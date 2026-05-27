@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=400, initial-scale=1.0" />
+  <title>엘커넥트 · 토스 프론트2 (메인)</title>
+  <link rel="stylesheet" href="styles/common.css" />
+  <style>
+    /* ───────────────────────────────────────────
+       메인(접수 프로세스) 화면 — Figma 920:741
+       Canvas 400×640, 좌표 metadata 그대로 적용
+       Device mockup: 실제 토스 프론트2 형태
+       Dev sidebar: 좌측 테이블 + 우측 Description
+       화면ID: LCN-MAN-001 (디자인 미반영)
+       ─────────────────────────────────────────── */
+    .main-screen {
+      position: absolute;
+      inset: 0;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* 1. 타이틀 (x:34, y:30, w:177, h:190) */
+    .title {
+      position: absolute;
+      left: 34px;
+      top: 30px;
+      font-weight: 700;
+      color: #000;
+      letter-spacing: -1.2px;
+    }
+    .title-line {
+      font-size: 51px;
+      line-height: 63px;
+      font-weight: 700;
+    }
+    .title-line.accent {
+      color: #527EF6;
+    }
+
+    /* 2. 공지 배너 (x:19, y:234, w:362, h:42) */
+    .notice-banner {
+      position: absolute;
+      left: 19px;
+      top: 234px;
+      width: 362px;
+      height: 42px;
+      background: #E7F3FF;
+      border-radius: 16px;
+      border: none;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    .notice-icon {
+      width: 16px;
+      height: 16px;
+      color: #527EF6;
+      flex-shrink: 0;
+    }
+    .notice-text {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      color: #527EF6;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 3. 메뉴 버튼 (도착인증 x:19/y:330, 1회권 x:18/y:451)
+       텍스트 x:24, y:42 — 좌측 정렬 (padding-left 24px) */
+    .menu-button {
+      position: absolute;
+      height: 104px;
+      border-radius: 16px;
+      border: none;
+      font-size: 26px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 24px;
+      text-align: left;
+      box-sizing: border-box;
+      transition: filter 0.15s ease, transform 0.1s ease;
+    }
+    .menu-button:active {
+      transform: scale(0.98);
+      filter: brightness(0.96);
+    }
+    .menu-button.primary {
+      left: 19px;
+      top: 330px;
+      width: 362px;
+      background: #527EF6;
+      color: #ffffff;
+    }
+    .menu-button.secondary {
+      left: 18px;
+      top: 451px;
+      width: 363px;
+      background: #F2F4F5;
+      color: #3D3D3D;
+    }
+
+    /* 4. 푸터 (toss 로고, x:160, y:589, w:80, h:24) */
+    .main-footer {
+      position: absolute;
+      left: 0;
+      top: 589px;
+      width: 400px;
+      display: flex;
+      justify-content: center;
+    }
+    .main-footer img {
+      width: 80px;
+      height: 24px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="main-screen">
+
+        <!-- 1. 타이틀 -->
+        <div class="title">
+          <div class="title-line">여기서</div>
+          <div class="title-line accent">체크</div>
+          <div class="title-line">해주세요</div>
+        </div>
+
+        <!-- 2. 공지 배너 -->
+        <button class="notice-banner" type="button" onclick="alert('공지사항 (프로토타입)')">
+          <!-- fluent:alert-20-filled -->
+          <svg class="notice-icon" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M10 1.5a6.5 6.5 0 0 0-6.5 6.5v2.382l-1.224 2.447A1 1 0 0 0 3.17 14.25h13.66a1 1 0 0 0 .894-1.421L16.5 10.382V8A6.5 6.5 0 0 0 10 1.5Zm0 16a3 3 0 0 1-2.83-2h5.66A3 3 0 0 1 10 17.5Z"/>
+          </svg>
+          <span class="notice-text">공지사항 공지사항 공지사항</span>
+        </button>
+
+        <!-- 3. 도착인증 -->
+        <button class="menu-button primary" type="button" onclick="go('arrival.html')">
+          도착인증
+        </button>
+
+        <!-- 4. 1회권 구매 -->
+        <button class="menu-button secondary" type="button" onclick="go('purchase.html')">
+          1회권 구매
+        </button>
+
+        <!-- 5. 푸터 (toss 로고) -->
+        <div class="main-footer">
+          <img src="assets/toss-logo.png" alt="toss" />
+        </div>
+
+          </div><!-- /.main-screen -->
+        </div><!-- /.device-screen -->
+      </div><!-- /.device-frame -->
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div><!-- /.device-mockup -->
+  </div><!-- /.device-stage -->
+
+  <script src="scripts/common.js"></script>
+</body>
+</html>
