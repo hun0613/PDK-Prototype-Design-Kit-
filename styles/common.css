@@ -137,6 +137,45 @@ html, body {
     0 0 0 3px rgba(20, 20, 30, 0.03);
 }
 
+/* ─── 디바이스 화면 내 스크롤바 숨김 ─────
+   기능은 유지하되 시각적으로만 숨김 (실제 단말기처럼 보이도록) */
+.device-screen *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+.device-screen * {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE/Edge */
+}
+
+/* ─── 모든 디바이스 화면 내 버튼 누름 효과 ─────
+   - scale 살짝 축소 + 살짝 어두워짐
+   - .no-press / [disabled] 클래스로 제외 가능 */
+.device-screen button {
+  transition: transform 0.12s ease, filter 0.12s ease, background-color 0.12s ease;
+}
+.device-screen button:active {
+  transform: scale(0.97);
+  filter: brightness(0.92);
+}
+.device-screen button.no-press:active,
+.device-screen button[disabled]:active {
+  transform: none;
+  filter: none;
+}
+
+/* ─── 아이콘 전용 버튼(뒤로가기/홈) — 누름 시 둥근 배경 fill ───
+   aria-label 기반으로 모든 페이지의 뒤로가기/홈 버튼에 일괄 적용 */
+.device-screen button[aria-label="뒤로가기"],
+.device-screen button[aria-label="홈"] {
+  border-radius: 12px;
+}
+.device-screen button[aria-label="뒤로가기"]:active,
+.device-screen button[aria-label="홈"]:active {
+  background: rgba(0, 0, 0, 0.06);
+}
+
 /* 스탠드/베이스는 실제 디바이스에 없음 - 숨김 */
 .device-stand,
 .device-base {
@@ -174,12 +213,248 @@ html, body {
   border-radius: 6px;
 }
 
+/* ─────────────────────────────────────────────
+   와이어프레임 공용 유틸리티
+   ─ 메인페이지 스타일 기반 토큰 + 스켈레톤
+   ───────────────────────────────────────────── */
+
+/* 화면 컨테이너 (400×640, 메인페이지와 동일한 베이스) */
+.wf-screen {
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  overflow: hidden;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  color: #111;
+}
+
+/* 헤더 영역 (뒤로가기 + 타이틀) */
+.wf-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 8px;
+}
+
+.wf-header-back {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  color: #111;
+}
+.wf-header-back:hover { background: #f3f4f6; }
+
+.wf-header-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111;
+  flex: 1;
+  letter-spacing: -0.3px;
+}
+
+/* 본문 영역 (헤더 + 푸터 여백 자동 처리 가능) */
+.wf-body {
+  position: absolute;
+  inset: 56px 0 88px;
+  overflow-y: auto;
+  padding: 0 18px;
+}
+
+.wf-body--no-header { top: 0; }
+.wf-body--no-footer { bottom: 0; }
+
+/* 푸터(하단 고정 버튼 영역) */
+.wf-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 18px 18px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 큰 타이틀 (메인페이지 "여기서 체크해주세요" 스타일) */
+.wf-title {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #111;
+  letter-spacing: -0.8px;
+  margin-top: 8px;
+}
+.wf-title .accent { color: #527EF6; }
+
+.wf-subtitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* 섹션 라벨 (작은 카테고리) */
+.wf-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  margin: 18px 0 8px;
+}
+
+/* 카드 / 리스트 항목 */
+.wf-card {
+  background: #ffffff;
+  border: 1px solid #eaecef;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+.wf-tile {
+  background: #F2F4F5;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+.wf-tile:hover { background: #e9edef; }
+
+/* 인풋 */
+.wf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.wf-field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+}
+.wf-input {
+  height: 52px;
+  border: 1px solid #d8dde3;
+  border-radius: 12px;
+  padding: 0 16px;
+  font-size: 16px;
+  background: #ffffff;
+  outline: none;
+  font-family: inherit;
+}
+.wf-input:focus { border-color: #527EF6; }
+
+/* 버튼 */
+.wf-btn {
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.wf-btn:active { transform: scale(0.99); filter: brightness(0.96); }
+
+.wf-btn--primary   { background: #527EF6; color: #ffffff; }
+.wf-btn--secondary { background: #F2F4F5; color: #3D3D3D; }
+.wf-btn--ghost     { background: transparent; color: #527EF6; }
+
+/* 알림/공지 배너 */
+.wf-banner {
+  background: #E7F3FF;
+  border-radius: 14px;
+  padding: 12px 16px;
+  color: #527EF6;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Skeleton UI ── (애매한 영역에 사용) */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #eef0f3 0%,
+    #e2e5e9 50%,
+    #eef0f3 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: 8px;
+  color: transparent;
+  user-select: none;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-line {
+  height: 14px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+.skeleton-line.lg { height: 22px; border-radius: 8px; }
+.skeleton-line.sm { height: 10px; }
+.skeleton-line.w-30 { width: 30%; }
+.skeleton-line.w-50 { width: 50%; }
+.skeleton-line.w-70 { width: 70%; }
+.skeleton-line.w-90 { width: 90%; }
+
+.skeleton-block {
+  width: 100%;
+  height: 80px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+.skeleton-block.h-40 { height: 40px; }
+.skeleton-block.h-56 { height: 56px; }
+.skeleton-block.h-100 { height: 100px; }
+.skeleton-block.h-140 { height: 140px; }
+
+.skeleton-circle {
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+}
+.skeleton-circle.sm { width: 32px; height: 32px; }
+.skeleton-circle.lg { width: 72px; height: 72px; }
+
 /* ─── 개발용 페이지 네비게이션 사이드바 (테이블) ─── */
 .page-nav {
   position: fixed;
   left: 24px;
   top: 24px;
   width: 380px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
@@ -190,6 +465,22 @@ html, body {
   z-index: 100;
   font-family: "Pretendard", -apple-system, sans-serif;
   user-select: none;
+}
+
+/* 사이드바 커스텀 스크롤바 */
+.page-nav::-webkit-scrollbar {
+  width: 8px;
+}
+.page-nav::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0;
+}
+.page-nav::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+.page-nav::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
 }
 
 .page-nav-title {
@@ -220,6 +511,10 @@ html, body {
   padding: 8px 10px;
   border-bottom: 1px solid #e5e7eb;
   font-family: "Pretendard", -apple-system, sans-serif;
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  z-index: 1;
 }
 
 .page-nav-table .col-id     { width: 42%; }
@@ -342,6 +637,7 @@ html, body {
   width: 380px;
   max-height: calc(100vh - 48px);
   overflow-y: auto;
+  overscroll-behavior: contain;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
@@ -351,6 +647,22 @@ html, body {
     0 8px 24px rgba(0, 0, 0, 0.06);
   z-index: 100;
   font-family: "Pretendard", -apple-system, sans-serif;
+}
+
+/* 우측 패널 커스텀 스크롤바 */
+.page-detail::-webkit-scrollbar {
+  width: 8px;
+}
+.page-detail::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0;
+}
+.page-detail::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+.page-detail::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
 }
 
 .page-detail-header {
@@ -427,6 +739,38 @@ html, body {
   height: 1px;
   background: #f0f1f3;
   margin: 4px 0;
+}
+
+/* Figma 링크 */
+.page-detail-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #527EF6;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 7px 12px;
+  background: #eef4ff;
+  border: 1px solid #d4e0fb;
+  border-radius: 7px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  max-width: 100%;
+}
+.page-detail-link:hover {
+  background: #dbe7fe;
+  border-color: #b8caf7;
+}
+.page-detail-link svg {
+  flex-shrink: 0;
+}
+
+.page-detail-empty-value {
+  color: #9ca3af;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 /* Description 번호 리스트 */
@@ -513,37 +857,43 @@ html, body {
   font-weight: 500;
 }
 
-/* ── Hover dim/highlight 효과 (디바이스 내부 화면) ── */
-.main-screen.is-dimming > *,
-.screen.is-dimming > * {
+/* ── Hover dim/highlight 효과 (디바이스 내부 화면)
+   .device-screen 의 첫 자식(.main-screen/.auth-screen/.screen 등)에
+   is-dimming 클래스가 붙으면 자식들이 흐려지고,
+   .is-highlighted 와 그 조상(.contains-highlight) 분기만 또렷해짐
+   → nested 타겟도 지원 */
+.device-screen > .is-dimming > * {
+  transition: opacity 0.18s ease, filter 0.18s ease;
+}
+
+/* 1) 스크린 직속 자식 중 highlight 분기가 아닌 것은 dim */
+.device-screen > .is-dimming > *:not(.is-highlighted):not(.contains-highlight) {
+  opacity: 0.12;
+  filter: saturate(0.4);
+}
+
+/* 2) contains-highlight 부모 내부에서도, highlight 분기가 아닌 형제는 dim */
+.device-screen > .is-dimming .contains-highlight > *:not(.is-highlighted):not(.contains-highlight) {
   transition: opacity 0.18s ease, filter 0.18s ease;
   opacity: 0.12;
   filter: saturate(0.4);
 }
 
-.main-screen.is-dimming > .is-highlighted,
-.screen.is-dimming > .is-highlighted {
+/* 3) 실제 강조 대상은 또렷
+      ❗ position 을 강제로 바꾸면 absolute 로 고정된 요소(예: .seat-footer)가
+         자연 흐름으로 떠올라 위치가 깨짐.
+         → outline + box-shadow 로 처리해 원래 position 유지 */
+.device-screen > .is-dimming .is-highlighted {
   opacity: 1;
   filter: none;
-  position: relative;
-  z-index: 2;
-}
-
-/* 강조 요소 주변에 살짝 ring 효과 */
-.main-screen.is-dimming > .is-highlighted::before,
-.screen.is-dimming > .is-highlighted::before {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border: 2px solid #527EF6;
-  border-radius: 14px;
-  pointer-events: none;
+  outline: 2px solid #527EF6;
+  outline-offset: 4px;
   animation: highlight-pulse 1.2s ease-in-out infinite;
 }
 
 @keyframes highlight-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(82, 126, 246, 0.35); }
-  50%      { box-shadow: 0 0 0 6px rgba(82, 126, 246, 0); }
+  50%      { box-shadow: 0 0 0 8px rgba(82, 126, 246, 0); }
 }
 
 /* 우측 패널 토글 (닫혔을 때 표시) */

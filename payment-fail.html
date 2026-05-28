@@ -5,15 +5,85 @@
   <meta name="viewport" content="width=400, initial-scale=1.0" />
   <title>엘커넥트 · 결제 실패페이지 (LCN-PCH-007)</title>
   <link rel="stylesheet" href="styles/common.css" />
+  <style>
+    /* ───────────────────────────────────────────
+       결제 실패페이지 (LCN-PCH-007) — Figma 310:668 확정
+       Canvas 400×640
+       미니멀 페이지: 노란 경고 아이콘 + 두 줄 텍스트 (뒤로/홈 없음)
+       ─────────────────────────────────────────── */
+    .pay-fail-screen {
+      position: absolute;
+      inset: 0;
+      background: #ffffff;
+      font-family: "Pretendard", -apple-system, sans-serif;
+      overflow: hidden;
+    }
+
+    /* 1. 노란 경고 아이콘 (x:160, y:216, 80×80) */
+    .pay-fail-icon {
+      position: absolute;
+      left: 160px;
+      top: 216px;
+      width: 80px;
+      height: 80px;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* 2. 텍스트 그룹 (y:312, w:400, h:134, padding 24, gap 12, center) */
+    .pay-fail-text {
+      position: absolute;
+      left: 0;
+      top: 312px;
+      width: 400px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .pay-fail-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #363D4A;
+      line-height: 1.37;
+      letter-spacing: -0.5px;
+    }
+    .pay-fail-sub {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.37;
+      letter-spacing: -0.5px;
+      background: linear-gradient(137.998deg, #1EA3AE 40.865%, #2F87EA 59.621%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
 </head>
 <body>
   <div class="device-stage">
     <div class="device-mockup">
       <div class="device-frame">
         <div class="device-screen">
-          <div class="placeholder-screen">
-            <div class="placeholder-screen-name">결제 실패페이지</div>
-            <div class="placeholder-screen-id">LCN-PCH-007</div>
+          <div class="pay-fail-screen">
+
+            <!-- 1. 노란 경고 아이콘 (느낌표 검정) -->
+            <svg class="pay-fail-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="40" cy="40" r="40" fill="#FACC15"/>
+              <line x1="40" y1="23" x2="40" y2="43" stroke="#191C23" stroke-width="7" stroke-linecap="round"/>
+              <circle cx="40" cy="58" r="4" fill="#191C23"/>
+            </svg>
+
+            <!-- 2. 텍스트 -->
+            <div class="pay-fail-text">
+              <div class="pay-fail-title">60,000원 결제실패</div>
+              <div class="pay-fail-sub">카드를 빼주세요</div>
+            </div>
+
           </div>
         </div>
       </div>
