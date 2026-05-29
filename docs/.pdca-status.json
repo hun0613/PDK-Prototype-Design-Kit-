@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-28T08:55:57.277Z",
+  "lastUpdated": "2026-05-29T00:06:30.478Z",
   "activeFeatures": [
     "scripts"
   ],
@@ -15,7 +15,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-26T04:56:45.767Z",
-        "lastUpdated": "2026-05-28T08:55:57.276Z"
+        "lastUpdated": "2026-05-29T00:06:30.478Z"
       },
       "lastFile": "C:\\Users\\THEBESTPAY\\Desktop\\내손키\\엘커넥트\\scripts\\common.js"
     }
@@ -28,7 +28,7 @@
   "session": {
     "startedAt": "2026-05-26T04:50:49.145Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-05-28T08:55:57.277Z"
+    "lastActivity": "2026-05-29T00:06:30.478Z"
   },
   "history": [
     {
@@ -543,6 +543,12 @@
     },
     {
       "timestamp": "2026-05-28T08:55:57.276Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-05-29T00:06:30.478Z",
       "feature": "scripts",
       "phase": "do",
       "action": "updated"

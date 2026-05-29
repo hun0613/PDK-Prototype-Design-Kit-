@@ -357,7 +357,7 @@
       // 층별 타석 데이터
       // status: 'available' | 'using' | 'reserved'
       // sub:    "이용중" / "예약석" (using/reserved 일 때)
-      // time:   "45분" / "3분 남음" (using 일 때만, 'urgent' 옵션은 빨강)
+      // time:   "45분" / "4분 남음" (using 일 때만 표시, 항상 분 단위. 5분 미만 남으면 urgent:true → 빨강)
       const FLOORS = {
         '2': [
           { n:1 }, { n:2 }, { n:3 }, { n:4 }, { n:5 },
@@ -375,7 +375,7 @@
         ],
         '4': [
           { n:1 }, { n:2 }, { n:3, status:'using', sub:'이용중', time:'50분' }, { n:4 }, { n:5 },
-          { n:6 }, { n:7, status:'reserved', sub:'예약석' }, { n:8 }, { n:9 }, { n:10, status:'using', sub:'이용중', time:'5분 남음', urgent:true },
+          { n:6 }, { n:7, status:'reserved', sub:'예약석' }, { n:8 }, { n:9 }, { n:10, status:'using', sub:'이용중', time:'4분 남음', urgent:true },
           { n:11 }, { n:12 }, { n:13 }, { n:14, status:'using', sub:'이용중', time:'25분' }, { n:15 },
           { n:16 }, { n:17 }, { n:18 }, { n:19, status:'reserved', sub:'예약석' }, { n:20 },
           { n:21 }, { n:22 }, { n:23 }, { n:24, status:'using', sub:'이용중', time:'15분' }, { n:25 },
