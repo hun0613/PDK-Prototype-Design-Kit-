@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=400, initial-scale=1.0" />
+  <title>엘커넥트 · 예약목록 페이지-2개이상 (LCN-ATH-008)</title>
+  <link rel="stylesheet" href="styles/common.css" />
+  <style>
+    /* ───────────────────────────────────────────
+       예약목록 페이지-2개이상 (LCN-ATH-008) — Figma 380:563 확정
+       Canvas 400×640
+       QR 인증 후 예약이 2개 이상(주로 횟수권)일 때 선택 목록.
+       카드 클릭 → 도착인증 완료(LCN-ATH-006)
+       ─────────────────────────────────────────── */
+    .reservation-multi-screen {
+      position: absolute;
+      inset: 0;
+      background: #ffffff;
+      font-family: "Pretendard", -apple-system, sans-serif;
+      overflow: hidden;
+    }
+
+    /* 1. 좌상단 뒤로가기 (8,8, 40×40) */
+    .reservation-multi-back {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    .reservation-multi-back svg { display: block; pointer-events: none; }
+
+    /* 1-2. 우상단 홈 버튼 (352,8, 40×40) */
+    .reservation-multi-home {
+      position: absolute;
+      top: 8px;
+      left: 352px;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    .reservation-multi-home img { width: 40px; height: 40px; display: block; pointer-events: none; }
+
+    /* 2. 헤더 (frame top:48, padding 24, gap 4, 중앙 정렬) */
+    .reservation-multi-subtitle {
+      position: absolute;
+      left: 24px;
+      top: 72px;
+      width: 352px;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.37;
+      text-align: center;
+      background: linear-gradient(151.4deg, #1EA3AE 40.865%, #2F87EA 59.621%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .reservation-multi-title {
+      position: absolute;
+      left: 24px;
+      top: 99px;
+      width: 352px;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.37;
+      color: #363D4A;
+      text-align: center;
+    }
+
+    /* 3. 선택 목록 컨테이너 (y:161, w:400, padding 16/16/16/24, gap 20) */
+    .reservation-multi-list {
+      position: absolute;
+      left: 0;
+      top: 161px;
+      width: 400px;
+      padding: 16px 16px 16px 24px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* 3-1. 예약 카드(선택지) — 360×128, 클릭 가능 */
+    .reservation-multi-item {
+      width: 100%;
+      height: 128px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      text-align: left;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    /* 이미지 박스 (128×128, bg #F3F4F6, radius 16) */
+    .rm-card-image {
+      flex-shrink: 0;
+      width: 128px;
+      height: 128px;
+      background: #F3F4F6;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rm-card-image img { width: 80px; height: 80px; display: block; pointer-events: none; }
+
+    /* 정보 영역 (212×128, 상단 뱃지+타석 / 하단 시간) */
+    .rm-card-info {
+      flex: 1;
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+    .rm-card-top {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-start;
+    }
+    .rm-badge {
+      background: #1B8F42;          /* 횟수권 = 초록 (기간제 파랑과 구분) */
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.3;
+      padding: 4px 6px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rm-card-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #363D4A;
+      line-height: 1.3;
+      white-space: nowrap;
+    }
+    .rm-card-bottom {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .rm-card-bottom .col {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .rm-card-bottom .label {
+      font-size: 15px;
+      font-weight: 500;
+      color: #6B7684;
+      line-height: 1.4;
+    }
+    .rm-card-bottom .value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #363D4A;
+      line-height: 1.3;
+    }
+
+    /* 카드 사이 구분선 */
+    .rm-divider {
+      width: 100%;
+      height: 1px;
+      background: #E5E8EB;
+    }
+
+    /* ───────────────────────────────────────────
+       예약최종확인 모달 (LCN-ATH-007) — Figma 385:286
+       dim 백드롭 + 하단 시트형 모달
+       ─────────────────────────────────────────── */
+    .rm-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      background: rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.22s ease, visibility 0.22s ease;
+    }
+    .rm-backdrop.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .rm-modal {
+      position: absolute;
+      left: 50%;
+      bottom: 10px;
+      width: 380px;
+      background: #ffffff;
+      border-radius: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+      transform: translateX(-50%) translateY(112%);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      box-sizing: border-box;
+    }
+    .rm-backdrop.is-open .rm-modal {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* 손잡이 바 (px10 py12, 48×4 #D9D9D9) */
+    .rm-modal-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px 10px;
+    }
+    .rm-modal-handle {
+      width: 48px;
+      height: 4px;
+      border-radius: 4px;
+      background: #D9D9D9;
+    }
+
+    /* 타이틀 영역 (padding 24, gap 25) */
+    .rm-modal-title {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 25px;
+      padding: 24px;
+    }
+    .rm-modal-seat {
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.37;
+      color: #363D4A;
+    }
+    .rm-modal-question {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #6E7683;
+    }
+
+    /* 버튼 영역 (pt24 pb2 px20 gap7) */
+    .rm-modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding: 24px 20px 2px;
+    }
+    .rm-modal-btn {
+      width: 100%;
+      height: 56px;
+      border: none;
+      border-radius: 16px;
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.3;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rm-modal-btn.confirm {
+      background: #3182F6;
+      color: #ffffff;
+    }
+    .rm-modal-btn.cancel {
+      background: transparent;
+      color: #697483;
+    }
+  </style>
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="reservation-multi-screen">
+
+            <!-- 1. 뒤로가기 -->
+            <button class="reservation-multi-back" type="button" onclick="history.length > 1 ? history.back() : go('qr-output.html')" aria-label="뒤로가기">
+              <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M17 8H1M1 8L8 15M1 8L8 1" stroke="#363D4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <!-- 1-2. 홈 버튼 -->
+            <button class="reservation-multi-home" type="button" onclick="go('index.html')" aria-label="홈">
+              <img src="assets/home.png" alt="홈" width="40" height="40" />
+            </button>
+
+            <!-- 2. 헤더 -->
+            <div class="reservation-multi-subtitle">홍길동님 반가워요!</div>
+            <div class="reservation-multi-title">예약한 내역을 선택해주세요</div>
+
+            <!-- 3. 선택 목록 -->
+            <div class="reservation-multi-list">
+
+              <!-- 카드 1 -->
+              <button class="reservation-multi-item" type="button" onclick="openConfirm('3F 15번')">
+                <div class="rm-card-image">
+                  <img src="assets/ticket-icon.svg" alt="횟수권" />
+                </div>
+                <div class="rm-card-info">
+                  <div class="rm-card-top">
+                    <span class="rm-badge">횟수권</span>
+                    <div class="rm-card-title">3F 15번</div>
+                  </div>
+                  <div class="rm-card-bottom">
+                    <div class="col">
+                      <div class="label">시작 시간</div>
+                      <div class="value">17:12</div>
+                    </div>
+                    <div class="col">
+                      <div class="label">종료 시간</div>
+                      <div class="value">19:12</div>
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              <!-- 구분선 -->
+              <div class="rm-divider" aria-hidden="true"></div>
+
+              <!-- 카드 2 -->
+              <button class="reservation-multi-item" type="button" onclick="openConfirm('2F 16번')">
+                <div class="rm-card-image">
+                  <img src="assets/ticket-icon.svg" alt="횟수권" />
+                </div>
+                <div class="rm-card-info">
+                  <div class="rm-card-top">
+                    <span class="rm-badge">횟수권</span>
+                    <div class="rm-card-title">2F 16번</div>
+                  </div>
+                  <div class="rm-card-bottom">
+                    <div class="col">
+                      <div class="label">시작 시간</div>
+                      <div class="value">17:12</div>
+                    </div>
+                    <div class="col">
+                      <div class="label">종료 시간</div>
+                      <div class="value">19:12</div>
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+            </div><!-- /.reservation-multi-list -->
+
+            <!-- 예약최종확인 모달 (LCN-ATH-007) — dim 백드롭 + 하단 시트 -->
+            <div class="rm-backdrop" id="rm-backdrop" aria-hidden="true">
+              <div class="rm-modal" role="dialog" aria-modal="true" aria-labelledby="rm-modal-seat">
+                <div class="rm-modal-bar">
+                  <div class="rm-modal-handle"></div>
+                </div>
+                <div class="rm-modal-title">
+                  <div class="rm-modal-seat" id="rm-modal-seat">2F 15번</div>
+                  <div class="rm-modal-question">선택하신 자리가 맞나요?</div>
+                </div>
+                <div class="rm-modal-actions">
+                  <button class="rm-modal-btn confirm" type="button" onclick="go('arrival-complete.html')">맞아요</button>
+                  <button class="rm-modal-btn cancel" type="button" onclick="closeConfirm()">다시 고를래요</button>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /.reservation-multi-screen -->
+        </div>
+      </div>
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div>
+  </div>
+
+  <script src="scripts/common.js"></script>
+  <script>
+    (function () {
+      const backdrop = document.getElementById('rm-backdrop');
+      const seatEl = document.getElementById('rm-modal-seat');
+
+      // 예약 카드 클릭 → 선택 타석으로 모달 열기 (백드롭 dim)
+      window.openConfirm = function (seat) {
+        if (seat) seatEl.textContent = seat;
+        backdrop.classList.add('is-open');
+        backdrop.setAttribute('aria-hidden', 'false');
+      };
+      window.closeConfirm = function () {
+        backdrop.classList.remove('is-open');
+        backdrop.setAttribute('aria-hidden', 'true');
+      };
+
+      // 백드롭(모달 바깥) 클릭 시 닫기
+      backdrop.addEventListener('click', function (e) {
+        if (e.target === backdrop) closeConfirm();
+      });
+
+      // 개발 사이드바에서 모달 상태 미리보기: ?modal=1[&seat=3F 15번]
+      const params = new URLSearchParams(location.search);
+      if (params.get('modal') === '1') {
+        openConfirm(params.get('seat') || '3F 15번');
+      }
+    })();
+  </script>
+</body>
+</html>

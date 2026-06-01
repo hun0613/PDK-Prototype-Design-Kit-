@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=400, initial-scale=1.0" />
+  <title>엘커넥트 · 토스 프론트2 (랜딩페이지)</title>
+  <link rel="stylesheet" href="styles/common.css" />
+  <style>
+    /* ───────────────────────────────────────────
+       랜딩페이지 (LCN-INT-001) — Figma 386:294 확정
+       Canvas 400×640, 절대 좌표 적용
+       최초 진입 화면. [환영합니다] 클릭 → 메인페이지(LCN-MAN-001)
+       ─────────────────────────────────────────── */
+    .landing-screen {
+      position: absolute;
+      inset: 0;
+      background: #000000;
+      overflow: hidden;
+      font-family: "Pretendard", -apple-system, sans-serif;
+    }
+
+    /* 0. 배경 골프 연습장 이미지 (풀스크린) */
+    .landing-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* 1. 더베스트 골프클럽 로고 (x:35.38, y:72.98, w:328.62, h:40.44) */
+    .landing-logo {
+      position: absolute;
+      left: 35.38px;
+      top: 72.98px;
+      width: 328.62px;
+      height: 40.44px;
+    }
+    .landing-logo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* 2. 가용 타석 안내 박스 (x:28, y:383, w:344, radius 16, padding 8)
+       내부 텍스트는 오른쪽→왼쪽 무한 루프 마퀴 슬라이드.
+       동일 내용 2벌을 이어붙이고 -50%까지 이동 → 이음새 없이 끊김 없이 반복 */
+    .landing-info {
+      position: absolute;
+      left: 28px;
+      top: 383px;
+      width: 344px;
+      box-sizing: border-box;
+      padding: 8px 0;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.32);
+      overflow: hidden;
+      color: #ffffff;
+      line-height: 1.3;
+    }
+    .landing-info-track {
+      display: flex;
+      width: max-content;
+      animation: info-marquee 13s linear infinite;
+      will-change: transform;
+    }
+    @keyframes info-marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .landing-info-item {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 0 32px;       /* 반복 사이 간격 = 좌우 32 → 64px */
+      text-align: center;
+    }
+    .landing-info-main {
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: -0.6px;
+      white-space: nowrap;
+    }
+    .landing-info-sub {
+      font-size: 16px;
+      font-weight: 400;
+      letter-spacing: -0.48px;
+      white-space: nowrap;
+    }
+
+    /* 3. 환영합니다 버튼 (x:67, y:472, w:264, h:90, radius 45)
+       wrapper(.landing-welcome)는 위아래 부유(float) 애니메이션,
+       버튼(.landing-welcome-btn)은 누름 효과(common.css :active scale)를 각각 담당.
+       → transform 충돌 없이 둘 다 동작 */
+    .landing-welcome {
+      position: absolute;
+      left: 67px;
+      top: 472px;
+      width: 264px;
+      height: 90px;
+      animation: welcome-float 1.4s ease-in-out infinite;
+      will-change: transform;
+    }
+    @keyframes welcome-float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
+    }
+    .landing-welcome-btn {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 0 20px;
+      border: none;
+      border-radius: 45px;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .landing-welcome-title {
+      width: 100%;
+      font-size: 30px;
+      font-weight: 700;
+      color: #191C23;
+      letter-spacing: -0.9px;
+    }
+    .landing-welcome-sub {
+      width: 100%;
+      font-size: 17px;
+      font-weight: 400;
+      color: #757884;
+      letter-spacing: -0.51px;
+    }
+
+    /* 4. toss 로고 (x:50% translateX, y:578, w:100, h:50, opacity 60%) */
+    .landing-toss {
+      position: absolute;
+      left: 50%;
+      top: 589px;            /* 다른 페이지 푸터 로고와 동일 위치 */
+      transform: translateX(-50%);
+      width: 80px;           /* 다른 페이지 푸터 로고와 동일 사이즈 (80×24) */
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .landing-toss img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      /* 회청색 로고가 배경 위에서 또렷하게 떨어지도록 부드러운 그림자 */
+      filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+    }
+  </style>
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="landing-screen">
+
+            <!-- 0. 배경 이미지 -->
+            <img class="landing-bg" src="assets/landing-bg.png" alt="" aria-hidden="true" />
+
+            <!-- 1. 더베스트 골프클럽 로고 -->
+            <div class="landing-logo">
+              <img src="assets/the-best-golf-club.svg" alt="더베스트 골프클럽" />
+            </div>
+
+            <!-- 2. 가용 타석 안내 (오른쪽→왼쪽 무한 루프 마퀴, 동일 내용 2벌) -->
+            <div class="landing-info">
+              <div class="landing-info-track">
+                <div class="landing-info-item">
+                  <div class="landing-info-main">이용 가능한 타석 수 16/20</div>
+                  <div class="landing-info-sub">the number of available at-bats 16/20</div>
+                </div>
+                <div class="landing-info-item" aria-hidden="true">
+                  <div class="landing-info-main">이용 가능한 타석 수 16/20</div>
+                  <div class="landing-info-sub">the number of available at-bats 16/20</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. 환영합니다 버튼 (wrapper: 부유 애니메이션 / button: 누름 효과) -->
+            <div class="landing-welcome">
+              <button class="landing-welcome-btn" type="button" onclick="go('index.html')">
+                <span class="landing-welcome-title">환영합니다</span>
+                <span class="landing-welcome-sub">Welcome</span>
+              </button>
+            </div>
+
+            <!-- 4. toss 로고 -->
+            <div class="landing-toss">
+              <img src="assets/toss-logo.png" alt="toss" />
+            </div>
+
+          </div><!-- /.landing-screen -->
+        </div><!-- /.device-screen -->
+      </div><!-- /.device-frame -->
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div><!-- /.device-mockup -->
+  </div><!-- /.device-stage -->
+
+  <script src="scripts/common.js"></script>
+</body>
+</html>

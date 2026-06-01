@@ -208,7 +208,7 @@
               <div class="final-close-hint">
                 <span id="final-countdown">10</span>초뒤에 닫혀요
               </div>
-              <button class="final-confirm-btn" type="button" onclick="go('index.html')">확인</button>
+              <button class="final-confirm-btn" type="button" onclick="go('landing.html')">확인</button>
             </div>
 
           </div>
@@ -221,7 +221,7 @@
 
   <script src="scripts/common.js"></script>
   <script>
-    // ── 카운트다운 10 → 0 (프로토타입: 0에서 정지, 실제 운영 시 메인페이지 이동) ──
+    // ── 카운트다운 10 → 0, 종료 시 랜딩페이지로 이동 ──
     (function () {
       const el = document.getElementById('final-countdown');
       if (!el) return;
@@ -231,6 +231,7 @@
         el.textContent = String(n);
         if (n <= 0) {
           clearInterval(timer);
+          go('landing.html');
         }
       };
       const timer = setInterval(tick, 1000);

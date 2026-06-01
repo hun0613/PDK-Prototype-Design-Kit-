@@ -436,7 +436,8 @@
       function renderCount() {
         const total = totalSelected();
         countEl.textContent = total;
-        nextBtn.disabled = (total === 0);
+        // [다음]은 필요 타석 수(MAX_SELECT)를 모두 선택해야 활성화 — 일부만 선택 시 진행 불가
+        nextBtn.disabled = (total !== MAX_SELECT);
         // 3/3 도달 시 비선택 타석 dim + 클릭 비활성
         gridEl.classList.toggle('is-max', total >= MAX_SELECT);
       }

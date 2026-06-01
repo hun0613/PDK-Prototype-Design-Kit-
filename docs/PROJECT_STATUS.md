@@ -20,12 +20,14 @@
 
 ```
 엘커넥트/
+├── landing.html                LCN-INT-001 랜딩페이지 (최초 진입)
 ├── index.html                  LCN-MAN-001 메인페이지
 ├── arrival.html                LCN-ATH-001 인증방법 선택
 ├── qr-output.html              LCN-ATH-002 QR출력
 ├── qr-fail.html                LCN-ATH-003 QR인증 실패
 ├── reservation-empty.html      LCN-ATH-004 예약목록 미존재
-├── reservation-list.html       LCN-ATH-005 예약목록
+├── reservation-list.html       LCN-ATH-005 예약목록 페이지-1개
+├── reservation-list-multi.html LCN-ATH-008 예약목록 페이지-2개이상 (횟수권 선택)
 ├── arrival-complete.html       LCN-ATH-006 도착인증 완료
 ├── purchase.html               LCN-PCH-001 1회권상품 선택
 ├── phone-input.html            LCN-PCH-002 휴대폰번호 입력 (placeholder)
@@ -41,8 +43,15 @@
 │   ├── home.png                홈 버튼 (120×120 → 40×40 표시, 패딩 포함)
 │   ├── qr-code.png             QR 코드 (160×160)
 │   ├── qr-icon.png             QR 인증 카드 아이콘 (42×42)
-│   ├── golf-icon.png           예약 목록 골프 아이콘 (80×80)
-│   └── golf-icon-large.png     상품 상세 큰 골프 (290×230)
+│   ├── landing-bg.png          랜딩 배경 골프 연습장 사진 (832×1248)
+│   ├── the-best-golf-club.svg  랜딩 "더베스트 골프클럽" 흰색 로고
+│   ├── ticket-icon.svg         횟수권 티켓 아이콘 (초록, 80×80) — 예약목록 2개이상
+│   ├── ticket-icon-blue.svg    기간제 티켓 아이콘 (블루, 80×80) — 예약목록 1개
+│   ├── golfer-icon.svg         골퍼 일러스트 (80×80) — 1회권 상품 카드(PCH-001)/선택확인(PCH-004)
+│   ├── golfer-large.svg        골퍼 일러스트 (270×270) — 상품 상세 상단(LCN-PCH-009)
+│   ├── clear-x-icon.svg        입력 초기화 X (휴대폰 입력 LCN-PCH-002)
+│   └── backspace-icon.svg      키패드 지우기 ← (휴대폰 입력 LCN-PCH-002)
+│   (랜딩 하단 toss 로고는 기존 toss-logo.png 재사용)
 ├── styles/
 │   └── common.css              공용 스타일 + 디바이스 목업 + 사이드바
 ├── scripts/
@@ -57,6 +66,13 @@
 
 ## 3. 디자인 적용 현황
 
+### 공통 카테고리 — **전체 적용 완료** ✓
+
+| ID | 화면명 | 파일 | 상태 |
+|---|---|---|---|
+| LCN-INT-001 | 랜딩페이지 (최초 진입) | landing.html | ✅ |
+| LCN-MAN-001 | 메인페이지 | index.html | ✅ |
+
 ### 도착인증 카테고리 — **전체 적용 완료** ✓
 
 | ID | 화면명 | 파일 | 상태 |
@@ -66,7 +82,9 @@
 | LCN-ATH-002 | QR출력페이지 | qr-output.html | ✅ |
 | LCN-ATH-003 | QR인증 실패페이지 | qr-fail.html | ✅ |
 | LCN-ATH-004 | 예약목록 미존재 알림페이지 | reservation-empty.html | ✅ |
-| LCN-ATH-005 | 예약목록 페이지 | reservation-list.html | ✅ |
+| LCN-ATH-005 | 예약목록 페이지-1개 | reservation-list.html | ✅ |
+| LCN-ATH-008 | 예약목록 페이지-2개이상 (횟수권 선택) | reservation-list-multi.html | ✅ |
+| LCN-ATH-007 | 예약최종확인 모달 (dim 배경 하단 시트) | reservation-list-multi.html 내 모달 (`?modal=1`로 미리보기) | ✅ |
 | LCN-ATH-006 | 도착인증 완료 페이지 | arrival-complete.html | ✅ |
 
 ### 1회권 구매 카테고리 — **전체 적용 완료** ✓
@@ -89,14 +107,22 @@
 ## 4. 페이지 흐름 (User Flow)
 
 ```
+랜딩 (LCN-INT-001, 최초 진입)
+└── [환영합니다] → 메인 (LCN-MAN-001)
+
 메인 (LCN-MAN-001)
+├── (30초 무동작) → 랜딩 (LCN-INT-001) 자동 복귀  ※ 터치/클릭 시 타이머 초기화
 ├── [도착 인증] → 인증방법 선택 (LCN-ATH-001)
 │   └── [QR 인증] → QR 출력 (LCN-ATH-002, 60초 카운트다운)
-│       ├── ❌ QR 실패 → QR인증 실패 (LCN-ATH-003, 10초 카운트다운)
+│       ├── ❌ QR 실패 → QR인증 실패 (LCN-ATH-003, 10초/확인 → 메인)
 │       └── ✅ QR 성공
-│           ├── 예약 없음 → 예약목록 미존재 (LCN-ATH-004, 10초)
-│           └── 예약 있음 → 예약목록 (LCN-ATH-005)
-│                          └── [도착 완료하기] → 도착인증 완료 (LCN-ATH-006, 5초)
+│           ├── 예약 없음 → 예약목록 미존재 (LCN-ATH-004, 10초/확인 → 메인)
+│           ├── 예약 1개 → 예약목록 페이지-1개 (LCN-ATH-005)
+│           │              └── [도착 완료하기] → 도착인증 완료 (LCN-ATH-006, 5초/확인 → 랜딩)
+│           └── 예약 2개 이상(횟수권) → 예약목록 페이지-2개이상 (LCN-ATH-008)
+│                          └── [예약 카드 선택] → 예약최종확인 모달 (LCN-ATH-007, dim 배경)
+│                                     ├── [맞아요] → 도착인증 완료 (LCN-ATH-006, 5초/확인 → 랜딩)
+│                                     └── [다시 고를래요]/배경 클릭 → 모달 닫고 목록 복귀
 │
 └── [1회권 구매] → 1회권상품 선택 (LCN-PCH-001)
     └── [상품 카드 클릭] → 상품 상세 (LCN-PCH-009)
@@ -105,7 +131,11 @@
                 └── [다음] → 선택내용 확인 (LCN-PCH-004)
                     └── [결제하기] → 카드결제 (LCN-PCH-005)
                         ├── ✅ 성공 → 결제 성공 (LCN-PCH-006)
+                        │              └── (카드 제거) → 타석배정 최종완료 (LCN-PCH-010, 10초/확인 → 랜딩)
                         └── ❌ 실패 → 결제 실패 (LCN-PCH-007)
+
+※ 도착인증 완료(LCN-ATH-006)·타석배정 최종완료(LCN-PCH-010)는 카운트다운 종료/[확인] 시 랜딩페이지(LCN-INT-001)로 복귀
+※ QR인증 실패(LCN-ATH-003)·예약목록 미존재(LCN-ATH-004)는 기존 정책 유지(메인페이지로 복귀)
 ```
 
 ---
@@ -213,11 +243,33 @@
 
 ## 8. 개발 사이드바 (common.js 자동 주입)
 
-### 좌측: 페이지 목록 테이블
+### 좌측 상단: 페이지 목록 테이블
 - 카테고리(공통 / 도착인증 / 1회권 구매)별 그룹
 - 컬럼: **화면ID / 화면이름 / 디자인** (반영/미반영 뱃지)
 - 행 클릭 → 해당 페이지로 이동
-- max-height 적용 + sticky 컬럼 헤더 + 스크롤바 숨김
+- `max-height: 42vh`로 높이 제한 + 내부 스크롤 + sticky 컬럼 헤더
+
+### 좌측 하단: 화면 플로우 다이어그램 (Mermaid)
+- `common.js`의 `injectFlowDiagram()`이 주입, **Mermaid**(CDN)로 렌더
+- 전체 화면 흐름을 **상→하(TD) 유저플로우** 스타일로 표시 (랜딩 → 메인 → 도착인증/1회권 분기)
+- **노드 타입별 스타일** (실무 유저플로우 가이드 반영):
+  - 화면 페이지 = 진한 파랑(`#3182F6`, 흰 글자, 화면명+ID 2줄)
+  - 액션(클릭) = 연한 파랑(`#D9E8FF`)
+  - 분기(판단) = 노란 마름모(`#FFD43B`) — 인증 성공 여부 / 예약 목록 존재 여부 / 예약 개수 / 결제 성공 여부
+  - 시작·종료 = 회색 원(terminator)
+- **현재 화면 노드는 굵은 검정 테두리(4px)로 강조** (`classDef cur`, `currentFlowNode()`로 판별, 모달은 ATH-007)
+- **화면 노드 클릭 → 해당 페이지로 이동** (`click … call __flowGo()`, `FLOW_HREFS` 매핑)
+- **다이어그램은 자연 크기로 렌더**(Mermaid `useMaxWidth:false` + 렌더 후 viewBox 크기로 고정) → 노드가 작아지지 않음
+- 패널 본문(`.page-flow-body`)에서 **좌우/상하 스크롤**로 큰 플로우 탐색, 헤더(제목·▾ 접기)는 상단 고정
+- **마우스 드래그(grab) 패닝**: 빈 영역을 잡고 상하좌우로 끌어 이동(`enableFlowPan`). 4px 이상 드래그하면 직후 클릭 1회를 막아 노드 오클릭 방지, 살짝만 누르면 노드 클릭(이동)으로 동작
+- **현재 화면 노드 자동 중앙 정렬**: 페이지 진입 시 해당 노드가 패널 정중앙에 오도록 스크롤(`centerCurrentNodeIn`, 렌더 후 `requestAnimationFrame`)
+- **현재 위치 버튼(⊕ 크로스헤어)**: 헤더 아이콘 클릭 시 현재 화면 노드로 부드럽게(smooth) 중앙 이동 — 패널·모달 양쪽에 제공(`centerCurrentNodeIn(body, true)`)
+- **크게 보기(전체화면 모달)**: 헤더의 ⛶ 아이콘 클릭 → `.page-flow-modal`이 화면 전체에 열림
+  - 확대/축소(`+`/`−`)·맞춤(폭 기준 fit)·`✕`/ESC/배경 클릭으로 닫기
+  - 모달 안에서도 드래그 패닝 + 현재 노드 중앙정렬 + 노드 클릭 이동 동작 (모달용 Mermaid를 최초 열 때 1회 렌더)
+- 패널 크기 `width:380px / max-height:48vh`, 좌측 하단 고정
+- **로딩 처리(깜빡임 방지)**: Mermaid 렌더 전까지 `.page-flow.is-loading`으로 원시 그래프 텍스트를 숨기고(`position:absolute; visibility:hidden`) "불러오는 중…" 표시 → 렌더 완료 시 클래스 해제(모달은 `:not([data-processed])`로 동일 처리)
+- 노드/엣지 정의는 `buildFlowGraph()`에 하드코딩 (화면 추가 시 함께 갱신)
 
 ### 우측: Description 패널
 - 현재 페이지의: **화면 ID / 화면명 / 카테고리 / 디자인 반영 / Figma 링크 / Description 리스트**
@@ -343,12 +395,15 @@ const CATEGORIES = [
 ### 노드 ID 매핑
 | 페이지 | Figma 노드 ID |
 |---|---|
+| LCN-INT-001 | 386:294 |
 | LCN-MAN-001 | 308:87 |
 | LCN-ATH-001 | 308:11 |
 | LCN-ATH-002 | 310:619 |
 | LCN-ATH-003 | 310:2679 |
 | LCN-ATH-004 | 338:305 |
 | LCN-ATH-005 | 339:339 |
+| LCN-ATH-008 | 380:563 |
+| LCN-ATH-007 | 385:286 |
 | LCN-ATH-006 | 313:2757 |
 | LCN-PCH-001 | 313:2719 |
 | LCN-PCH-009 | 339:474 |

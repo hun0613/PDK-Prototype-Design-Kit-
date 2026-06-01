@@ -167,5 +167,20 @@
   </div><!-- /.device-stage -->
 
   <script src="scripts/common.js"></script>
+  <script>
+    // 30초 무동작 시 랜딩페이지로 자동 복귀 (키오스크 idle) — 터치/클릭/키 입력 시 초기화
+    (function () {
+      const IDLE_MS = 30000;
+      let timer;
+      function reset() {
+        clearTimeout(timer);
+        timer = setTimeout(function () { go('landing.html'); }, IDLE_MS);
+      }
+      ['pointerdown', 'click', 'keydown', 'touchstart'].forEach(function (ev) {
+        window.addEventListener(ev, reset, { passive: true });
+      });
+      reset();
+    })();
+  </script>
 </body>
 </html>
