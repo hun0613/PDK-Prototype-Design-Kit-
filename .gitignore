@@ -1,5 +1,6 @@
-# Claude Code 설정
-.claude/
+# Claude Code 설정 (단, PDK 슬래시 커맨드는 템플릿의 핵심 산출물이므로 추적)
+.claude/*
+!.claude/commands/
 
 # bkit 툴링 상태 (로컬)
 .bkit/

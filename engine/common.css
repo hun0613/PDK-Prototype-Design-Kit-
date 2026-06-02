@@ -1391,6 +1391,22 @@ html, body {
   border-color: #3182f6;
 }
 
+/* 페이지 목록 빈 상태 (/pdk-init 직후 화면 0개) */
+.nav-empty {
+  padding: 22px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #9aa3af;
+  line-height: 1.7;
+}
+.nav-empty code {
+  background: #f1f3f5;
+  border-radius: 5px;
+  padding: 1px 6px;
+  color: #3182f6;
+  font-size: 11px;
+}
+
 /* ─────────────────────────────────────────────
    PDK 스켈레톤 UI (/pdk-wireframe 산출물 기본 스타일)
    ※ W-3 규칙: 스켈레톤 루트는 .device-screen 의 직속 단일 자식 .pdk-screen 이어야 한다.

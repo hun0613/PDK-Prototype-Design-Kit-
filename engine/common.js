@@ -58,7 +58,7 @@
           <th colspan="3">${cat.name || cat.category || ''}</th>
         </tr>
       `;
-      cat.pages.forEach(p => {
+      (cat.pages || []).forEach(p => {
         const isActive = current === p.href;
         const isTbd = p.id === 'TBD';
         rowsHtml += `
@@ -75,6 +75,15 @@
         `;
       });
     });
+
+    // 화면이 하나도 없을 때(예: /pdk-init 직후) 빈 상태 안내
+    if (!rowsHtml.trim()) {
+      rowsHtml = `
+        <tr><td colspan="3" class="nav-empty">
+          아직 화면이 없습니다.<br><code>/pdk-screen</code> 으로 추가하세요.
+        </td></tr>
+      `;
+    }
 
     const nav = document.createElement('aside');
     nav.className = 'page-nav';

@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-06-02T02:50:06.155Z",
+  "lastUpdated": "2026-06-02T03:40:39.537Z",
   "activeFeatures": [
     "scripts",
     "engine",
@@ -31,9 +31,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-29T06:50:00.762Z",
-        "lastUpdated": "2026-05-29T07:00:05.279Z"
+        "lastUpdated": "2026-06-02T03:40:39.537Z"
       },
-      "lastFile": "C:\\Users\\THEBESTPAY\\Desktop\\내손키\\screen-design-kit\\engine\\shell.js"
+      "lastFile": "C:\\Users\\THEBESTPAY\\Desktop\\planning\\thebestpay-prototype-design-kit\\engine\\common.js"
     },
     "config": {
       "phase": "do",
@@ -70,7 +70,7 @@
   "session": {
     "startedAt": "2026-05-26T04:50:49.145Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-06-02T02:50:06.155Z"
+    "lastActivity": "2026-06-02T03:40:39.537Z"
   },
   "history": [
     {
@@ -1060,6 +1060,12 @@
     {
       "timestamp": "2026-06-02T02:50:06.155Z",
       "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T03:40:39.537Z",
+      "feature": "engine",
       "phase": "do",
       "action": "updated"
     }
