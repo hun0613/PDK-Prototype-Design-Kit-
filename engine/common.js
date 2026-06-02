@@ -1,4 +1,6 @@
-// 엘커넥트 × 토스 프론트2 프로토타입 공용 스크립트
+// PDK (Prototype Design Kit) 엔진 공용 스크립트
+// config(PDK_PROJECT/PDK_DEVICES/PDK_SCREENS)를 읽어 디바이스 목업 + 사이드바
+// (페이지 목록 / 화면 플로우 / Description) 를 자동 렌더한다.
 
 (function () {
   // ── 상단 상태바 시계 ─────────────────────

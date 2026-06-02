@@ -106,18 +106,19 @@ window.PDK_PROJECT = {
 ### 3.2 `config/devices.js` — 디바이스 레지스트리
 
 ```js
+// ※ 실제 구현(config/devices.js) 기준. type: 'frame'(미니멀 베젤, 엔진이 CSS로 렌더) | 'kiosk'(상세 목업)
 window.PDK_DEVICES = {
-  // 내장 4종 (M2에서 전부 구현)
-  desktop:    { label: '데스크탑',     width: 1280, height: 800, frame: 'css' }, // 미니멀 프레임, Figma 기반 CSS 제작
-  mobile:     { label: '모바일',       width: 390,  height: 844, frame: 'css' }, // 미니멀 프레임, Figma 기반 CSS 제작
-  tossfront2: { label: '토스프론트2',  width: 400,  height: 640, frame: 'css' }, // 기존 common.css 목업 그대로 재사용
-  responsive: { label: '반응형',       toggle: ['desktop', 'mobile'] }, // 상단 토글로 전환
+  // 내장 4종 (M2에서 전부 구현) — 규격은 Figma 실측
+  desktop:    { label: '데스크탑',    type: 'frame', width: 1440, height: 1024, bezel: 10, radius: 20, bezelColor: '#404040' },
+  mobile:     { label: '모바일',      type: 'frame', width: 360,  height: 782,  bezel: 10, radius: 40, bezelColor: '#404040' },
+  tossfront2: { label: '토스프론트2', type: 'kiosk', width: 400,  height: 640,  radius: 18 }, // 기존 common.css 키오스크 목업 재사용
+  responsive: { label: '반응형',      toggle: ['desktop', 'mobile'], default: 'desktop' },     // 상단 토글로 전환
 
-  // /pdk-mockup으로 추가되는 커스텀 예시
-  // mykiosk:  { label: '내 키오스크', width: 720, height: 1280,
-  //             frame: 'assets/mockups/mykiosk/frame.png' },
+  // /pdk-mockup으로 추가되는 커스텀 예시 (type:'frame' = CSS 베젤)
+  // mykiosk:  { label: '내 키오스크', type: 'frame', width: 720, height: 1280, bezel: 12, radius: 28, bezelColor: '#222' },
 };
 ```
+> 엔진은 `frame` 타입을 CSS 베젤(단색/그라데이션 + 둥근 모서리)로 렌더한다. 실물 프레임 이미지를 그대로 오버레이하는 방식은 향후 확장.
 
 - `frame`: 외곽 프레임 이미지 경로(없으면 기본 베젤). `width/height`: 캔버스 규격(대화 입력).
 - 엔진은 `PDK_PROJECT.device`로 규격/프레임을 골라 CSS 변수(`--screen-w`, `--screen-h`, `--device-frame`)로 적용.

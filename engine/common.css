@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────
-   엘커넥트 × 토스 프론트2 프로토타입 공용 스타일
-   Device: 400 × 640 (세로형 터치 단말기)
-   Figma scale: 500x800 → 400x640 (x0.8)
+   PDK (Prototype Design Kit) 엔진 공용 스타일
+   디바이스 목업 + 개발 사이드바(페이지목록/플로우/Description) + 스켈레톤
+   디바이스 규격은 config/devices.js 기반 CSS 변수(--pdk-screen-w/h 등)로 제어
    ───────────────────────────────────────────── */
 
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
