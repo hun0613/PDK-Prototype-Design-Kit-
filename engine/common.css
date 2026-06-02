@@ -1418,6 +1418,9 @@ html, body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  padding: 28px;
+  background: #ffffff;
 }
 /* 회색 블록/라인/박스 — 시각 스타일은 미니멀 (실제 디자인은 Figma에서) */
 .pdk-skeleton,

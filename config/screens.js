@@ -52,7 +52,9 @@ window.PDK_SCREENS = [
         designed: false, figmaLink: '',
         context: '결제 수단 선택 및 진행',
         description: [
+          { text: '결제 화면 제목 영역', target: '.pdk-title' },
           { text: '결제 수단 선택 영역', target: '.pdk-methods' },
+          { text: '결제 진행 버튼 — 결과(성공/실패)에 따라 완료(SCR-DONE-001) 또는 실패(SCR-FAIL-001)로 분기', target: '.pdk-btn-pay' },
         ],
         flow: { to: [
           { screen: 'SCR-DONE-001', via: '성공', branch: '결제 성공 여부' },
