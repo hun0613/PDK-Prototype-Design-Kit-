@@ -81,13 +81,18 @@ window.PDK_SCREENS = [];
       <div class="device-base"></div>
     </div>
   </div>
-  <script src="config/devices.js"></script>
-  <script src="config/project.js"></script>
-  <script src="config/screens.js"></script>
-  <script src="engine/common.js"></script>
+  <script>
+    (function () {
+      var v = Date.now();
+      var files = ['config/devices.js', 'config/project.js', 'config/screens.js', 'engine/common.js'];
+      for (var i = 0; i < files.length; i++) document.write('<scr' + 'ipt src="' + files[i] + '?_=' + v + '"></scr' + 'ipt>');
+    })();
+  </script>
 </body>
 </html>
 ```
+
+> 위 골격의 스크립트 로더는 config를 캐시 없이 로드해, `/pdk-*` 변경이 새로고침만으로 즉시 반영되게 한다(강력 새로고침 불필요).
 
 ### 7) 안내
 - 생성된 파일 목록을 요약하고, `index.html`을 브라우저로 열면 빈 골격(디바이스 목업 + 3개 패널)이 보인다고 알린다.

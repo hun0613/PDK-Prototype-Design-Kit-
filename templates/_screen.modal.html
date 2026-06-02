@@ -34,9 +34,15 @@
     </div>
   </div>
 
-  <script src="config/devices.js"></script>
-  <script src="config/project.js"></script>
-  <script src="config/screens.js"></script>
-  <script src="engine/common.js"></script>
+  <!-- config·엔진을 캐시 없이 순서대로 로드 (변경 즉시 반영) -->
+  <script>
+    (function () {
+      var v = Date.now();
+      var files = ['config/devices.js', 'config/project.js', 'config/screens.js', 'engine/common.js'];
+      for (var i = 0; i < files.length; i++) {
+        document.write('<scr' + 'ipt src="' + files[i] + '?_=' + v + '"></scr' + 'ipt>');
+      }
+    })();
+  </script>
 </body>
 </html>

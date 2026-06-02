@@ -1,9 +1,10 @@
-/* PDK 프로젝트 설정 (/pdk-init이 생성·갱신)
- * device = PDK_DEVICES의 키. responsive면 toggle 변형 중 default로 시작.
+/* PDK 프로젝트 설정 — /pdk-init 이 생성·갱신한다. (초기엔 비어 있음)
+ * device = PDK_DEVICES의 키(desktop/mobile/tossfront2/responsive 또는 커스텀).
+ * responsive면 toggle 변형 중 default로 시작.
  */
 window.PDK_PROJECT = {
-  name: '샘플 프로젝트',
-  description: '데스크탑 목업 + 3개 패널 합성 미리보기',
+  name: '',
+  description: '',
   device: 'desktop',
   responsive: false,
 };

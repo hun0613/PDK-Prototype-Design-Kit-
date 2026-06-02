@@ -56,21 +56,18 @@ engine/                엔진(직접 수정 불필요)
 templates/             화면/인덱스 골격 템플릿
 .claude/commands/      슬래시 커맨드 5종
 assets/                범용 아이콘 + 커스텀 목업 프레임(assets/mockups/)
-index.html             현재 프로젝트의 진입 화면
-preview-*.html         디바이스별 미리보기 샘플
-samples/               디바이스 프레임 단독 데모
+index.html             진입 화면 (초기엔 빈 골격, /pdk-init 이 생성·갱신)
 docs/                  GUIDE, 설계·계획 문서
 ```
 
 ---
 
-## 포함된 예제
+## 초기 상태 (빈 프로젝트)
 
-이 레포에는 **중립 샘플 화면설계서**(메인 → 상품목록 → 상품상세 → 결제 →〈성공/실패 분기〉→ 완료/실패)가
-들어 있어, 클론 직후 바로 동작을 확인할 수 있다.
+클론 직후에는 **빈 상태**다 — `config/screens.js`에 화면이 없고, `index.html`은 빈 골격이다.
+`index.html`을 열면 디바이스 목업과 3개 패널(페이지 목록·화면 플로우·Description)이 **비어 있는 채로** 나타난다.
 
-- 진입: `index.html` (또는 `preview-desktop.html` / `preview-mobile.html` / `preview-tossfront2.html` / `preview-responsive.html`)
-- 새 프로젝트로 시작하려면 `/pdk-init`을 실행한다. (기존 샘플을 보존하려면 먼저 복사해 둘 것)
+여기서 위 [5분 퀵스타트](#5분-퀵스타트)대로 `/pdk-init` → `/pdk-screen` → … 순서로 자신의 화면설계서를 만든다.
 
 ---
 
