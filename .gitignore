@@ -1,6 +1,9 @@
 # Claude Code 설정
 .claude/
 
+# bkit 툴링 상태 (로컬)
+.bkit/
+
 # OS
 .DS_Store
 Thumbs.db

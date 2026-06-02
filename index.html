@@ -2,121 +2,18 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=400, initial-scale=1.0" />
-  <title>엘커넥트 · 토스 프론트2 (메인페이지)</title>
-  <link rel="stylesheet" href="styles/common.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDK · 메인 (SCR-MAIN-001)</title>
+  <link rel="stylesheet" href="engine/common.css" />
   <style>
-    /* ───────────────────────────────────────────
-       메인페이지 (LCN-MAN-001) — Figma 308:87 확정 v2
-       Canvas 400×640, 절대 좌표 적용
-       Device mockup: 실제 토스 프론트2 형태
-       Dev sidebar: common.js 자동 주입 (max-height + 스크롤)
-       ─────────────────────────────────────────── */
-    .main-screen {
-      position: absolute;
-      inset: 0;
-      background: #ffffff;
-      overflow: hidden;
-      font-family: "Pretendard", -apple-system, sans-serif;
-    }
-
-    /* 1. 타이틀 (x:24, y:48, w:352, h:192) */
-    .title {
-      position: absolute;
-      left: 24px;
-      top: 48px;
-      width: 352px;
-    }
-    .title-line {
-      font-size: 47px;
-      line-height: 1.37;
-      font-weight: 700;
-      color: #191C23;
-    }
-    .title-line.accent { color: #1EA3AE; }
-
-    /* 2. 공지 배너 (x:24, y:272, w:352, h:40, radius 16) */
-    .notice-banner {
-      position: absolute;
-      left: 24px;
-      top: 272px;
-      width: 352px;
-      height: 40px;
-      background: #E8F3FF;
-      border: none;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 24px 10px 10px;
-      cursor: default;
-      font-family: inherit;
-      box-sizing: border-box;
-    }
-    .notice-icon {
-      width: 18px;
-      height: 18px;
-      color: #3182F6;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .notice-text {
-      font-size: 15px;
-      font-weight: 500;
-      color: #3182F6;
-      line-height: 1.32;
-      white-space: nowrap;
-      text-align: left;
-      flex: 1;
-    }
-
-    /* 3. 메뉴 버튼 (x:24, w:352, h:100, radius 18, padding 10px 36px)
-       누름 효과는 common.css의 .device-screen button:active 에서 일괄 처리 */
-    .menu-button {
-      position: absolute;
-      left: 24px;
-      width: 352px;
-      height: 100px;
-      border-radius: 18px;
-      border: none;
-      padding: 10px 36px;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 26px;
-      font-weight: 600;
-      letter-spacing: -0.78px;
-      line-height: 1.3;
-      text-align: left;
-      box-sizing: border-box;
-    }
-    .menu-button.primary {
-      top: 358px;
-      background: #3182F6;
-      color: #ffffff;
-    }
-    .menu-button.secondary {
-      top: 473px;
-      background: #F0F2F4;
-      color: #363D4A;
-    }
-
-    /* 4. 푸터 (toss 로고, x:160, y:589, 80×24) */
-    .main-footer {
-      position: absolute;
-      left: 50%;
-      top: 589px;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 24px;
-    }
-    .main-footer img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+    /* 데모용 스켈레톤 (실제로는 /pdk-wireframe가 생성) */
+    .pdk-screen { width: 100%; height: 100%; display: flex; flex-direction: column; padding: 40px; gap: 24px; }
+    .pdk-title { height: 44px; width: 60%; border-radius: 12px; background: #e9ecef; }
+    .pdk-sub { height: 20px; width: 40%; border-radius: 8px; background: #eef0f2; }
+    .pdk-hero { flex: 1; border-radius: 20px; background: #eef0f2; min-height: 120px; }
+    .pdk-btn-start {
+      height: 64px; border-radius: 14px; border: none;
+      background: #3182F6; color: #fff; font-size: 20px; font-weight: 700; cursor: pointer;
     }
   </style>
 </head>
@@ -125,62 +22,24 @@
     <div class="device-mockup">
       <div class="device-frame">
         <div class="device-screen">
-          <div class="main-screen">
-
-            <!-- 1. 타이틀 -->
-            <div class="title">
-              <div class="title-line">여기서</div>
-              <div class="title-line accent">입장</div>
-              <div class="title-line">해주세요</div>
-            </div>
-
-            <!-- 2. 공지 배너 (비인터랙티브) -->
-            <button class="notice-banner no-press" type="button">
-              <span class="notice-icon" aria-hidden="true">
-                <!-- fluent:alert -->
-                <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10 1.5a6.5 6.5 0 0 0-6.5 6.5v2.382l-1.224 2.447A1 1 0 0 0 3.17 14.25h13.66a1 1 0 0 0 .894-1.421L16.5 10.382V8A6.5 6.5 0 0 0 10 1.5Zm0 16a3 3 0 0 1-2.83-2h5.66A3 3 0 0 1 10 17.5Z"/>
-                </svg>
-              </span>
-              <span class="notice-text">시설점검 : 9/1 (월) ~ 9/5 (금)</span>
-            </button>
-
-            <!-- 3. 메뉴 버튼 -->
-            <button class="menu-button primary" type="button" onclick="go('arrival.html')">
-              도착 인증
-            </button>
-            <button class="menu-button secondary" type="button" onclick="go('purchase.html')">
-              1회권 구매
-            </button>
-
-            <!-- 4. toss 로고 -->
-            <div class="main-footer">
-              <img src="assets/toss-logo.png" alt="toss" />
-            </div>
-
-          </div><!-- /.main-screen -->
-        </div><!-- /.device-screen -->
-      </div><!-- /.device-frame -->
+          <div class="pdk-screen">
+            <div class="pdk-title"></div>
+            <div class="pdk-sub"></div>
+            <div class="pdk-hero"></div>
+            <button class="pdk-btn-start" type="button">시작하기</button>
+          </div>
+        </div>
+      </div>
       <div class="device-stand"></div>
       <div class="device-base"></div>
-    </div><!-- /.device-mockup -->
-  </div><!-- /.device-stage -->
+    </div>
+  </div>
 
-  <script src="scripts/common.js"></script>
-  <script>
-    // 30초 무동작 시 랜딩페이지로 자동 복귀 (키오스크 idle) — 터치/클릭/키 입력 시 초기화
-    (function () {
-      const IDLE_MS = 30000;
-      let timer;
-      function reset() {
-        clearTimeout(timer);
-        timer = setTimeout(function () { go('landing.html'); }, IDLE_MS);
-      }
-      ['pointerdown', 'click', 'keydown', 'touchstart'].forEach(function (ev) {
-        window.addEventListener(ev, reset, { passive: true });
-      });
-      reset();
-    })();
-  </script>
+  <!-- config (엔진보다 먼저 로드) -->
+  <script src="config/devices.js?v=3"></script>
+  <script src="config/project.js?v=3"></script>
+  <script src="config/screens.js?v=3"></script>
+  <!-- 엔진 -->
+  <script src="engine/common.js?v=3"></script>
 </body>
 </html>

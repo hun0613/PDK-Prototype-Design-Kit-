@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDK · 디바이스 목업 샘플 (데스크탑 / 모바일)</title>
+  <style>
+    /* =========================================================
+       PDK 디바이스 목업 — Figma 시안(통합 내손키) 기반 CSS 재현
+       node 651:2476 (Desktop) / 651:2477 (Phone)
+       공통: border 10px solid #404040, overflow hidden
+       Desktop: 화면 1440×1024, radius 20px
+       Mobile : 화면 360×782,  radius 40px
+       → M2에서 engine/common.css + config/devices.js로 편입 예정
+       ========================================================= */
+    :root {
+      --pdk-bezel: #404040;
+      --pdk-bezel-w: 10px;
+      --pdk-screen-bg: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Pretendard, sans-serif;
+      background: #f3f4f6;
+      color: #363d4a;
+      padding: 32px;
+    }
+    .sample-head { max-width: 1100px; margin: 0 auto 28px; }
+    .sample-head h1 { font-size: 22px; margin: 0 0 6px; }
+    .sample-head p { margin: 0; color: #6e7683; font-size: 14px; line-height: 1.6; }
+
+    .stage {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 56px;
+      align-items: flex-start;
+      justify-content: center;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .device-block { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .device-label { font-size: 14px; font-weight: 600; }
+    .device-label span { color: #8b95a1; font-weight: 400; font-size: 12px; }
+
+    /* ── 스케일러: 축소된 외곽 크기만큼만 레이아웃 공간 차지 ── */
+    .device-scaler {
+      width: calc((var(--pdk-screen-w) + var(--pdk-bezel-w) * 2) * var(--pdk-scale));
+      height: calc((var(--pdk-screen-h) + var(--pdk-bezel-w) * 2) * var(--pdk-scale));
+      overflow: hidden;            /* 변환 전 원본 박스의 오버플로 클립 */
+    }
+    /* ── 디바이스 목업 프레임 (CSS 변수로 규격 제어) ── */
+    .pdk-mockup {
+      border: var(--pdk-bezel-w) solid var(--pdk-bezel);
+      border-radius: var(--pdk-radius);
+      overflow: hidden;
+      background: var(--pdk-screen-bg);
+      position: relative;
+      /* 화면(내부 콘텐츠) 실제 규격 */
+      width: var(--pdk-screen-w);
+      height: var(--pdk-screen-h);
+      /* 미리보기 축소 (좌상단 기준 → 스케일러 박스에 정확히 맞춤) */
+      transform: scale(var(--pdk-scale));
+      transform-origin: top left;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    }
+
+    /* 디바이스별 규격 */
+    .mock-desktop {
+      --pdk-screen-w: 1440px;
+      --pdk-screen-h: 1024px;
+      --pdk-radius: 20px;
+      --pdk-scale: 0.36;
+    }
+    .mock-mobile {
+      --pdk-screen-w: 360px;
+      --pdk-screen-h: 782px;
+      --pdk-radius: 40px;
+      --pdk-scale: 0.6;
+    }
+
+    /* ── 프레임 안 데모용 플레이스홀더 콘텐츠 (스켈레톤) ── */
+    .demo-screen { width: 100%; height: 100%; display: flex; flex-direction: column; }
+    .demo-bar {
+      height: 56px; flex: none;
+      display: flex; align-items: center; padding: 0 20px; gap: 12px;
+      border-bottom: 1px solid #eef0f2;
+    }
+    .demo-dot { width: 28px; height: 28px; border-radius: 50%; background: #e9ecef; }
+    .demo-titleline { width: 160px; height: 14px; border-radius: 7px; background: #e9ecef; }
+    .demo-body { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+    .sk { background: #e9ecef; border-radius: 10px; }
+    .sk-hero { height: 120px; }
+    .sk-line { height: 16px; }
+    .sk-line.w70 { width: 70%; }
+    .sk-line.w50 { width: 50%; }
+    .sk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 6px; }
+    .sk-card { height: 90px; background: #e9ecef; border-radius: 12px; }
+    .demo-watermark {
+      margin-top: auto; text-align: center; color: #b8c0c8;
+      font-size: 13px; padding-bottom: 8px;
+    }
+    .mock-mobile .sk-grid { grid-template-columns: repeat(2, 1fr); }
+  </style>
+</head>
+<body>
+  <div class="sample-head">
+    <h1>PDK 디바이스 목업 샘플</h1>
+    <p>
+      Figma 시안(통합 내손키, node 651:2476 / 651:2477) 기반으로 데스크탑·모바일 목업을
+      <b>순수 CSS 프레임</b>(베젤 10px <code>#404040</code>, 모서리 radius 20/40px)으로 재현했습니다.<br>
+      안쪽은 데모용 스켈레톤 콘텐츠이며, 실제로는 화면별 HTML이 이 자리에 들어갑니다.
+      (미리보기 편의를 위해 축소 표시 — 실제 규격은 라벨의 px 값)
+    </p>
+  </div>
+
+  <div class="stage">
+    <!-- 데스크탑 -->
+    <div class="device-block">
+      <div class="device-label">데스크탑 <span>· 화면 1440×1024 · radius 20</span></div>
+      <div class="device-scaler mock-desktop">
+      <div class="pdk-mockup mock-desktop">
+        <div class="demo-screen">
+          <div class="demo-bar">
+            <div class="demo-dot"></div>
+            <div class="demo-titleline"></div>
+          </div>
+          <div class="demo-body">
+            <div class="sk sk-hero"></div>
+            <div class="sk sk-line w70"></div>
+            <div class="sk sk-line w50"></div>
+            <div class="sk-grid">
+              <div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div>
+            </div>
+            <div class="demo-watermark">Desktop 1440 × 1024</div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- 모바일 -->
+    <div class="device-block">
+      <div class="device-label">모바일 <span>· 화면 360×782 · radius 40</span></div>
+      <div class="device-scaler mock-mobile">
+      <div class="pdk-mockup mock-mobile">
+        <div class="demo-screen">
+          <div class="demo-bar">
+            <div class="demo-dot"></div>
+            <div class="demo-titleline"></div>
+          </div>
+          <div class="demo-body">
+            <div class="sk sk-hero"></div>
+            <div class="sk sk-line w70"></div>
+            <div class="sk sk-line w50"></div>
+            <div class="sk-grid">
+              <div class="sk-card"></div><div class="sk-card"></div>
+            </div>
+            <div class="demo-watermark">Mobile 360 × 782</div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
