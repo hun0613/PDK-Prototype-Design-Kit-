@@ -1,0 +1,6 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="drop down">
+<rect width="32" height="32" rx="8" fill="var(--fill-0, white)"/>
+<path id="arrow" d="M10 16H22" stroke="var(--stroke-0, #9CA3AF)" stroke-width="2"/>
+</g>
+</svg>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDK 예제 — 데스크탑</title>
+  <link rel="stylesheet" href="../engine/common.css" />
+  <style>
+    /* ── 데스크탑 샘플 화면 (1440×1024 캔버스) ── */
+    .dt-screen { position:absolute; inset:0; display:flex; flex-direction:column; background:#ffffff; color:#111; overflow:hidden; }
+
+    /* 상단 GNB */
+    .pdk-topbar { flex:0 0 72px; display:flex; align-items:center; gap:32px; padding:0 48px; border-bottom:1px solid #eef0f3; background:#ffffff; }
+    .pdk-topbar .logo { font-size:24px; font-weight:800; color:#3182f6; letter-spacing:-0.5px; }
+    .pdk-topbar nav { display:flex; gap:28px; flex:1; }
+    .pdk-topbar nav a { font-size:16px; font-weight:600; color:#4b5563; text-decoration:none; }
+    .pdk-topbar nav a.active { color:#111; }
+    .pdk-topbar .login { height:44px; padding:0 22px; border:none; border-radius:12px; background:#3182f6; color:#fff; font-size:16px; font-weight:700; cursor:pointer; }
+
+    /* 본문 */
+    .dt-body { flex:1; overflow-y:auto; }
+
+    /* 히어로 */
+    .pdk-hero { padding:96px 48px 72px; text-align:center; background:linear-gradient(180deg,#f5f9ff 0%,#ffffff 100%); }
+    .pdk-hero h1 { font-size:56px; font-weight:800; line-height:1.2; letter-spacing:-1.5px; margin:0 0 20px; }
+    .pdk-hero h1 .accent { color:#3182f6; }
+    .pdk-hero p { font-size:20px; color:#6b7280; font-weight:500; margin:0 0 40px; line-height:1.5; }
+    .pdk-cta { height:60px; padding:0 40px; border:none; border-radius:16px; background:#3182f6; color:#fff; font-size:19px; font-weight:700; cursor:pointer; }
+
+    /* 카드 그리드 */
+    .pdk-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; padding:24px 48px 80px; max-width:1200px; margin:0 auto; }
+    .dt-card { background:#ffffff; border:1px solid #eaecef; border-radius:20px; padding:32px; }
+    .dt-card .ico { width:56px; height:56px; border-radius:16px; background:#eaf2ff; display:flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:20px; }
+    .dt-card h3 { font-size:22px; font-weight:700; margin:0 0 10px; letter-spacing:-0.3px; }
+    .dt-card p { font-size:16px; color:#6b7280; line-height:1.6; margin:0; }
+  </style>
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="pdk-screen dt-screen">
+            <header class="pdk-topbar">
+              <div class="logo">toss</div>
+              <nav>
+                <a href="#" class="active">홈</a>
+                <a href="#">서비스</a>
+                <a href="#">요금제</a>
+                <a href="#">고객지원</a>
+              </nav>
+              <button class="login">로그인</button>
+            </header>
+            <div class="dt-body">
+              <section class="pdk-hero">
+                <h1>한 곳에서 끝내는<br><span class="accent">스마트 결제</span> 경험</h1>
+                <p>복잡한 과정 없이, 클릭 한 번으로 시작하세요.</p>
+                <button class="pdk-cta">무료로 시작하기</button>
+              </section>
+              <section class="pdk-cards">
+                <div class="dt-card"><div class="ico">⚡</div><h3>빠른 정산</h3><p>실시간으로 매출을 확인하고 즉시 정산받으세요.</p></div>
+                <div class="dt-card"><div class="ico">🔒</div><h3>안전한 보안</h3><p>금융권 수준의 암호화로 데이터를 안전하게 지킵니다.</p></div>
+                <div class="dt-card"><div class="ico">📊</div><h3>한눈에 보는 리포트</h3><p>매출·고객 데이터를 직관적인 대시보드로 분석하세요.</p></div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.PDK_DEVICES = {
+      desktop: { label: '데스크탑', type: 'frame', width: 1440, height: 1024, bezel: 10, radius: 20, bezelColor: '#404040' },
+    };
+    window.PDK_PROJECT = { name: '데스크탑 테스트', device: 'desktop' };
+    window.PDK_SCREENS = [
+      { category: '랜딩', pages: [
+        { id: 'WEB-LND-001', label: '홈(랜딩)', href: 'desktop.html', designed: true,
+          figmaLink: 'https://www.figma.com/design/UfaTo8FaMLnsqzAvGkNUQq/?node-id=434-2072',
+          description: [
+            { text: '상단 GNB — 로고 / 메뉴 / 로그인 버튼', target: '.pdk-topbar' },
+            { text: '히어로 영역 — 핵심 메시지 + CTA', target: '.pdk-hero' },
+            { text: '무료로 시작하기 클릭 → 가입 플로우(WEB-SGN-001)', target: '.pdk-cta' },
+            { text: '기능 소개 카드 3종', target: '.pdk-cards' },
+          ],
+          flow: { to: [
+            { screen: 'WEB-SGN-001', via: '무료로 시작하기' },
+            { screen: 'WEB-PRC-001', via: '요금제' },
+          ] } },
+      ] },
+      { category: '온보딩', pages: [
+        { id: 'WEB-SGN-001', label: '회원가입', href: 'a.html', designed: false,
+          description: [],
+          flow: { to: [ { screen: 'WEB-DSH-001', via: '가입 완료' } ] } },
+        { id: 'WEB-DSH-001', label: '대시보드', href: 'b.html', designed: false, description: [] },
+      ] },
+      { category: '정보', pages: [
+        { id: 'WEB-PRC-001', label: '요금제', href: 'c.html', designed: true, description: [] },
+        { id: 'WEB-SUP-001', label: '고객지원', href: 'd.html', designed: false, description: [] },
+      ] },
+    ];
+    window.PDK_CURRENT = 'desktop.html';
+  </script>
+  <script src="../engine/common.js"></script>
+</body>
+</html>

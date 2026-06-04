@@ -1,0 +1,6 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="drop down">
+<rect width="32" height="32" rx="8" fill="var(--fill-0, white)"/>
+<path id="Rectangle 12" d="M13 10H12C10.8954 10 10 10.8954 10 12V13M19 10H20C21.1046 10 22 10.8954 22 12V13M22 19V20C22 21.1046 21.1046 22 20 22H19M10 19V20C10 21.1046 10.8954 22 12 22H13" stroke="var(--stroke-0, #9CA3AF)" stroke-width="2" stroke-linecap="square" stroke-linejoin="round"/>
+</g>
+</svg>

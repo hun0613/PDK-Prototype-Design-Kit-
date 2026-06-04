@@ -27,10 +27,14 @@ html, body {
   height: 100%;
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
     "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
-  background: #ffffff;
+  background: #f1f3f7;
   color: var(--color-text-default);
   overflow: auto;
   user-select: none;
+  /* Figma처럼 얇게 렌더 (grayscale AA) — macOS/일부 환경에서 두께 보정 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* ─── 디바이스 목업 (실제 토스 프론트2) ─────── */
@@ -40,7 +44,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  background: #f1f3f7;
   padding: 40px 20px;
 }
 
@@ -500,61 +504,162 @@ html, body {
 .skeleton-circle.sm { width: 32px; height: 32px; }
 .skeleton-circle.lg { width: 72px; height: 72px; }
 
-/* ─── 개발용 페이지 네비게이션 사이드바 (테이블) ─── */
+/* ─── 좌측 페이지 목록 레일 (풀하이트) — Figma 시안 기반 ─── */
 .page-nav {
   position: fixed;
-  left: 24px;
-  top: 24px;
-  width: 380px;
-  max-height: 42vh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 20px 16px 16px;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(0, 0, 0, 0.06);
+  border-right: 1px solid #e5e7eb;
   z-index: 100;
   font-family: "Pretendard", -apple-system, sans-serif;
   user-select: none;
 }
 
-/* 사이드바 커스텀 스크롤바 */
-.page-nav::-webkit-scrollbar {
-  width: 8px;
+/* 상단: 현재 화면 헤더 (타이틀 + 코드 + Figma 링크) */
+.page-nav-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 24px 16px;
+  border-bottom: 1px solid #e5e7eb;
 }
-.page-nav::-webkit-scrollbar-track {
-  background: transparent;
-  margin: 4px 0;
+.page-nav-head-info {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.page-nav::-webkit-scrollbar-thumb {
+.page-nav-head-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: -0.2px;
+  word-break: keep-all;
+}
+.page-nav-head-code {
+  font-size: 14px;
+  font-weight: 400;
+  color: #9ca3af;
+  letter-spacing: 0.2px;
+}
+.page-nav-head-code.is-tbd { font-style: italic; }
+.page-nav-figma {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 6px 8px;
+  background: #374151;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+.page-nav-figma:hover { background: #1f2937; }
+.page-nav-figma.is-disabled {
   background: #e5e7eb;
-  border-radius: 4px;
-}
-.page-nav::-webkit-scrollbar-thumb:hover {
-  background: #d1d5db;
+  color: #9ca3af;
+  pointer-events: none;
 }
 
-/* ── 좌측 하단 화면 플로우 다이어그램 ───────────── */
+/* 스크롤 본문 */
+.page-nav-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.page-nav-scroll::-webkit-scrollbar { width: 8px; }
+.page-nav-scroll::-webkit-scrollbar-track { background: transparent; margin: 4px 0; }
+.page-nav-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+.page-nav-scroll::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
+
+/* 컬럼 헤더 (PAGE NAME / UI DESIGN) */
+.page-nav-cols {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* 카테고리 그룹 */
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav-cat {
+  padding: 6px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+/* 페이지 행 */
+.nav-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.nav-row:not(.is-active):hover { background: #f3f4f6; }
+.nav-row.is-active { background: #3182f6; }
+.nav-row-title {
+  flex: 1 0 0;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 400;
+  color: #374151;
+  word-break: keep-all;
+}
+.nav-row.is-active .nav-row-title { color: #ffffff; }
+
+/* 상태 뱃지 (Figma 에셋 SVG 그대로) */
+.nav-bdg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* ── 우측 하단 화면 플로우 다이어그램 ───────────── */
 .page-flow {
   position: fixed;
-  left: 24px;
-  bottom: 24px;
-  width: 380px;
-  height: 48vh;                /* 높이 고정 → 로딩↔렌더 시 레이아웃 시프트 방지 */
+  right: 16px;
+  bottom: 76px;                /* 우하단 dock 버튼 위로 띄움 */
+  width: 280px;
+  height: 46vh;                /* 높이 고정 → 로딩↔렌더 시 레이아웃 시프트 방지 */
   overflow: hidden;            /* 패널은 클리핑만, 스크롤은 본문이 담당(헤더 고정) */
   display: flex;
   flex-direction: column;
   overscroll-behavior: contain;
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 14px 16px 16px;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 6px 0 0;
   z-index: 100;
   font-family: "Pretendard", -apple-system, sans-serif;
 }
@@ -563,21 +668,21 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0 0 10px 2px;
+  height: 40px;
+  padding: 0 12px 0 16px;
 }
 .page-flow-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.3px;
 }
 .page-flow-hint {
   font-size: 11px;
   font-weight: 500;
   color: #b6bcc6;
 }
-/* 본문 — 다이어그램 자연 크기 유지 + 좌우/상하 스크롤 */
+/* 본문 — 다이어그램 자연 크기 유지 + 좌우/상하 스크롤. 시안: 연회색 인셋(#f9fafb) */
 .page-flow-body {
   flex: 1;
   min-height: 0;
@@ -585,11 +690,13 @@ html, body {
   overscroll-behavior: contain;
   cursor: grab;
   user-select: none;          /* 드래그 패닝 중 텍스트 선택 방지 */
+  background: #f9fafb;
+  padding: 10px;
 }
 .page-flow-body:active { cursor: grabbing; }
 .page-flow-body::-webkit-scrollbar { width: 9px; height: 9px; }
 .page-flow-body::-webkit-scrollbar-track { background: transparent; }
-.page-flow-body::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 5px; border: 2px solid #ffffff; }
+.page-flow-body::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 5px; border: 2px solid #f9fafb; }
 .page-flow-body::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
 .page-flow-body::-webkit-scrollbar-corner { background: transparent; }
 .page-flow .mermaid { margin: 0; line-height: 1; width: max-content; }
@@ -597,40 +704,30 @@ html, body {
 .page-flow .mermaid .node { cursor: pointer; }
 /* 렌더 전 원시 그래프 텍스트 숨김(깜빡임 방지) — 흐름에서 제외해 레이아웃 영향 없음 */
 .page-flow.is-loading .mermaid { position: absolute; visibility: hidden; }
-.page-flow-loading { padding: 16px 4px; font-size: 12px; color: #b6bcc6; }
+.page-flow-loading { padding: 16px 4px; font-size: 13px; color: #c4c9d4; }
 .page-flow:not(.is-loading) .page-flow-loading { display: none; }
 
-/* 플로우 패널 접기 토글 */
-.page-flow.is-collapsed { height: auto; }
-.page-flow.is-collapsed .page-flow-body { display: none; }
-.page-flow-toggle {
-  border: none;
-  background: transparent;
-  color: #9ca3af;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 6px;
-  line-height: 1;
-}
-.page-flow-toggle:hover { background: #f3f4f6; }
-
-/* 헤더 우측 도구 묶음 + 크게보기 아이콘 */
-.page-flow-header-tools { display: flex; align-items: center; gap: 2px; }
+/* 헤더 도구 버튼 (Figma 아이콘 에셋 32×32) */
+.page-flow-toggle,
 .page-flow-expand,
 .page-flow-locate {
+  width: 32px;
+  height: 32px;
+  padding: 0;
   border: none;
   background: transparent;
-  color: #9ca3af;
   cursor: pointer;
-  padding: 3px 5px;
-  border-radius: 6px;
-  line-height: 0;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
 }
-.page-flow-expand:hover,
-.page-flow-locate:hover { background: #f3f4f6; color: #3182F6; }
+.page-flow-toggle img,
+.page-flow-expand img { width: 32px; height: 32px; display: block; }
+.page-flow-locate img { width: 16px; height: 16px; display: block; }
+
+/* 헤더 우측 도구 묶음 */
+.page-flow-header-tools { display: flex; align-items: center; gap: 2px; }
 
 /* 전체화면 플로우 모달 */
 .page-flow-modal {
@@ -704,295 +801,126 @@ html, body {
 .page-flow-modal-loading { padding: 28px; font-size: 13px; color: #9ca3af; }
 .page-flow-modal .mermaid-modal[data-processed] ~ .page-flow-modal-loading { display: none; }
 
-.page-nav-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  margin: 0 0 12px 4px;
-  font-family: "Pretendard", -apple-system, sans-serif;
-}
-
-/* 테이블 */
-.page-nav-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-  font-family: "Pretendard", -apple-system, sans-serif;
-}
-
-.page-nav-table thead th {
-  text-align: left;
+/* 페이지 목록 빈 상태(행) */
+.nav-empty-row {
+  padding: 22px 8px;
+  text-align: center;
   font-size: 12px;
-  font-weight: 700;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 8px 10px;
-  border-bottom: 1px solid #e5e7eb;
-  font-family: "Pretendard", -apple-system, sans-serif;
-  position: sticky;
-  top: 0;
+  color: #9aa3af;
+  line-height: 1.7;
+}
+
+/* ─── 우하단 통합 토글바 (Description / Flow 재열기) — Figma 시안 ─── */
+.pdk-dock {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 101;
+  display: flex;
+  gap: 8px;
+}
+.pdk-dock-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #e5e7eb;
   background: #ffffff;
-  z-index: 1;
-}
-
-.page-nav-table .col-id     { width: 42%; }
-.page-nav-table .col-name   { width: 38%; }
-.page-nav-table .col-status { width: 20%; text-align: right; }
-
-/* 카테고리 헤더 행 */
-.nav-cat-row th {
-  text-align: left;
-  font-size: 13px;
-  font-weight: 700;
-  color: #6b7280;
-  padding: 14px 10px 6px;
-  background: #f9fafb;
-  border-bottom: 1px solid #f3f4f6;
-  text-transform: none;
-  letter-spacing: 0;
-  font-family: "Pretendard", -apple-system, sans-serif;
-}
-
-/* 페이지 행 */
-.nav-page-row {
+  border-radius: 12px;
   cursor: pointer;
-  transition: background 0.12s ease;
-}
-
-.nav-page-row:not(.is-active):hover {
-  background: #f3f4f6;
-}
-
-.nav-page-row.is-active {
-  background: #527EF6;
-}
-
-.nav-page-row td {
-  padding: 11px 10px;
-  font-size: 14px;
-  vertical-align: middle;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.nav-page-row:last-child td {
-  border-bottom: none;
-}
-
-/* 셀: 화면ID */
-.cell-id {
-  font-family: "Pretendard", -apple-system, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: #4b5563;
-  letter-spacing: 0.2px;
-}
-
-.cell-id.is-tbd {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #9ca3af;
-  font-style: italic;
-  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: background 0.15s ease, color 0.15s ease;
 }
-
-/* 셀: 화면이름 */
-.cell-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  font-family: "Pretendard", -apple-system, sans-serif;
-}
-
-/* 셀: 디자인 상태 */
-.cell-status {
-  text-align: right;
-}
-
-/* 활성 행 색상 오버라이드 */
-.nav-page-row.is-active .cell-id,
-.nav-page-row.is-active .cell-name {
+.pdk-dock-btn:hover { background: #ebedf1; color: #6b7280; }
+.pdk-dock-btn svg { display: block; }
+/* hover 라벨 (버튼 위에 표시) */
+.pdk-dock-btn::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  padding: 8px 12px;
+  background: #374151;
   color: #ffffff;
-}
-
-.nav-page-row.is-active .cell-id.is-tbd {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-/* 디자인 반영 상태 뱃지 */
-.status-badge {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 9px;
-  border-radius: 6px;
-  letter-spacing: 0.2px;
-  line-height: 1.4;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 12px;
   white-space: nowrap;
-  font-family: "Pretendard", -apple-system, sans-serif;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
 }
+.pdk-dock-btn:hover::after { opacity: 0.8; }
 
-.status-badge.status--done {
-  background: #dcfce7;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-}
-
-.status-badge.status--pending {
-  background: #fef3c7;
-  color: #b45309;
-  border: 1px solid #fde68a;
-}
-
-.nav-page-row.is-active .status-badge {
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.32);
-}
-
-/* ─── 우측 페이지 상세 정보 패널 ─────────────── */
+/* ─── 우상단 Description 패널 (번호 리스트) — Figma 시안 ─── */
 .page-detail {
   position: fixed;
-  right: 24px;
-  top: 24px;
-  width: 380px;
-  max-height: calc(100vh - 48px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  right: 16px;
+  top: 16px;
+  width: 280px;
+  max-height: 42vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;              /* 헤더 ↔ 리스트 간격 (시안 gap-8) */
+  padding: 6px 0;        /* 패널 상하 여백 (시안 py-6) */
+  overflow: hidden;
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 20px;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
   z-index: 100;
   font-family: "Pretendard", -apple-system, sans-serif;
 }
 
-/* 우측 패널 커스텀 스크롤바 */
-.page-detail::-webkit-scrollbar {
-  width: 8px;
-}
-.page-detail::-webkit-scrollbar-track {
-  background: transparent;
-  margin: 4px 0;
-}
-.page-detail::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
-  border-radius: 4px;
-}
-.page-detail::-webkit-scrollbar-thumb:hover {
-  background: #d1d5db;
-}
-
 .page-detail-header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid #e5e7eb;
+  height: 40px;
+  padding: 0 12px 0 16px;
 }
 
 .page-detail-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-
-.page-detail-close {
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: transparent;
-  font-size: 20px;
-  color: #9ca3af;
-  cursor: pointer;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  font-family: inherit;
-}
-
-.page-detail-close:hover {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.page-detail-body {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.page-detail-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.page-detail-label {
+  flex: 1;
   font-size: 12px;
   font-weight: 700;
   color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
-.page-detail-value {
-  font-size: 15px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.page-detail-value.is-tbd {
-  color: #9ca3af;
-  font-style: italic;
-  font-weight: 500;
-}
-
-.page-detail-divider {
-  height: 1px;
-  background: #f0f1f3;
-  margin: 4px 0;
-}
-
-/* Figma 링크 */
-.page-detail-link {
-  display: inline-flex;
+.page-detail-close {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  color: #527EF6;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  padding: 7px 12px;
-  background: #eef4ff;
-  border: 1px solid #d4e0fb;
-  border-radius: 7px;
-  transition: background 0.15s ease, border-color 0.15s ease;
-  font-family: "Pretendard", -apple-system, sans-serif;
-  max-width: 100%;
+  justify-content: center;
+  line-height: 0;
+  font-family: inherit;
 }
-.page-detail-link:hover {
-  background: #dbe7fe;
-  border-color: #b8caf7;
-}
-.page-detail-link svg {
-  flex-shrink: 0;
-}
+.page-detail-close img { width: 32px; height: 32px; display: block; }
 
-.page-detail-empty-value {
-  color: #9ca3af;
-  font-style: italic;
-  font-weight: 500;
-  font-size: 14px;
+/* 리스트 본문 (스크롤) */
+.page-detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 12px 12px;
 }
+.page-detail-body::-webkit-scrollbar { width: 8px; }
+.page-detail-body::-webkit-scrollbar-track { background: transparent; margin: 4px 0; }
+.page-detail-body::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+.page-detail-body::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
+
 
 /* Description 번호 리스트 */
 .page-detail-list {
@@ -1006,28 +934,23 @@ html, body {
 
 .page-detail-item {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 10px 12px;
-  background: #f9fafb;
-  border: 1px solid #f0f1f3;
-  border-radius: 9px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  background: #ffffff;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  transition: background 0.15s ease;
 }
-
-.page-detail-item:hover {
-  background: #eef4ff;
-  border-color: #c8d8fb;
-  transform: translateY(-1px);
-}
+.page-detail-item:hover { background: #f3f4f6; }
+.page-detail-item.is-active { background: #ebf3ff; }
 
 .page-detail-item-num {
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: #527EF6;
+  background: #585f6c;
   color: #ffffff;
   font-size: 12px;
   font-weight: 700;
@@ -1035,19 +958,24 @@ html, body {
   align-items: center;
   justify-content: center;
   line-height: 1;
-  margin-top: 1px;
+  transition: background 0.15s ease;
 }
+.page-detail-item:hover .page-detail-item-num,
+.page-detail-item.is-active .page-detail-item-num { background: #3182f6; }
 
 .page-detail-item-text {
+  flex: 1 0 0;
+  min-width: 0;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   color: #374151;
-  line-height: 1.5;
+  line-height: 1.4;
   word-break: keep-all;
 }
 
 /* Empty state */
 .page-detail-empty {
+  margin: 4px 0 12px;
   padding: 28px 16px;
   display: flex;
   flex-direction: column;
@@ -1066,13 +994,13 @@ html, body {
 }
 
 .page-detail-empty-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: #6b7280;
 }
 
 .page-detail-empty-sub {
-  font-size: 12px;
+  font-size: 14px;
   color: #9ca3af;
   line-height: 1.5;
   font-weight: 500;
@@ -1117,60 +1045,10 @@ html, body {
   50%      { box-shadow: 0 0 0 8px rgba(82, 126, 246, 0); }
 }
 
-/* 우측 패널 토글 (닫혔을 때 표시) */
-.page-detail-toggle {
-  position: fixed;
-  right: 24px;
-  top: 24px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  cursor: pointer;
+/* 좌측 패널 숨김 (좌하단 dock 버튼으로 재열기) */
+.page-detail.is-hidden,
+.page-flow.is-hidden {
   display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 101;
-  font-size: 18px;
-  font-weight: 700;
-  color: #6b7280;
-  font-style: italic;
-  font-family: serif;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.page-detail.is-hidden {
-  display: none;
-}
-
-.page-detail.is-hidden + .page-detail-toggle {
-  display: flex;
-}
-
-.page-nav-toggle {
-  position: fixed;
-  left: 24px;
-  top: 24px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 101;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  font-size: 16px;
-}
-
-.page-nav.is-hidden {
-  display: none;
-}
-.page-nav.is-hidden + .page-nav-toggle {
-  display: flex;
 }
 
 /* 화면 컨테이너 (실제 콘텐츠가 그려지는 곳) */
@@ -1392,14 +1270,7 @@ html, body {
 }
 
 /* 페이지 목록 빈 상태 (/pdk-init 직후 화면 0개) */
-.nav-empty {
-  padding: 22px 12px;
-  text-align: center;
-  font-size: 12px;
-  color: #9aa3af;
-  line-height: 1.7;
-}
-.nav-empty code {
+.nav-empty-row code {
   background: #f1f3f5;
   border-radius: 5px;
   padding: 1px 6px;

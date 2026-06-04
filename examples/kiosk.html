@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDK 예제 — 키오스크(tossfront2)</title>
+  <link rel="stylesheet" href="../engine/common.css" />
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="pdk-screen" style="padding:28px 24px;">
+            <div class="pdk-title" style="font-size:32px;font-weight:700;line-height:1.25;letter-spacing:-0.8px;">여기서 <span style="color:#3182f6;">입장</span> 해주세요</div>
+            <div class="pdk-banner" style="margin-top:24px;background:#ebf3ff;border-radius:14px;padding:12px 16px;color:#3182f6;font-size:14px;font-weight:600;">시설점검 : 9/1 (월) ~ 9/5 (금)</div>
+            <button class="pdk-btn-auth" style="margin-top:32px;width:100%;height:100px;border:none;border-radius:16px;background:#3182f6;color:#fff;font-size:20px;font-weight:700;cursor:pointer;">도착 인증</button>
+            <button class="pdk-btn-buy" style="margin-top:14px;width:100%;height:100px;border:none;border-radius:16px;background:#f2f4f5;color:#3d3d3d;font-size:20px;font-weight:700;cursor:pointer;">1회권 구매</button>
+            <div class="pdk-logo" style="margin-top:auto;text-align:center;color:#b6bcc6;font-weight:700;">toss</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.PDK_DEVICES = {
+      tossfront2: { label: '키오스크', width: 400, height: 640, radius: 18, type: 'kiosk' },
+    };
+    window.PDK_PROJECT = { name: '테스트프로젝트', device: 'tossfront2' };
+    window.PDK_SCREENS = [
+      { category: '1회권 구매', pages: [
+        { id: 'LCN-LND-001', label: '랜딩페이지', href: 'lcn-lnd-001.html', designed: false, figmaLink: '',
+          description: [],
+          flow: { to: [ { screen: 'LCN-MAN-001', via: '화면 터치' } ] } },
+        { id: 'LCN-MAN-001', label: '메인페이지', href: 'kiosk.html', designed: true,
+          figmaLink: 'https://www.figma.com/design/UfaTo8FaMLnsqzAvGkNUQq/?node-id=434-2072',
+          description: [
+            { text: '도착 인증 버튼 클릭 → 인증방법 선택페이지 (LCN-ATH-001)로 이동', target: '.pdk-btn-auth' },
+            { text: '1회권 구매 버튼 클릭 → 1회권상품 선택페이지 (LCN-PCH-001)로 이동', target: '.pdk-btn-buy' },
+            { text: '공지 배너 문구는 기기에서 수정 가능', target: '.pdk-banner' },
+            { text: '30초 무동작 시 랜딩페이지로 자동 이동', target: '' },
+          ],
+          flow: { to: [ { screen: 'LCN-ATH-001', via: '도착 인증' } ] } },
+      ] },
+      { category: '도착인증', pages: [
+        { id: 'LCN-ATH-001', label: '인증방법 선택', href: 'a.html', designed: true,
+          description: [],
+          flow: { to: [ { screen: 'LCN-ATH-002', via: 'QR 인증' } ] } },
+        { id: 'LCN-ATH-002', label: 'QR 출력', href: 'b.html', designed: false,
+          description: [],
+          flow: { to: [ { screen: 'LCN-ATH-003', via: '인증 시도' } ] } },
+        { id: 'LCN-ATH-003', label: 'QR 인증 실패', href: 'c.html', designed: false,
+          description: [],
+          flow: { to: [ { screen: 'LCN-PCH-001', via: '1회권 구매로 전환' } ] } },
+      ] },
+      { category: '1회권 구매', pages: [
+        { id: 'LCN-PCH-001', label: '1회권 상품 선택', href: 'd.html', designed: true,
+          description: [],
+          flow: { to: [ { screen: 'LCN-PCH-002', via: '상품 선택' } ] } },
+        { id: 'LCN-PCH-002', label: '휴대폰번호 입력', href: 'e.html', designed: true,
+          description: [],
+          flow: { to: [ { screen: 'LCN-MAN-001', via: '결제 완료', kind: 'auto' } ] } },
+      ] },
+    ];
+    window.PDK_CURRENT = 'kiosk.html';
+  </script>
+  <script src="../engine/common.js"></script>
+</body>
+</html>

@@ -3,6 +3,15 @@
 // (페이지 목록 / 화면 플로우 / Description) 를 자동 렌더한다.
 
 (function () {
+  // ── 엔진 위치 자동 감지 (아이콘 등 에셋 경로 기준) ───────
+  // 이 스크립트(engine/common.js)의 실제 URL에서 디렉토리를 추출 →
+  // 페이지가 루트든 examples/ 같은 하위 폴더든 에셋 경로가 깨지지 않는다.
+  var ENGINE_BASE = (function () {
+    var s = document.currentScript;
+    if (s && s.src) return s.src.replace(/[^/]*$/, '');   // ".../engine/"
+    return 'engine/';
+  })();
+
   // ── 상단 상태바 시계 ─────────────────────
   function updateClock() {
     const el = document.querySelector('.status-bar .time');
@@ -51,94 +60,68 @@
 
   function injectPageNav() {
     const current = currentKey();
+    const found = findCurrentPage(current);
+    const headPage = found && found.page;
 
-    // 테이블 본문 행들 (카테고리 헤더 + 페이지 행)
-    let rowsHtml = '';
+    // 상단 헤더: 현재 화면 타이틀 / 코드 / Figma 링크
+    const headTitle = headPage ? headPage.label : '—';
+    const headId = headPage ? (headPage.id || '-') : '';
+    const isTbd = headPage && headPage.id === 'TBD';
+    const figmaLink = headPage && headPage.figmaLink;
+    const figmaBtn = figmaLink
+      ? `<a class="page-nav-figma" href="${escapeHtml(figmaLink)}" target="_blank" rel="noopener noreferrer">↗ Figma</a>`
+      : `<span class="page-nav-figma is-disabled" title="등록된 Figma 링크 없음">↗ Figma</span>`;
+
+    // 본문: 카테고리 그룹 + 행 (원형 상태 뱃지)
+    let groupsHtml = '';
     CATEGORIES.forEach(cat => {
-      rowsHtml += `
-        <tr class="nav-cat-row">
-          <th colspan="3">${cat.name || cat.category || ''}</th>
-        </tr>
-      `;
+      let rows = '';
       (cat.pages || []).forEach(p => {
-        const isActive = current === p.href;
-        const isTbd = p.id === 'TBD';
-        rowsHtml += `
-          <tr class="nav-page-row${isActive ? ' is-active' : ''}" data-href="${p.href}">
-            <td class="cell-id${isTbd ? ' is-tbd' : ''}">${p.id || '-'}</td>
-            <td class="cell-name">${p.label}</td>
-            <td class="cell-status">
-              <span class="status-badge status--${p.designed ? 'done' : 'pending'}"
-                    title="${p.designed ? '디자인 반영 완료' : '디자인 미반영'}">
-                ${p.designed ? '반영' : '미반영'}
-              </span>
-            </td>
-          </tr>
-        `;
+        const active = current === p.href;
+        const badgeFile = active ? 'badge-active' : (p.designed ? 'badge-done' : 'badge-pending');
+        rows += `
+          <div class="nav-row${active ? ' is-active' : ''}" data-href="${escapeHtml(p.href)}">
+            <span class="nav-row-title">${escapeHtml(p.label)}</span>
+            <img class="nav-bdg" src="${ENGINE_BASE}icons/${badgeFile}.svg" width="20" height="20" alt="" title="${p.designed ? '디자인 반영' : '미반영'}">
+          </div>`;
       });
+      groupsHtml += `
+        <div class="nav-group">
+          <div class="nav-cat">${escapeHtml(cat.name || cat.category || '')}</div>
+          ${rows}
+        </div>`;
     });
 
     // 화면이 하나도 없을 때(예: /pdk-init 직후) 빈 상태 안내
-    if (!rowsHtml.trim()) {
-      rowsHtml = `
-        <tr><td colspan="3" class="nav-empty">
-          아직 화면이 없습니다.<br><code>/pdk-screen</code> 으로 추가하세요.
-        </td></tr>
-      `;
+    if (!groupsHtml.trim()) {
+      groupsHtml = `<div class="nav-empty-row">아직 화면이 없습니다.<br><code>/pdk-screen</code> 으로 추가하세요.</div>`;
     }
 
     const nav = document.createElement('aside');
     nav.className = 'page-nav';
     nav.innerHTML = `
-      <div class="page-nav-title">페이지 목록</div>
-      <table class="page-nav-table">
-        <thead>
-          <tr>
-            <th class="col-id">화면ID</th>
-            <th class="col-name">화면이름</th>
-            <th class="col-status">디자인</th>
-          </tr>
-        </thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>
+      <div class="page-nav-head">
+        <div class="page-nav-head-info">
+          <div class="page-nav-head-title">${escapeHtml(headTitle)}</div>
+          <div class="page-nav-head-code${isTbd ? ' is-tbd' : ''}">${escapeHtml(headId)}</div>
+        </div>
+        ${figmaBtn}
+      </div>
+      <div class="page-nav-scroll">
+        <div class="page-nav-cols"><span>PAGE NAME</span><span>UI DESIGN</span></div>
+        ${groupsHtml}
+      </div>
     `;
 
     // 행 클릭 → 페이지 이동
     nav.addEventListener('click', (e) => {
-      const row = e.target.closest('.nav-page-row');
+      const row = e.target.closest('.nav-row');
       if (row && row.dataset.href) {
         location.href = row.dataset.href;
       }
     });
 
-    const toggle = document.createElement('button');
-    toggle.className = 'page-nav-toggle';
-    toggle.type = 'button';
-    toggle.setAttribute('aria-label', '페이지 목록 열기');
-    toggle.textContent = '☰';
-    toggle.addEventListener('click', () => {
-      nav.classList.remove('is-hidden');
-    });
-
-    // 사이드바 자체에도 닫기 더블클릭 비활성화. 우상단 X로 닫기 가능하게.
-    const closeBtn = document.createElement('button');
-    closeBtn.type = 'button';
-    closeBtn.setAttribute('aria-label', '페이지 목록 닫기');
-    closeBtn.style.cssText = [
-      'position:absolute', 'top:8px', 'right:8px',
-      'width:24px', 'height:24px',
-      'border:none', 'background:transparent',
-      'font-size:16px', 'color:#9ca3af',
-      'cursor:pointer', 'border-radius:6px'
-    ].join(';');
-    closeBtn.textContent = '×';
-    closeBtn.addEventListener('click', () => {
-      nav.classList.add('is-hidden');
-    });
-    nav.appendChild(closeBtn);
-
     document.body.appendChild(nav);
-    document.body.appendChild(toggle);
   }
 
   // ── 우측 페이지 상세 정보 패널 ──────────────
@@ -155,8 +138,7 @@
     const found = findCurrentPage(current);
     if (!found) return;
 
-    const { page, category } = found;
-    const isTbd = page.id === 'TBD';
+    const { page } = found;
     const desc = Array.isArray(page.description) ? page.description : [];
 
     // Description 본문 렌더 (리스트 or empty state)
@@ -183,59 +165,20 @@
     detail.className = 'page-detail';
     detail.innerHTML = `
       <div class="page-detail-header">
-        <div class="page-detail-title">Description</div>
-        <button class="page-detail-close" type="button" aria-label="닫기">×</button>
+        <div class="page-detail-title">DESCRIPTION</div>
+        <button class="page-detail-close" type="button" aria-label="Description 최소화">
+          <img src="${ENGINE_BASE}icons/desc-minimize.svg" width="32" height="32" alt="">
+        </button>
       </div>
       <div class="page-detail-body">
-        <div class="page-detail-field">
-          <div class="page-detail-label">화면 ID</div>
-          <div class="page-detail-value${isTbd ? ' is-tbd' : ''}">${escapeHtml(page.id || '-')}</div>
-        </div>
-        <div class="page-detail-field">
-          <div class="page-detail-label">화면명</div>
-          <div class="page-detail-value">${escapeHtml(page.label)}</div>
-        </div>
-        <div class="page-detail-field">
-          <div class="page-detail-label">카테고리</div>
-          <div class="page-detail-value">${escapeHtml(category)}</div>
-        </div>
-        <div class="page-detail-field">
-          <div class="page-detail-label">디자인 반영</div>
-          <div class="page-detail-value">
-            <span class="status-badge status--${page.designed ? 'done' : 'pending'}">
-              ${page.designed ? '반영' : '미반영'}
-            </span>
-          </div>
-        </div>
-        <div class="page-detail-field">
-          <div class="page-detail-label">Figma 링크</div>
-          <div class="page-detail-value">
-            ${page.figmaLink
-              ? `<a href="${escapeHtml(page.figmaLink)}" target="_blank" rel="noopener noreferrer" class="page-detail-link">
-                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                   </svg>
-                   Figma에서 열기
-                 </a>`
-              : `<span class="page-detail-empty-value">미등록</span>`
-            }
-          </div>
-        </div>
-        <div class="page-detail-divider"></div>
         ${descriptionBlock}
       </div>
     `;
 
-    const toggle = document.createElement('button');
-    toggle.className = 'page-detail-toggle';
-    toggle.type = 'button';
-    toggle.setAttribute('aria-label', 'Description 열기');
-    toggle.textContent = 'i';
-    toggle.addEventListener('click', () => detail.classList.remove('is-hidden'));
-
-    detail.querySelector('.page-detail-close')
-      .addEventListener('click', () => detail.classList.add('is-hidden'));
+    // 최소화 → 패널 숨김 (우하단 dock 버튼으로 재열기)
+    detail.querySelector('.page-detail-close').addEventListener('click', () => {
+      detail.classList.add('is-hidden');
+    });
 
     // 항목 hover → 해당 UI만 또렷, 나머지는 dim
     // device-screen 의 첫 자식을 화면 래퍼로 간주 (페이지별로 .main-screen, .auth-screen, .placeholder-screen 등 다양함)
@@ -250,6 +193,7 @@
         const screen = getScreenEl();
         const target = screen && screen.querySelector(selector);
         if (!screen || !target) return;
+        li.classList.add('is-active');         // 강조 중인 항목 = 파랑
         screen.classList.add('is-dimming');
         target.classList.add('is-highlighted');
         // 타겟이 nested 일 경우: 모든 부모(스크린 직전까지)에 contains-highlight 클래스 부여
@@ -261,6 +205,7 @@
         }
       });
       li.addEventListener('mouseleave', () => {
+        li.classList.remove('is-active');
         const screen = getScreenEl();
         if (!screen) return;
         screen.classList.remove('is-dimming');
@@ -270,7 +215,37 @@
     });
 
     document.body.appendChild(detail);
-    document.body.appendChild(toggle);
+  }
+
+  // ── 우하단 통합 dock (Description / 화면 플로우 표시 토글) ──
+  function injectDock() {
+    // Figma 실측 아이콘(Material Symbols) — 경로 그대로, 색만 currentColor로 테마 연동
+    // DESCRIPTION = text_ad (문서/카드)
+    const ICON_DESC = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M5 17H19V15H5V17ZM5 13H19V11H5V13ZM5 9H15V7H5V9ZM4 20C3.45 20 2.97917 19.8042 2.5875 19.4125C2.19583 19.0208 2 18.55 2 18V6C2 5.45 2.19583 4.97917 2.5875 4.5875C2.97917 4.19583 3.45 4 4 4H20C20.55 4 21.0208 4.19583 21.4125 4.5875C21.8042 4.97917 22 5.45 22 6V18C22 18.55 21.8042 19.0208 21.4125 19.4125C21.0208 19.8042 20.55 20 20 20H4ZM4 18H20V6H4V18Z"/></svg>';
+    // FLOW DIAGRAM = automation (두 노드 + S곡선)
+    const ICON_FLOW = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M7.4 17.25C6.7 17.8333 5.97083 18.1 5.2125 18.05C4.45417 18 3.79167 17.7417 3.225 17.275C2.65833 16.8083 2.27083 16.1958 2.0625 15.4375C1.85417 14.6792 1.99167 13.9 2.475 13.1L4.35 10C3.93333 9.63333 3.60417 9.19167 3.3625 8.675C3.12083 8.15833 3 7.6 3 7C3 5.9 3.39167 4.95833 4.175 4.175C4.95833 3.39167 5.9 3 7 3C8.1 3 9.04167 3.39167 9.825 4.175C10.6083 4.95833 11 5.9 11 7C11 8.1 10.6083 9.04167 9.825 9.825C9.04167 10.6083 8.1 11 7 11C6.85 11 6.7 10.9917 6.55 10.975C6.4 10.9583 6.25833 10.9333 6.125 10.9L4.2 14.15C4.01667 14.45 3.95833 14.7458 4.025 15.0375C4.09167 15.3292 4.23333 15.5667 4.45 15.75C4.66667 15.9333 4.925 16.0375 5.225 16.0625C5.525 16.0875 5.81667 15.9833 6.1 15.75L16.6 6.725C17.3 6.14167 18.0333 5.87917 18.8 5.9375C19.5667 5.99583 20.2333 6.25833 20.8 6.725C21.3667 7.19167 21.75 7.80417 21.95 8.5625C22.15 9.32083 22.0083 10.1 21.525 10.9L19.65 14C20.0667 14.3667 20.3958 14.8083 20.6375 15.325C20.8792 15.8417 21 16.4 21 17C21 18.1 20.6083 19.0417 19.825 19.825C19.0417 20.6083 18.1 21 17 21C15.9 21 14.9583 20.6083 14.175 19.825C13.3917 19.0417 13 18.1 13 17C13 15.9 13.3917 14.9583 14.175 14.175C14.9583 13.3917 15.9 13 17 13C17.15 13 17.2958 13.0083 17.4375 13.025C17.5792 13.0417 17.7167 13.0667 17.85 13.1L19.8 9.85C19.9833 9.55 20.0417 9.25417 19.975 8.9625C19.9083 8.67083 19.7667 8.43333 19.55 8.25C19.3333 8.06667 19.075 7.9625 18.775 7.9375C18.475 7.9125 18.1833 8.01667 17.9 8.25L7.4 17.25ZM8.4125 8.4125C8.80417 8.02083 9 7.55 9 7C9 6.45 8.80417 5.97917 8.4125 5.5875C8.02083 5.19583 7.55 5 7 5C6.45 5 5.97917 5.19583 5.5875 5.5875C5.19583 5.97917 5 6.45 5 7C5 7.55 5.19583 8.02083 5.5875 8.4125C5.97917 8.80417 6.45 9 7 9C7.55 9 8.02083 8.80417 8.4125 8.4125ZM18.4125 18.4125C18.8042 18.0208 19 17.55 19 17C19 16.45 18.8042 15.9792 18.4125 15.5875C18.0208 15.1958 17.55 15 17 15C16.45 15 15.9792 15.1958 15.5875 15.5875C15.1958 15.9792 15 16.45 15 17C15 17.55 15.1958 18.0208 15.5875 18.4125C15.9792 18.8042 16.45 19 17 19C17.55 19 18.0208 18.8042 18.4125 18.4125Z"/></svg>';
+    const items = [
+      { key: 'flow', sel: '.page-flow', label: 'FLOW DIAGRAM', icon: ICON_FLOW },
+      { key: 'detail', sel: '.page-detail', label: 'DESCRIPTION', icon: ICON_DESC },
+    ];
+    const dock = document.createElement('div');
+    dock.className = 'pdk-dock';
+    items.forEach(it => {
+      const panel = document.querySelector(it.sel);
+      if (!panel) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pdk-dock-btn';
+      btn.dataset.dock = it.key;
+      btn.dataset.label = it.label;
+      btn.setAttribute('aria-label', it.label + ' 토글');
+      btn.innerHTML = it.icon;
+      btn.addEventListener('click', () => {
+        panel.classList.toggle('is-hidden');
+      });
+      dock.appendChild(btn);
+    });
+    document.body.appendChild(dock);
   }
 
   // ── 좌측 하단 화면 플로우 다이어그램 (Mermaid) ──────────
@@ -405,7 +380,7 @@
         securityLevel: 'loose',
         theme: 'neutral',
         // useMaxWidth:false → 패널 폭에 맞춰 축소하지 않고 다이어그램 자연 크기로 렌더
-        flowchart: { htmlLabels: true, curve: 'basis', nodeSpacing: 28, rankSpacing: 55, padding: 8, useMaxWidth: false },
+        flowchart: { htmlLabels: true, curve: 'basis', nodeSpacing: 28, rankSpacing: 55, padding: 16, useMaxWidth: false },
       });
       await window.mermaid.run({ querySelector: '.page-flow .mermaid' });
       // 렌더된 SVG를 viewBox 자연 크기로 고정 → 좌우/상하 스크롤로 보기
@@ -489,21 +464,15 @@
     aside.className = 'page-flow is-loading';
     aside.innerHTML = `
       <div class="page-flow-header">
-        <div class="page-flow-title">화면 플로우</div>
+        <div class="page-flow-title">FLOW DIAGRAM</div>
         <div class="page-flow-header-tools">
           <button class="page-flow-locate" type="button" aria-label="현재 위치" title="현재 화면으로 이동">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="7"/>
-              <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
-              <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
-            </svg>
+            <img src="${ENGINE_BASE}icons/flow-locate.svg" width="16" height="16" alt="">
           </button>
           <button class="page-flow-expand" type="button" aria-label="크게 보기" title="크게 보기">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/>
-            </svg>
+            <img src="${ENGINE_BASE}icons/flow-expand.svg" width="32" height="32" alt="">
           </button>
-          <button class="page-flow-toggle" type="button" aria-label="플로우 접기/펼치기">▾</button>
+          <button class="page-flow-toggle" type="button" aria-label="플로우 최소화"><img src="${ENGINE_BASE}icons/flow-minimize.svg" width="32" height="32" alt=""></button>
         </div>
       </div>
       <div class="page-flow-body">
@@ -518,19 +487,12 @@
 
     // 현재 위치(현재 화면 노드 중앙으로 이동)
     aside.querySelector('.page-flow-locate').addEventListener('click', () => {
-      if (aside.classList.contains('is-collapsed')) {  // 접혀 있으면 펼친 뒤 이동
-        aside.classList.remove('is-collapsed');
-        aside.querySelector('.page-flow-toggle').textContent = '▾';
-        requestAnimationFrame(() => requestAnimationFrame(() => centerCurrentFlowNode(true)));
-      } else {
-        centerCurrentFlowNode(true);
-      }
+      centerCurrentFlowNode(true);
     });
 
-    // 접기 토글
-    aside.querySelector('.page-flow-toggle').addEventListener('click', (e) => {
-      const collapsed = aside.classList.toggle('is-collapsed');
-      e.currentTarget.textContent = collapsed ? '▸' : '▾';
+    // 최소화 → 패널 완전 숨김 (우하단 dock 버튼으로 재열기)
+    aside.querySelector('.page-flow-toggle').addEventListener('click', () => {
+      aside.classList.add('is-hidden');
     });
 
     // ── 전체화면(크게보기) 모달 ──────────────────
@@ -583,7 +545,7 @@
       try {
         window.mermaid.initialize({
           startOnLoad: false, securityLevel: 'loose', theme: 'neutral',
-          flowchart: { htmlLabels: true, curve: 'basis', nodeSpacing: 28, rankSpacing: 55, padding: 8, useMaxWidth: false },
+          flowchart: { htmlLabels: true, curve: 'basis', nodeSpacing: 28, rankSpacing: 55, padding: 16, useMaxWidth: false },
         });
         await window.mermaid.run({ querySelector: '.page-flow-modal .mermaid-modal' });
         const svg = modalBody.querySelector('svg');
@@ -665,7 +627,7 @@
 
     function fit() {
       const outerW = d.width + bezel * 2, outerH = d.height + bezel * 2;
-      const availW = Math.max(260, window.innerWidth - 820);  // 좌우 패널 여유
+      const availW = Math.max(260, window.innerWidth - 640);  // 좌(280)+우(280) 패널 여유
       const availH = Math.max(340, window.innerHeight - 90);
       const scale = Math.min(1, availW / outerW, availH / outerH);
       root.style.setProperty('--pdk-device-scale', scale.toFixed(3));
@@ -707,6 +669,7 @@
     injectPageNav();
     injectPageDetail();
     injectFlowDiagram();
+    injectDock();
   }
 
   if (document.readyState === 'loading') {
