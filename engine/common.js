@@ -78,7 +78,8 @@
       let rows = '';
       (cat.pages || []).forEach(p => {
         const active = current === p.href;
-        const badgeFile = active ? 'badge-active' : (p.designed ? 'badge-done' : 'badge-pending');
+        // 디자인 확정(designed) 여부가 우선 — 미확정이면 선택 상태여도 체크(X), 마이너스 유지
+        const badgeFile = !p.designed ? 'badge-pending' : (active ? 'badge-active' : 'badge-done');
         rows += `
           <div class="nav-row${active ? ' is-active' : ''}" data-href="${escapeHtml(p.href)}">
             <span class="nav-row-title">${escapeHtml(p.label)}</span>
