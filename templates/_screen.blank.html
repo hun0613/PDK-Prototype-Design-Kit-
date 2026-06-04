@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{SCREEN_NAME}} ({{SCREEN_ID}})</title>
+  <link rel="stylesheet" href="engine/common.css" />
+</head>
+<body>
+  <!-- /pdk-screen 이 생성한 화면. 아직 이름·ID만 표기됩니다.
+       UI는 /pdk-wireframe [화면ID] 로 설계하고, 디자인은 /pdk-figma-sync 로 입힙니다. -->
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="placeholder-screen">
+            <div class="placeholder-screen-name">{{SCREEN_NAME}}</div>
+            <div class="placeholder-screen-id">{{SCREEN_ID}}</div>
+          </div>
+        </div>
+      </div>
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div>
+  </div>
+
+  <!-- config·엔진을 캐시 없이 순서대로 로드 (변경 즉시 반영) -->
+  <script>
+    (function () {
+      var v = Date.now();
+      var files = ['config/devices.js', 'config/project.js', 'config/screens.js', 'engine/common.js'];
+      for (var i = 0; i < files.length; i++) {
+        document.write('<scr' + 'ipt src="' + files[i] + '?_=' + v + '"></scr' + 'ipt>');
+      }
+    })();
+  </script>
+</body>
+</html>

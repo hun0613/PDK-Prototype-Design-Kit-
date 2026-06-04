@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{SCREEN_NAME}} ({{SCREEN_ID}})</title>
+  <link rel="stylesheet" href="engine/common.css" />
+</head>
+<body>
+  <!-- 카운트다운형 화면 변형. {{SECONDS}}초 후 자동 이동(프로토타입은 0에서 정지).
+       실제 이동 의도는 config/screens.js 의 flow.to(kind:'auto') + Description 에 명시. -->
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="pdk-screen" style="align-items:center; justify-content:center; text-align:center;">
+            <div class="pdk-sk-box pdk-icon" style="width:80px; height:80px; border-radius:50%;"></div>
+            <div class="pdk-sk-title pdk-title" style="width:70%"></div>
+            <div class="pdk-hint pdk-countdown">{{SECONDS}}초 후 이동합니다</div>
+            <button class="pdk-sk-btn pdk-confirm">확인</button>
+          </div>
+        </div>
+      </div>
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div>
+  </div>
+
+  <!-- config·엔진을 캐시 없이 순서대로 로드 (변경 즉시 반영) -->
+  <script>
+    (function () {
+      var v = Date.now();
+      var files = ['config/devices.js', 'config/project.js', 'config/screens.js', 'engine/common.js'];
+      for (var i = 0; i < files.length; i++) {
+        document.write('<scr' + 'ipt src="' + files[i] + '?_=' + v + '"></scr' + 'ipt>');
+      }
+    })();
+  </script>
+  <script>
+    // 카운트다운(프로토타입: 0에서 정지). 초기값은 화면 작성 시 수정.
+    (function () {
+      var el = document.querySelector('.pdk-countdown');
+      var n = parseInt('{{SECONDS}}', 10); if (isNaN(n)) n = 5;
+      if (!el) return;
+      var t = setInterval(function () {
+        n -= 1;
+        if (n <= 0) { n = 0; clearInterval(t); }
+        el.textContent = n + '초 후 이동합니다';
+      }, 1000);
+    })();
+  </script>
+</body>
+</html>

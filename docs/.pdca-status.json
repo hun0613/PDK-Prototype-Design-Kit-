@@ -1,10 +1,11 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-06-01T05:40:18.367Z",
+  "lastUpdated": "2026-06-02T03:40:39.537Z",
   "activeFeatures": [
     "scripts",
     "engine",
-    "config"
+    "config",
+    "thebestpay-prototype-design-kit"
   ],
   "primaryFeature": "scripts",
   "features": {
@@ -17,9 +18,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-26T04:56:45.767Z",
-        "lastUpdated": "2026-06-01T05:40:18.367Z"
+        "lastUpdated": "2026-06-02T02:50:06.155Z"
       },
-      "lastFile": "C:\\Users\\THEBESTPAY\\Desktop\\내손키\\엘커넥트\\scripts\\common.js"
+      "lastFile": "C:\\Users\\THEBESTPAY\\Desktop\\planning\\thebestpay-prototype-design-kit\\scripts\\common.js"
     },
     "engine": {
       "phase": "do",
@@ -30,9 +31,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-29T06:50:00.762Z",
-        "lastUpdated": "2026-05-29T07:00:05.279Z"
+        "lastUpdated": "2026-06-02T03:40:39.537Z"
       },
-      "lastFile": "C:\\Users\\THEBESTPAY\\Desktop\\내손키\\screen-design-kit\\engine\\shell.js"
+      "lastFile": "C:\\Users\\THEBESTPAY\\Desktop\\planning\\thebestpay-prototype-design-kit\\engine\\common.js"
     },
     "config": {
       "phase": "do",
@@ -43,9 +44,22 @@
       "documents": {},
       "timestamps": {
         "started": "2026-05-29T06:51:24.488Z",
-        "lastUpdated": "2026-05-29T06:51:42.130Z"
+        "lastUpdated": "2026-06-02T02:48:11.768Z"
       },
-      "lastFile": "C:\\Users\\THEBESTPAY\\Desktop\\내손키\\screen-design-kit\\config\\screens.config.js"
+      "lastFile": "C:\\Users\\THEBESTPAY\\Desktop\\planning\\thebestpay-prototype-design-kit\\config\\project.js"
+    },
+    "thebestpay-prototype-design-kit": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-06-02T02:38:08.321Z",
+        "lastUpdated": "2026-06-02T02:38:08.321Z"
+      },
+      "lastFile": "C:\\Users\\THEBESTPAY\\Desktop\\planning\\thebestpay-prototype-design-kit\\.tmp_flow_block.js"
     }
   },
   "pipeline": {
@@ -56,7 +70,7 @@
   "session": {
     "startedAt": "2026-05-26T04:50:49.145Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-06-01T05:40:18.367Z"
+    "lastActivity": "2026-06-02T03:40:39.537Z"
   },
   "history": [
     {
@@ -986,6 +1000,72 @@
     {
       "timestamp": "2026-06-01T05:40:18.367Z",
       "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T02:34:48.128Z",
+      "feature": "config",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T02:34:50.385Z",
+      "feature": "config",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T02:35:07.625Z",
+      "feature": "config",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T02:38:08.321Z",
+      "feature": "thebestpay-prototype-design-kit",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T02:40:28.725Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T02:42:00.124Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T02:42:04.653Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T02:46:02.744Z",
+      "feature": "config",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T02:48:11.768Z",
+      "feature": "config",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T02:50:06.155Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-06-02T03:40:39.537Z",
+      "feature": "engine",
       "phase": "do",
       "action": "updated"
     }

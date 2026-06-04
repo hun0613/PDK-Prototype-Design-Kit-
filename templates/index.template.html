@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{PROJECT_TITLE}}</title>
+  <link rel="stylesheet" href="engine/common.css" />
+</head>
+<body>
+  <!-- /pdk-init 이 생성하는 초기 골격. 화면은 /pdk-screen 으로 추가됩니다. -->
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="pdk-screen"><!-- /pdk-wireframe 로 이 화면을 설계하세요 --></div>
+        </div>
+      </div>
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div>
+  </div>
+
+  <!-- config·엔진을 캐시 없이 순서대로 로드 (변경 즉시 반영, 강력 새로고침 불필요) -->
+  <script>
+    (function () {
+      var v = Date.now();
+      var files = ['config/devices.js', 'config/project.js', 'config/screens.js', 'engine/common.js'];
+      for (var i = 0; i < files.length; i++) {
+        document.write('<scr' + 'ipt src="' + files[i] + '?_=' + v + '"></scr' + 'ipt>');
+      }
+    })();
+  </script>
+</body>
+</html>

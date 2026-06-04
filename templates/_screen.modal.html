@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{SCREEN_NAME}} ({{SCREEN_ID}})</title>
+  <link rel="stylesheet" href="engine/common.css" />
+  <style>
+    /* 모달형 화면: dim 배경 + 하단 시트. config/screens.js 에서 href 에 쿼리 허용
+       (예: 'list.html?modal=1') 로 별도 화면처럼 등록하면 플로우/현재화면 매칭됨. */
+    .pdk-backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.45); }
+    .pdk-sheet { position:absolute; left:0; right:0; bottom:0; background:#fff;
+                 border-radius:20px 20px 0 0; padding:24px; display:flex; flex-direction:column; gap:14px; }
+  </style>
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="pdk-screen" style="padding:0;">
+            <div class="pdk-backdrop pdk-dim"></div>
+            <div class="pdk-sheet pdk-modal">
+              <div class="pdk-sk-title pdk-modal-title" style="width:60%"></div>
+              <div class="pdk-sk-line" style="width:80%"></div>
+              <button class="pdk-sk-btn pdk-confirm">확인</button>
+              <button class="pdk-sk-btn pdk-cancel" style="background:#e9ecef; color:#6b7280;">취소</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div>
+  </div>
+
+  <!-- config·엔진을 캐시 없이 순서대로 로드 (변경 즉시 반영) -->
+  <script>
+    (function () {
+      var v = Date.now();
+      var files = ['config/devices.js', 'config/project.js', 'config/screens.js', 'engine/common.js'];
+      for (var i = 0; i < files.length; i++) {
+        document.write('<scr' + 'ipt src="' + files[i] + '?_=' + v + '"></scr' + 'ipt>');
+      }
+    })();
+  </script>
+</body>
+</html>

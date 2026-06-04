@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────
-   엘커넥트 × 토스 프론트2 프로토타입 공용 스타일
-   Device: 400 × 640 (세로형 터치 단말기)
-   Figma scale: 500x800 → 400x640 (x0.8)
+   PDK (Prototype Design Kit) 엔진 공용 스타일
+   디바이스 목업 + 개발 사이드바(페이지목록/플로우/Description) + 스켈레톤
+   디바이스 규격은 config/devices.js 기반 CSS 변수(--pdk-screen-w/h 등)로 제어
    ───────────────────────────────────────────── */
 
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
@@ -50,6 +50,8 @@ html, body {
   align-items: center;
   justify-content: center;
   filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.10));
+  transform: scale(var(--pdk-device-scale, 1));   /* 큰 캔버스(데스크탑 등) 뷰포트 맞춤 */
+  transform-origin: center center;
 }
 
 /* 우측 카드리더 돌출부 (몸체 뒤에서 옆으로 튀어나옴) */
@@ -124,13 +126,13 @@ html, body {
     inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
-/* 실제 화면 영역 (400×640) */
+/* 실제 화면 영역 (디바이스 규격은 CSS 변수로 제어; 기본 400×640 = tossfront2) */
 .device-screen {
   position: relative;
-  width: 400px;
-  height: 640px;
+  width: var(--pdk-screen-w, 400px);
+  height: var(--pdk-screen-h, 640px);
   background: #ffffff;
-  border-radius: 18px;
+  border-radius: var(--pdk-screen-radius, 18px);
   overflow: hidden;
   box-shadow:
     inset 0 0 0 1px rgba(0, 0, 0, 0.08),
@@ -180,6 +182,58 @@ html, body {
 .device-stand,
 .device-base {
   display: none;
+}
+
+/* ─── 미니멀 프레임형 디바이스 (desktop / mobile / 커스텀) ───
+   Figma 시안 기반: 베젤 단색 + 둥근 모서리. 키오스크 디테일(카메라/슬롯/리더)은 숨김 */
+.device-stage[data-device-type="frame"] .device-mockup::before { display: none; }
+.device-stage[data-device-type="frame"] .device-frame {
+  width: auto;
+  height: auto;
+  /* 그라데이션 베젤: border 대신 padding(=베젤 두께) + 배경 그라데이션으로
+     둥근 모서리를 유지하면서 입체감(상단 하이라이트 → 하단 음영) 표현 */
+  background: var(--pdk-bezel-grad,
+    linear-gradient(145deg, #5a5a5a 0%, #404040 45%, #2a2a2a 100%));
+  border: none;
+  padding: var(--pdk-bezel-w, 10px);
+  border-radius: var(--pdk-radius, 24px);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),   /* 상단 광택 */
+    inset 0 -2px 3px rgba(0, 0, 0, 0.45);       /* 하단 음영 */
+}
+.device-stage[data-device-type="frame"] .device-frame::before,
+.device-stage[data-device-type="frame"] .device-frame::after { display: none; }
+.device-stage[data-device-type="frame"] .device-screen { box-shadow: none; }
+
+/* ─── 반응형 디바이스 토글 (상단 중앙 고정) ─── */
+.pdk-device-toggle {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+.pdk-device-toggle button {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.pdk-device-toggle button.is-active {
+  background: #3182F6;
+  color: #ffffff;
 }
 
 /* ─── 화면 placeholder (UI 미구현 시 중앙에 이름+ID 표기) ─── */
@@ -1335,4 +1389,47 @@ html, body {
 
 .field input:focus {
   border-color: #3182f6;
+}
+
+/* 페이지 목록 빈 상태 (/pdk-init 직후 화면 0개) */
+.nav-empty {
+  padding: 22px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #9aa3af;
+  line-height: 1.7;
+}
+.nav-empty code {
+  background: #f1f3f5;
+  border-radius: 5px;
+  padding: 1px 6px;
+  color: #3182f6;
+  font-size: 11px;
+}
+
+/* ─────────────────────────────────────────────
+   PDK 스켈레톤 UI (/pdk-wireframe 산출물 기본 스타일)
+   ※ W-3 규칙: 스켈레톤 루트는 .device-screen 의 직속 단일 자식 .pdk-screen 이어야 한다.
+     (Description hover dimming이 device-screen.firstElementChild 를 화면 래퍼로 가정)
+   ───────────────────────────────────────────── */
+.pdk-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px;
+  background: #ffffff;
+}
+/* 회색 블록/라인/박스 — 시각 스타일은 미니멀 (실제 디자인은 Figma에서) */
+.pdk-skeleton,
+.pdk-sk-box { background: #e9ecef; border-radius: 12px; }
+.pdk-sk-line { height: 14px; border-radius: 7px; background: #eef0f2; }
+.pdk-sk-title { height: 36px; border-radius: 10px; background: #e9ecef; }
+.pdk-sk-hero { flex: 1; min-height: 120px; border-radius: 18px; background: #eef0f2; }
+/* 스켈레톤 버튼 자리 (실제 동작/디자인은 이후 단계) */
+.pdk-sk-btn {
+  height: 56px; border: none; border-radius: 14px;
+  background: #3182f6; color: #fff; font-size: 18px; font-weight: 700; cursor: pointer;
 }
