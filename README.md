@@ -50,6 +50,28 @@
 > 비개발자는 **`/pdk-update` 한 번**만 실행하면 됩니다 — git 작업·구조 변경까지 알아서 처리됩니다.
 > 현재 적용 버전은 `config/pdk-version.json`, 변경 이력은 `RELEASES.md`에서 확인할 수 있습니다.
 
+#### (최초 1회) 기존 프로젝트에 `/pdk-update` 설치하기
+
+`/pdk-update`가 아직 없는 기존 프로젝트는 **새 파일 3개만** 가져오면 됩니다. (전체 `git pull`은 ❌ —
+`config/screens.js`(내 화면)를 덮어쓰고 불필요한 변경까지 끌려옵니다.)
+
+```bash
+# 프로젝트의 origin이 PDK 원본 레포인 경우
+git fetch origin
+git checkout origin/main -- .claude/commands/pdk-update.md RELEASES.md config/pdk-version.json
+
+# origin이 내 레포인 경우 (PDK를 upstream으로 추가)
+git remote add upstream http://git.hanuriit.co.kr/biz-planning/thebestpay-prototype-design-kit.git
+git fetch upstream
+git checkout upstream/main -- .claude/commands/pdk-update.md RELEASES.md config/pdk-version.json
+```
+
+→ 이후부터는 **`/pdk-update`** 만 실행하면 나머지(엔진·템플릿·정책 마이그레이션)가 자동 반영됩니다.
+
+> ⚠️ config 기반 구조(엔진이 `engine/` + `config/*.js`) **이전의 오래된 클론**이라면, 첫 업데이트는
+> 단순 동기화가 아닌 **1회 마이그레이션**이 필요합니다 — 해당 변경을 `RELEASES.md`의 "마이그레이션"에
+> 명세한 뒤 `/pdk-update`로 적용하거나, 한 번은 수동으로 맞춰 주세요.
+
 #### (유지보수자) 공통 변경 배포 방법
 1. 이 원본 레포에서 `engine`/`templates`/`.claude/commands` 등 공통 부분을 수정·커밋·푸시
 2. 의미있는 변경이면 `RELEASES.md` 맨 위에 새 `## v<N>` 항목 추가
