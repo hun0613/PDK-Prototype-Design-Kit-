@@ -670,7 +670,7 @@
     if (document.querySelector('.pdk-sys-footer')) return;
     const el = document.createElement('div');
     el.className = 'pdk-sys-footer';
-    el.textContent = '시스템 관련 문의: 시스템개발자 박성훈 (psh@thebestpay.co.kr)';
+    el.textContent = '시스템 관련 문의: 박성훈 (psh@thebestpay.co.kr)';
     document.body.appendChild(el);
   }
 

@@ -1272,7 +1272,7 @@ html, body {
 /* 하단 시스템 문의 푸터 (저작권 표기처럼 작게, 화면 하단 중앙 고정) */
 .pdk-sys-footer {
   position: fixed;
-  bottom: 6px;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1;                 /* 사이드바(z 50~60)보다 아래 — 겹치면 패널이 위로 */
