@@ -2,8 +2,11 @@
 .claude/*
 !.claude/commands/
 
-# bkit 툴링 상태 (로컬)
+# bkit 툴링 상태 (로컬 — 저장소 추적 제외)
 .bkit/
+docs/.bkit-memory.json
+docs/.pdca-status.json
+docs/.pdca-snapshots/
 
 # OS
 .DS_Store
