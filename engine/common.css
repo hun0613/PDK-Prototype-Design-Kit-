@@ -1269,6 +1269,23 @@ html, body {
   border-color: #3182f6;
 }
 
+/* 하단 시스템 문의 푸터 (저작권 표기처럼 작게, 화면 하단 중앙 고정) */
+.pdk-sys-footer {
+  position: fixed;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;                 /* 사이드바(z 50~60)보다 아래 — 겹치면 패널이 위로 */
+  font-size: 10px;
+  line-height: 1.4;
+  color: #c2c8d0;
+  letter-spacing: 0.2px;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;       /* 클릭/상호작용 방해하지 않음 */
+  user-select: none;
+}
+
 /* 페이지 목록 빈 상태 (/pdk-init 직후 화면 0개) */
 .nav-empty-row code {
   background: #f1f3f5;

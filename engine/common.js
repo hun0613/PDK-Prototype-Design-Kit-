@@ -665,12 +665,22 @@
     });
   }
 
+  // ── 하단 시스템 문의 푸터 (저작권 표기처럼 아주 작게) ──
+  function injectFooter() {
+    if (document.querySelector('.pdk-sys-footer')) return;
+    const el = document.createElement('div');
+    el.className = 'pdk-sys-footer';
+    el.textContent = '시스템 관련 문의: 시스템개발자 박성훈 (psh@thebestpay.co.kr)';
+    document.body.appendChild(el);
+  }
+
   function init() {
     applyDevice();
     injectPageNav();
     injectPageDetail();
     injectFlowDiagram();
     injectDock();
+    injectFooter();
   }
 
   if (document.readyState === 'loading') {
