@@ -31,6 +31,7 @@ RELEASES.md             # 릴리즈노트(읽기 + 사용자 사본 갱신)
 config/project.js, config/screens.js, config/devices.js   # 내 설정·디바이스
 config/pdk-version.json                                    # 내 버전 기록(이 커맨드가 갱신)
 index.html, *.html, assets/mockups/, README.md            # 내 화면·자산·프로젝트 README
+custom/                                                    # 공통 파일에 가한 내 수정(patch) 보관소 → 동기화 후 재적용
 ```
 
 ## 절차 (순서대로 — 사용자 개입 없이 자동)
@@ -59,11 +60,37 @@ git fetch upstream
 ### 4) 백업
 - 매니페스트 경로 중 현재 존재하는 것을 `.pdk-backup/<타임스탬프>/` 에 동일 구조로 복사(`.pdk-backup/`은 gitignore됨).
 
+### 4.5) 아직 안 뺀 공통 직접수정 감지 (custom으로 추출)
+- 공통 파일에 **patch로 보관되지 않은 로컬 직접수정**이 있는지 확인한다:
+  ```bash
+  git diff --stat HEAD -- engine templates .claude/commands docs/GUIDE.md RELEASES.md
+  ```
+- 변경이 있으면(=동기화로 덮어쓰면 사라질 수정), 덮어쓰기 전에 **`custom/patches/`로 추출**해 보존한다:
+  ```bash
+  mkdir -p custom/patches
+  git diff HEAD -- engine/common.js > custom/patches/engine-common.js.patch   # 변경된 파일별로
+  ```
+  - 변경된 공통 파일마다 `custom/patches/<경로치환>.patch` 로 저장(이미 같은 patch가 있으면 사용자에게 알리고 갱신 여부 확인).
+  - 추출한 내용은 사용자에게 요약 보고(어떤 파일의 어떤 변경을 custom으로 보존했는지).
+- `custom/README.md` 규칙을 따른다(패치 보관소 설명).
+
 ### 5) 코드·레이아웃 반영 (파일 동기화)
 ```bash
 git checkout upstream/<branch> -- engine templates .claude/commands docs/GUIDE.md RELEASES.md
 ```
 - 워킹트리+인덱스가 upstream 버전으로 갱신(스테이징). 보존 대상은 매니페스트에 없으므로 유지.
+
+### 5.5) custom 패치 재적용 (내 공통 수정 복구)
+- `custom/patches/*.patch` 가 있으면 동기화로 순정화된 공통 파일 위에 **다시 적용**한다.
+  ```bash
+  for p in custom/patches/*.patch; do
+    git apply --check "$p" 2>/dev/null && git apply "$p" || git apply --3way "$p"
+  done
+  ```
+  - `--check` 통과 → 그대로 적용. 실패 → `--3way`로 시도(가능한 부분 자동 반영, 충돌은 표시).
+  - **충돌이 난 patch**는 어떤 파일/어느 부분인지 사용자에게 알리고, 백업본(`.pdk-backup/`)·patch 위치를 안내(임의 강제 적용 금지).
+  - 적용/충돌 결과를 8) 보고에 포함한다.
+- `custom/patches/` 가 없으면 이 단계는 건너뛴다.
 
 ### 6) 정책/구조 마이그레이션 (릴리즈노트 지시 수행)
 - 이제 로컬 `RELEASES.md`(방금 최신화됨)를 읽는다.
