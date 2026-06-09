@@ -60,19 +60,24 @@ git fetch upstream
 ### 4) 백업
 - 매니페스트 경로 중 현재 존재하는 것을 `.pdk-backup/<타임스탬프>/` 에 동일 구조로 복사(`.pdk-backup/`은 gitignore됨).
 
-### 4.5) 아직 안 뺀 공통 직접수정 감지 (custom으로 추출)
-- 공통 파일에 **patch로 보관되지 않은 로컬 직접수정**이 있는지 확인한다:
+### 4.5) 아직 안 뺀 공통 직접수정 감지 → custom으로 자동 추출
+- ★ baseline = **내가 시작/마지막 동기화한 upstream 버전**으로 비교해야 *커밋 여부와 무관하게* 내 수정을 다 잡는다.
+  (단순 `git diff HEAD`는 커밋 안 한 변경만 잡으므로 사용 금지.)
   ```bash
-  git diff --stat HEAD -- engine templates .claude/commands docs/GUIDE.md RELEASES.md
+  BASE=$(git merge-base HEAD upstream/<branch>)
+  git diff --name-only "$BASE" -- engine templates .claude/commands docs/GUIDE.md
   ```
-- 변경이 있으면(=동기화로 덮어쓰면 사라질 수정), 덮어쓰기 전에 **`custom/patches/`로 추출**해 보존한다:
+- 변경된 공통 파일이 있으면(=동기화로 덮으면 사라질 내 수정), 덮어쓰기 **전에** 파일별로 `custom/patches/`에 추출:
   ```bash
   mkdir -p custom/patches
-  git diff HEAD -- engine/common.js > custom/patches/engine-common.js.patch   # 변경된 파일별로
+  git diff "$BASE" -- engine/common.js > custom/patches/engine-common.js.patch   # 변경 파일마다(경로 / → -)
   ```
-  - 변경된 공통 파일마다 `custom/patches/<경로치환>.patch` 로 저장(이미 같은 patch가 있으면 사용자에게 알리고 갱신 여부 확인).
-  - 추출한 내용은 사용자에게 요약 보고(어떤 파일의 어떤 변경을 custom으로 보존했는지).
-- `custom/README.md` 규칙을 따른다(패치 보관소 설명).
+  - 이렇게 하면 baseline 대비 "내 변경 전체"가 patch에 담긴다(커밋했든 안 했든 포함).
+  - 이미 같은 이름의 patch가 있으면 **최신 diff로 갱신**(중복 적용 방지 — patch는 항상 baseline 대비 전체 차이).
+  - 어떤 파일의 어떤 변경을 custom으로 보존했는지 사용자에게 요약 보고, `custom/README.md`에 메타 기록.
+- 이 단계 덕분에 사용자가 **custom에 미리 안 넣은 공통 수정도 자동으로 보존**된다(5.5에서 재적용됨).
+- merge-base를 못 구하면 `upstream/<branch>`를 baseline으로 쓰되, 옛 버전과의 차이가 섞일 수 있음을 경고하고
+  `.pdk-backup/`(4단계)이 안전망임을 알린다.
 
 ### 5) 코드·레이아웃 반영 (파일 동기화)
 ```bash
