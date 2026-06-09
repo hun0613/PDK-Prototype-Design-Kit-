@@ -55,32 +55,48 @@
 > 비개발자는 **`/pdk-update` 한 번**만 실행하면 됩니다 — git 작업·구조 변경까지 알아서 처리됩니다.
 > 현재 적용 버전은 `config/pdk-version.json`, 변경 이력은 `RELEASES.md`에서 확인할 수 있습니다.
 
-#### (최초 1회) 기존 프로젝트에 `/pdk-update` 설치하기
+#### (최초 1회) 기존 프로젝트에 PDK 커맨드 설치하기
 
-`/pdk-update`가 아직 없는 기존 프로젝트는 **새 파일 3개만** 가져오면 됩니다. (전체 `git pull`은 ❌ —
-`config/screens.js`(내 화면)를 덮어쓰고 불필요한 변경까지 끌려옵니다.)
+`/pdk-update`·`/pdk-custom` 등이 아직 없는 기존 프로젝트는 **커맨드와 안내 문서만** 먼저 가져옵니다.
+(전체 `git pull`은 ❌ — `config/screens.js`(내 화면) 등을 덮어쓰고 불필요한 변경까지 끌려옵니다.)
 
 ```bash
 # 프로젝트의 origin이 PDK 원본 레포인 경우
 git fetch origin
-git checkout origin/main -- .claude/commands/pdk-update.md RELEASES.md config/pdk-version.json
+git checkout origin/main -- .claude/commands README.md custom/README.md
 
 # origin이 내 레포인 경우 (PDK를 upstream으로 추가)
 git remote add upstream http://git.hanuriit.co.kr/biz-planning/thebestpay-prototype-design-kit.git
 git fetch upstream
-git checkout upstream/main -- .claude/commands/pdk-update.md RELEASES.md config/pdk-version.json
+git checkout upstream/main -- .claude/commands README.md custom/README.md
 ```
 
-→ 이후부터는 **`/pdk-update`** 만 실행하면 나머지(엔진·템플릿·정책 마이그레이션)가 자동 반영됩니다.
+가져오는 것:
+- `.claude/commands/` — **PDK 커맨드 전체**(`/pdk-update`, `/pdk-custom`, `/pdk-init` 등 최신본)
+- `README.md` — 최신 가이드(이 문서)
+- `custom/README.md` — 공통 커스터마이징(patch) 규칙
 
-> 💡 **브랜치는 바뀌지 않습니다.** `git checkout <ref> -- <파일>` 처럼 `--` 뒤에 경로를 주면
-> "그 파일만 가져오기"라서, **현재 브랜치 그대로** 해당 파일만 갱신(스테이징)됩니다.
+> 엔진·템플릿·`docs/GUIDE.md`·`RELEASES.md`·버전 기록은 **다음 단계 `/pdk-update`가 자동으로** 가져옵니다.
+> (`config/pdk-version.json`은 일부러 받지 않습니다 — 없어야 `/pdk-update`가 "첫 적용"으로 보고 누적 변경을 모두 반영합니다.)
+
+**다음 단계 (필수):**
+1. 공통 파일을 직접 고친 적이 있으면 먼저 **`/pdk-custom`** — 내 수정을 `custom/patches/`로 보관
+2. **`/pdk-update`** — 엔진·템플릿 최신화 + (있다면) custom 패치 자동 재적용 + 변경점(릴리즈노트) 표시
+
+> 💡 **브랜치는 바뀌지 않습니다.** `git checkout <ref> -- <경로>` 처럼 `--` 뒤에 경로를 주면
+> "그 경로만 가져오기"라서, **현재 브랜치 그대로** 해당 파일만 갱신(스테이징)됩니다.
 > (`--` 없는 `git checkout <ref>` 는 브랜치 전환이니 혼동 주의.) `git fetch` 도 브랜치를 바꾸지 않습니다.
 > 사용자는 있던 브랜치에서 그대로 커밋하면 됩니다. `/pdk-update` 도 같은 경로 지정 방식이라 브랜치를 바꾸지 않습니다.
 
-> ⚠️ config 기반 구조(엔진이 `engine/` + `config/*.js`) **이전의 오래된 클론**이라면, 첫 업데이트는
+> ⚠️ `.claude/commands` 를 통째로 가져와도, 그 디렉토리에 있는 **프로젝트 전용 커맨드는 지워지지 않습니다**
+> (경로 지정 checkout은 upstream에 있는 파일만 갱신하고, 내 추가 파일은 그대로 둡니다).
+
+> ⚠️ config 기반 구조(엔진이 `engine/` + `config/*.js`) **이전의 오래된 클론**이라면, 첫 `/pdk-update`는
 > 단순 동기화가 아닌 **1회 마이그레이션**이 필요합니다 — 해당 변경을 `RELEASES.md`의 "마이그레이션"에
 > 명세한 뒤 `/pdk-update`로 적용하거나, 한 번은 수동으로 맞춰 주세요.
+
+> 📌 README는 평소 `/pdk-update`의 보존 대상(프로젝트별 수정 가능)이지만, **이 최초 설치 때는** 최신 가이드를
+> 받기 위해 함께 가져옵니다. README를 직접 수정한 프로젝트라면 이 줄만 빼고 실행하세요.
 
 #### (유지보수자) 공통 변경 배포 방법
 1. 이 원본 레포에서 `engine`/`templates`/`.claude/commands` 등 공통 부분을 수정·커밋·푸시
