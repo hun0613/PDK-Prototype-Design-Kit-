@@ -46,9 +46,10 @@
 | 커맨드 | 하는 일 |
 |---|---|
 | `/pdk-update` | PDK 원본(upstream)에서 **공통 부분(엔진·커맨드·템플릿·가이드)** 을 받아 반영. ① upstream 자동 등록 ② 코드·레이아웃 자동 동기화 ③ `RELEASES.md`의 구조/정책 변경 자동 마이그레이션 ④ **`custom/patches/` 내 공통 수정 자동 보존·재적용** ⑤ 완료 후 변경점(릴리즈노트) 요약 표시. 내 화면·설정 보존, 덮어쓰기 전 `.pdk-backup/` 백업 |
+| `/pdk-custom` | 공통(`engine/` 등)에 직접 가한 **내 수정을 `custom/patches/`로 추출·보관**. 주로 `/pdk-update`를 처음 돌리기 **전에** 기존 공통 수정을 먼저 빼둘 때 사용 |
 
-> **공통 파일을 직접 고쳐야 한다면** `custom/`을 쓰세요. 공통(`engine/` 등)에 가한 내 수정을
-> `custom/patches/*.patch`로 보관하면, `/pdk-update`가 업데이트 후 **자동 재적용**해 줍니다.
+> **공통 파일을 직접 고쳤다면**: 먼저 **`/pdk-custom`** 으로 내 수정을 `custom/patches/`에 빼두세요.
+> 그러면 `/pdk-update` 시 공통이 최신으로 갱신된 뒤 그 patch가 **자동 재적용**되어 내 수정이 보존됩니다.
 > (자세한 규칙: [`custom/README.md`](custom/README.md))
 
 > 비개발자는 **`/pdk-update` 한 번**만 실행하면 됩니다 — git 작업·구조 변경까지 알아서 처리됩니다.

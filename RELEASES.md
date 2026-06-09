@@ -15,6 +15,19 @@
 
 <!-- 새 릴리즈는 이 줄 아래에 추가 -->
 
+## v3 — /pdk-custom 커맨드 추가 (내 공통 수정 추출·보관) (2026-06-09)
+
+### 요약
+- 공통 파일을 직접 고쳤다면, `/pdk-update` 전에 **`/pdk-custom`** 으로 내 수정을 `custom/patches/`에 미리 빼둘 수 있습니다.
+- baseline(merge-base) 기준으로 "내 수정만" 정확히 추출 → 이후 `/pdk-update`가 자동 재적용.
+
+### 코드 변경(자동)
+- `.claude/commands/pdk-custom.md` 추가.
+- README: 유지보수 커맨드 표에 `/pdk-custom` 추가.
+
+### 마이그레이션(필요 시)
+- 없음(커맨드 추가). `/pdk-update`로 커맨드가 배포되면 바로 사용 가능.
+
 ## v2 — /pdk-update custom 패치 보존·재적용 (2026-06-09)
 
 ### 요약
