@@ -8,6 +8,9 @@ docs/.bkit-memory.json
 docs/.pdca-status.json
 docs/.pdca-snapshots/
 
+# /pdk-update 백업 (로컬)
+.pdk-backup/
+
 # OS
 .DS_Store
 Thumbs.db
