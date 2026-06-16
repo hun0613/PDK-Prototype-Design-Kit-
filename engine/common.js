@@ -24,6 +24,77 @@
   updateClock();
   setInterval(updateClock, 1000 * 30);
 
+  // ── 패널 이동(헤더 드래그) + width 리사이즈(좌측 테두리) ──
+  // 우측 도킹된 .page-flow / .page-detail 을 팝업처럼 자유 이동하고, 좌측 테두리로 폭 조절.
+  function makePanelMovableResizable(panel, header) {
+    if (!panel || !header) return;
+    const MIN_W = 220;
+
+    // right/bottom 앵커 → left/top 절대좌표로 1회 전환(이동·리사이즈 공통)
+    function detach() {
+      if (panel.dataset.pdkDetached) return;
+      const r = panel.getBoundingClientRect();
+      panel.style.left = r.left + 'px';
+      panel.style.top = r.top + 'px';
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
+      panel.style.maxHeight = 'none';   // 이동 후 잘림 방지
+      panel.style.height = r.height + 'px';
+      panel.dataset.pdkDetached = '1';
+    }
+
+    // 1) 헤더 드래그 → 패널 이동 (헤더의 버튼 클릭은 제외)
+    header.style.cursor = 'move';
+    header.addEventListener('pointerdown', function (e) {
+      if (e.button !== 0 || e.target.closest('button')) return;
+      e.preventDefault();
+      detach();
+      const r = panel.getBoundingClientRect();
+      const offX = e.clientX - r.left, offY = e.clientY - r.top;
+      try { header.setPointerCapture(e.pointerId); } catch (_) {}
+      function move(ev) {
+        let nl = ev.clientX - offX, nt = ev.clientY - offY;
+        nl = Math.max(0, Math.min(nl, window.innerWidth - 40));
+        nt = Math.max(0, Math.min(nt, window.innerHeight - 40));
+        panel.style.left = nl + 'px';
+        panel.style.top = nt + 'px';
+      }
+      function up() {
+        header.removeEventListener('pointermove', move);
+        header.removeEventListener('pointerup', up);
+      }
+      header.addEventListener('pointermove', move);
+      header.addEventListener('pointerup', up);
+    });
+
+    // 2) 좌측 테두리 그립 → width 조절 (오른쪽 모서리는 고정, 왼쪽으로 늘리고 줄임)
+    const grip = document.createElement('div');
+    grip.className = 'pdk-resize-grip';
+    panel.appendChild(grip);
+    grip.addEventListener('pointerdown', function (e) {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      detach();
+      const r = panel.getBoundingClientRect();
+      const right0 = r.right;                 // 오른쪽 모서리 고정
+      try { grip.setPointerCapture(e.pointerId); } catch (_) {}
+      function move(ev) {
+        let nl = Math.max(0, ev.clientX);
+        let w = right0 - nl;
+        if (w < MIN_W) { w = MIN_W; nl = right0 - MIN_W; }
+        panel.style.left = nl + 'px';
+        panel.style.width = w + 'px';
+      }
+      function up() {
+        grip.removeEventListener('pointermove', move);
+        grip.removeEventListener('pointerup', up);
+      }
+      grip.addEventListener('pointermove', move);
+      grip.addEventListener('pointerup', up);
+    });
+  }
+
   // ── 화면 이동 헬퍼 ──────────────────────
   window.go = function (href) {
     location.href = href;
@@ -216,6 +287,7 @@
     });
 
     document.body.appendChild(detail);
+    makePanelMovableResizable(detail, detail.querySelector('.page-detail-header'));
   }
 
   // ── 우하단 통합 dock (Description / 화면 플로우 표시 토글) ──
@@ -482,6 +554,9 @@
       </div>
     `;
     document.body.appendChild(aside);
+
+    // 패널 이동(헤더) + width 리사이즈(좌측 테두리)
+    makePanelMovableResizable(aside, aside.querySelector('.page-flow-header'));
 
     // 드래그(grab) 패닝 활성화
     enableFlowPan(aside.querySelector('.page-flow-body'));

@@ -1269,6 +1269,19 @@ html, body {
   border-color: #3182f6;
 }
 
+/* 패널 width 리사이즈 그립 (좌측 테두리) — .page-flow / .page-detail 공통 */
+.pdk-resize-grip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 7px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 6;
+  touch-action: none;
+}
+.pdk-resize-grip:hover { background: rgba(49, 130, 246, 0.18); }
+
 /* 하단 시스템 문의 푸터 (저작권 표기처럼 작게, 화면 하단 중앙 고정) */
 .pdk-sys-footer {
   position: fixed;

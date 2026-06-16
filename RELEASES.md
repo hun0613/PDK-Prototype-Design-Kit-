@@ -15,6 +15,19 @@
 
 <!-- 새 릴리즈는 이 줄 아래에 추가 -->
 
+## v7 — 플로우·Description 패널 이동·width 리사이즈 (2026-06-09)
+
+### 요약
+- 화면 플로우와 Description 패널을 **팝업처럼 자유롭게 이동**(헤더 드래그)할 수 있습니다.
+- 패널 **좌측 테두리를 드래그**해 width를 늘리고 줄일 수 있습니다(오른쪽 모서리 고정).
+
+### 코드 변경(자동)
+- `engine/common.js`: `makePanelMovableResizable()` 추가 → `.page-flow`·`.page-detail`에 적용.
+- `engine/common.css`: `.pdk-resize-grip`(좌측 리사이즈 그립) 추가, 헤더 `cursor: move`.
+
+### 마이그레이션(필요 시)
+- 없음.
+
 ## v6 — /pdk-update 공통수정 자동감지 정확도 개선 (2026-06-09)
 
 ### 요약
