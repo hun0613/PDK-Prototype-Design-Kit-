@@ -7,4 +7,5 @@ window.PDK_PROJECT = {
   description: '',
   device: 'desktop',
   responsive: false,
+  prdFile: '',              // docs/prd/ 안의 PRD HTML 파일명 (예: 'prd.html')
 };

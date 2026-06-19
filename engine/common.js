@@ -132,16 +132,6 @@
   function injectPageNav() {
     const current = currentKey();
     const found = findCurrentPage(current);
-    const headPage = found && found.page;
-
-    // 상단 헤더: 현재 화면 타이틀 / 코드 / Figma 링크
-    const headTitle = headPage ? headPage.label : '—';
-    const headId = headPage ? (headPage.id || '-') : '';
-    const isTbd = headPage && headPage.id === 'TBD';
-    const figmaLink = headPage && headPage.figmaLink;
-    const figmaBtn = figmaLink
-      ? `<a class="page-nav-figma" href="${escapeHtml(figmaLink)}" target="_blank" rel="noopener noreferrer">↗ Figma</a>`
-      : `<span class="page-nav-figma is-disabled" title="등록된 Figma 링크 없음">↗ Figma</span>`;
 
     // 본문: 카테고리 그룹 + 행 (원형 상태 뱃지)
     let groupsHtml = '';
@@ -172,13 +162,6 @@
     const nav = document.createElement('aside');
     nav.className = 'page-nav';
     nav.innerHTML = `
-      <div class="page-nav-head">
-        <div class="page-nav-head-info">
-          <div class="page-nav-head-title">${escapeHtml(headTitle)}</div>
-          <div class="page-nav-head-code${isTbd ? ' is-tbd' : ''}">${escapeHtml(headId)}</div>
-        </div>
-        ${figmaBtn}
-      </div>
       <div class="page-nav-scroll">
         <div class="page-nav-cols"><span>PAGE NAME</span><span>UI DESIGN</span></div>
         ${groupsHtml}
@@ -203,6 +186,79 @@
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  }
+
+  // ── 상단 바 (화면 정보 + 프로젝트명 + 토글 버튼) ────────
+  function injectTopBar() {
+    if (document.querySelector('.pdk-topbar')) return;
+    var current = currentKey();
+    var found = findCurrentPage(current);
+    var headPage = found && found.page;
+    var proj = window.PDK_PROJECT || {};
+
+    // 좌측: 현재 화면 정보
+    var headTitle = headPage ? headPage.label : '—';
+    var headId = headPage ? (headPage.id || '-') : '';
+    var isTbd = headPage && headPage.id === 'TBD';
+    var figmaLink = headPage && headPage.figmaLink;
+    var figmaBtn = figmaLink
+      ? '<a class="pdk-topbar-figma" href="' + escapeHtml(figmaLink) + '" target="_blank" rel="noopener noreferrer">↗ Figma</a>'
+      : '<span class="pdk-topbar-figma is-disabled" title="등록된 Figma 링크 없음">↗ Figma</span>';
+
+    // 우측: PRD 버튼 (prdFile이 있을 때만)
+    var prdBtn = '';
+    if (proj.prdFile) {
+      prdBtn = '<button class="pdk-topbar-btn pdk-topbar-prd" type="button" title="PRD 문서 보기">'
+        + '<img src="' + ENGINE_BASE + 'icons/topbar-prd.svg" width="24" height="24" alt="">'
+        + '<span>PRD 문서 보기↗</span>'
+        + '</button>';
+    }
+
+    var bar = document.createElement('div');
+    bar.className = 'pdk-topbar';
+    bar.innerHTML =
+      '<div class="pdk-topbar-left">'
+        + '<div class="pdk-topbar-left-info">'
+          + '<div class="pdk-topbar-page-title">' + escapeHtml(headTitle) + '</div>'
+          + '<div class="pdk-topbar-page-id' + (isTbd ? ' is-tbd' : '') + '">' + escapeHtml(headId) + '</div>'
+        + '</div>'
+        + figmaBtn
+      + '</div>'
+      + '<div class="pdk-topbar-center">'
+        + '<div class="pdk-topbar-project">'
+          + (proj.name ? '<div class="pdk-topbar-project-name">' + escapeHtml(proj.name) + '</div>' : '')
+          + (proj.description ? '<div class="pdk-topbar-project-desc">' + escapeHtml(proj.description) + '</div>' : '')
+        + '</div>'
+        + '<div class="pdk-topbar-tools">'
+          + '<button class="pdk-topbar-btn" type="button" data-topbar-toggle="detail" data-tooltip="DESCRIPTION">'
+            + '<img src="' + ENGINE_BASE + 'icons/topbar-desc.svg" width="24" height="24" alt="">'
+          + '</button>'
+          + '<button class="pdk-topbar-btn" type="button" data-topbar-toggle="flow" data-tooltip="FLOW DIAGRAM">'
+            + '<img src="' + ENGINE_BASE + 'icons/topbar-flow.svg" width="24" height="24" alt="">'
+          + '</button>'
+          + prdBtn
+        + '</div>'
+      + '</div>';
+
+    document.body.appendChild(bar);
+
+    // 토글 버튼 이벤트
+    bar.querySelectorAll('[data-topbar-toggle]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var key = btn.dataset.topbarToggle;
+        var sel = key === 'detail' ? '.page-detail' : '.page-flow';
+        var panel = document.querySelector(sel);
+        if (panel) panel.classList.toggle('is-hidden');
+      });
+    });
+
+    // PRD 버튼 이벤트
+    var prdEl = bar.querySelector('.pdk-topbar-prd');
+    if (prdEl && proj.prdFile) {
+      prdEl.addEventListener('click', function () {
+        window.open(ENGINE_BASE + '../docs/prd/' + proj.prdFile, '_blank');
+      });
+    }
   }
 
   function injectPageDetail() {
@@ -291,35 +347,6 @@
   }
 
   // ── 우하단 통합 dock (Description / 화면 플로우 표시 토글) ──
-  function injectDock() {
-    // Figma 실측 아이콘(Material Symbols) — 경로 그대로, 색만 currentColor로 테마 연동
-    // DESCRIPTION = text_ad (문서/카드)
-    const ICON_DESC = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M5 17H19V15H5V17ZM5 13H19V11H5V13ZM5 9H15V7H5V9ZM4 20C3.45 20 2.97917 19.8042 2.5875 19.4125C2.19583 19.0208 2 18.55 2 18V6C2 5.45 2.19583 4.97917 2.5875 4.5875C2.97917 4.19583 3.45 4 4 4H20C20.55 4 21.0208 4.19583 21.4125 4.5875C21.8042 4.97917 22 5.45 22 6V18C22 18.55 21.8042 19.0208 21.4125 19.4125C21.0208 19.8042 20.55 20 20 20H4ZM4 18H20V6H4V18Z"/></svg>';
-    // FLOW DIAGRAM = automation (두 노드 + S곡선)
-    const ICON_FLOW = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M7.4 17.25C6.7 17.8333 5.97083 18.1 5.2125 18.05C4.45417 18 3.79167 17.7417 3.225 17.275C2.65833 16.8083 2.27083 16.1958 2.0625 15.4375C1.85417 14.6792 1.99167 13.9 2.475 13.1L4.35 10C3.93333 9.63333 3.60417 9.19167 3.3625 8.675C3.12083 8.15833 3 7.6 3 7C3 5.9 3.39167 4.95833 4.175 4.175C4.95833 3.39167 5.9 3 7 3C8.1 3 9.04167 3.39167 9.825 4.175C10.6083 4.95833 11 5.9 11 7C11 8.1 10.6083 9.04167 9.825 9.825C9.04167 10.6083 8.1 11 7 11C6.85 11 6.7 10.9917 6.55 10.975C6.4 10.9583 6.25833 10.9333 6.125 10.9L4.2 14.15C4.01667 14.45 3.95833 14.7458 4.025 15.0375C4.09167 15.3292 4.23333 15.5667 4.45 15.75C4.66667 15.9333 4.925 16.0375 5.225 16.0625C5.525 16.0875 5.81667 15.9833 6.1 15.75L16.6 6.725C17.3 6.14167 18.0333 5.87917 18.8 5.9375C19.5667 5.99583 20.2333 6.25833 20.8 6.725C21.3667 7.19167 21.75 7.80417 21.95 8.5625C22.15 9.32083 22.0083 10.1 21.525 10.9L19.65 14C20.0667 14.3667 20.3958 14.8083 20.6375 15.325C20.8792 15.8417 21 16.4 21 17C21 18.1 20.6083 19.0417 19.825 19.825C19.0417 20.6083 18.1 21 17 21C15.9 21 14.9583 20.6083 14.175 19.825C13.3917 19.0417 13 18.1 13 17C13 15.9 13.3917 14.9583 14.175 14.175C14.9583 13.3917 15.9 13 17 13C17.15 13 17.2958 13.0083 17.4375 13.025C17.5792 13.0417 17.7167 13.0667 17.85 13.1L19.8 9.85C19.9833 9.55 20.0417 9.25417 19.975 8.9625C19.9083 8.67083 19.7667 8.43333 19.55 8.25C19.3333 8.06667 19.075 7.9625 18.775 7.9375C18.475 7.9125 18.1833 8.01667 17.9 8.25L7.4 17.25ZM8.4125 8.4125C8.80417 8.02083 9 7.55 9 7C9 6.45 8.80417 5.97917 8.4125 5.5875C8.02083 5.19583 7.55 5 7 5C6.45 5 5.97917 5.19583 5.5875 5.5875C5.19583 5.97917 5 6.45 5 7C5 7.55 5.19583 8.02083 5.5875 8.4125C5.97917 8.80417 6.45 9 7 9C7.55 9 8.02083 8.80417 8.4125 8.4125ZM18.4125 18.4125C18.8042 18.0208 19 17.55 19 17C19 16.45 18.8042 15.9792 18.4125 15.5875C18.0208 15.1958 17.55 15 17 15C16.45 15 15.9792 15.1958 15.5875 15.5875C15.1958 15.9792 15 16.45 15 17C15 17.55 15.1958 18.0208 15.5875 18.4125C15.9792 18.8042 16.45 19 17 19C17.55 19 18.0208 18.8042 18.4125 18.4125Z"/></svg>';
-    const items = [
-      { key: 'flow', sel: '.page-flow', label: 'FLOW DIAGRAM', icon: ICON_FLOW },
-      { key: 'detail', sel: '.page-detail', label: 'DESCRIPTION', icon: ICON_DESC },
-    ];
-    const dock = document.createElement('div');
-    dock.className = 'pdk-dock';
-    items.forEach(it => {
-      const panel = document.querySelector(it.sel);
-      if (!panel) return;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'pdk-dock-btn';
-      btn.dataset.dock = it.key;
-      btn.dataset.label = it.label;
-      btn.setAttribute('aria-label', it.label + ' 토글');
-      btn.innerHTML = it.icon;
-      btn.addEventListener('click', () => {
-        panel.classList.toggle('is-hidden');
-      });
-      dock.appendChild(btn);
-    });
-    document.body.appendChild(dock);
-  }
 
   // ── 좌측 하단 화면 플로우 다이어그램 (Mermaid) ──────────
   // 각 화면 파일 → 다이어그램 노드 ID
@@ -445,6 +472,17 @@
     return lines.join('\n');
   }
 
+  // 패널 플로우 줌 상태
+  var panelFlowNatW = 0, panelFlowNatH = 0, panelFlowZoom = 1;
+
+  function applyPanelFlowZoom(recenter) {
+    var svg = document.querySelector('.page-flow .mermaid svg');
+    if (!svg || !panelFlowNatW) return;
+    svg.style.width = Math.round(panelFlowNatW * panelFlowZoom) + 'px';
+    svg.style.height = Math.round(panelFlowNatH * panelFlowZoom) + 'px';
+    if (recenter) requestAnimationFrame(function () { requestAnimationFrame(centerCurrentFlowNode); });
+  }
+
   async function renderFlowMermaid() {
     if (!window.mermaid) return;
     try {
@@ -462,6 +500,8 @@
         svg.style.maxWidth = 'none';
         const vb = (svg.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
         if (vb.length === 4 && vb[2] && vb[3]) {
+          panelFlowNatW = vb[2];
+          panelFlowNatH = vb[3];
           svg.setAttribute('width', vb[2]);
           svg.setAttribute('height', vb[3]);
           svg.style.width = vb[2] + 'px';
@@ -552,6 +592,11 @@
         <div class="page-flow-loading">화면 플로우를 불러오는 중…</div>
         <pre class="mermaid">${buildFlowGraph()}</pre>
       </div>
+      <div class="page-flow-zoom-ctrl">
+        <button class="page-flow-zoom-btn" type="button" data-panel-zoom="in" aria-label="확대" title="확대">＋</button>
+        <div class="page-flow-zoom-divider"></div>
+        <button class="page-flow-zoom-btn" type="button" data-panel-zoom="out" aria-label="축소" title="축소">−</button>
+      </div>
     `;
     document.body.appendChild(aside);
 
@@ -564,6 +609,16 @@
     // 현재 위치(현재 화면 노드 중앙으로 이동)
     aside.querySelector('.page-flow-locate').addEventListener('click', () => {
       centerCurrentFlowNode(true);
+    });
+
+    // 패널 확대/축소 버튼
+    aside.querySelectorAll('[data-panel-zoom]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        var m = btn.dataset.panelZoom;
+        if (m === 'in') panelFlowZoom = Math.min(panelFlowZoom * 1.2, 4);
+        else if (m === 'out') panelFlowZoom = Math.max(panelFlowZoom / 1.2, 0.3);
+        applyPanelFlowZoom(false);
+      });
     });
 
     // 최소화 → 패널 완전 숨김 (우하단 dock 버튼으로 재열기)
@@ -751,10 +806,10 @@
 
   function init() {
     applyDevice();
+    injectTopBar();
     injectPageNav();
     injectPageDetail();
     injectFlowDiagram();
-    injectDock();
     injectFooter();
   }
 

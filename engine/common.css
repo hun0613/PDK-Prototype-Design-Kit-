@@ -504,53 +504,51 @@ html, body {
 .skeleton-circle.sm { width: 32px; height: 32px; }
 .skeleton-circle.lg { width: 72px; height: 72px; }
 
-/* ─── 좌측 페이지 목록 레일 (풀하이트) — Figma 시안 기반 ─── */
-.page-nav {
+/* ─── 상단 바 (화면 정보 + 프로젝트명 + 토글/PRD 버튼) ─── */
+.pdk-topbar {
   position: fixed;
-  left: 0;
   top: 0;
-  bottom: 0;
-  width: 280px;
+  left: 0;
+  right: 0;
+  z-index: 150;
   display: flex;
-  flex-direction: column;
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
-  z-index: 100;
   font-family: "Pretendard", -apple-system, sans-serif;
-  user-select: none;
 }
 
-/* 상단: 현재 화면 헤더 (타이틀 + 코드 + Figma 링크) */
-.page-nav-head {
+/* 좌측: 현재 화면 정보 (Nav 위에 고정) */
+.pdk-topbar-left {
   flex-shrink: 0;
+  width: 280px;
   display: flex;
   align-items: flex-start;
   gap: 8px;
   padding: 24px 16px;
+  background: #ffffff;
   border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
 }
-.page-nav-head-info {
+.pdk-topbar-left-info {
   flex: 1 0 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.page-nav-head-title {
+.pdk-topbar-page-title {
   font-size: 18px;
   font-weight: 600;
   color: #374151;
   letter-spacing: -0.2px;
   word-break: keep-all;
 }
-.page-nav-head-code {
+.pdk-topbar-page-id {
   font-size: 14px;
   font-weight: 400;
   color: #9ca3af;
   letter-spacing: 0.2px;
 }
-.page-nav-head-code.is-tbd { font-style: italic; }
-.page-nav-figma {
+.pdk-topbar-page-id.is-tbd { font-style: italic; }
+.pdk-topbar-figma {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -566,11 +564,110 @@ html, body {
   white-space: nowrap;
   transition: background 0.15s ease;
 }
-.page-nav-figma:hover { background: #1f2937; }
-.page-nav-figma.is-disabled {
+.pdk-topbar-figma:hover { background: #1f2937; }
+.pdk-topbar-figma.is-disabled {
   background: #e5e7eb;
   color: #9ca3af;
   pointer-events: none;
+}
+
+/* 중앙~우측: 프로젝트명 + 도구 버튼 */
+.pdk-topbar-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px 24px;
+}
+.pdk-topbar-project {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.pdk-topbar-project-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+}
+.pdk-topbar-project-desc {
+  font-size: 16px;
+  font-weight: 400;
+  color: #666666;
+  line-height: 1.5;
+}
+
+/* 도구 버튼 공통 */
+.pdk-topbar-tools {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pdk-topbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: inherit;
+}
+.pdk-topbar-btn:hover { background: #f3f4f6; }
+.pdk-topbar-btn img { width: 24px; height: 24px; display: block; }
+
+/* 시안 스타일 hover 툴팁 (버튼 아래 다크 말풍선) */
+.pdk-topbar-btn {
+  position: relative;
+}
+.pdk-topbar-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: #374151;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+  border-radius: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.pdk-topbar-btn:hover::after { opacity: 0.8; }
+/* PRD 버튼은 텍스트가 있으므로 툴팁 불필요 */
+.pdk-topbar-prd::after { display: none; }
+.pdk-topbar-prd span {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+/* ─── 좌측 페이지 목록 레일 — Figma 시안 기반 ─── */
+.page-nav {
+  position: fixed;
+  left: 0;
+  top: 95px;                     /* 상단 바 높이만큼 아래로 */
+  bottom: 0;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  z-index: 100;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  user-select: none;
 }
 
 /* 스크롤 본문 */
@@ -649,8 +746,8 @@ html, body {
 .page-flow {
   position: fixed;
   right: 16px;
-  bottom: 76px;                /* 우하단 dock 버튼 위로 띄움 */
-  width: 280px;
+  bottom: 16px;
+  width: 420px;
   height: 46vh;                /* 높이 고정 → 로딩↔렌더 시 레이아웃 시프트 방지 */
   overflow: hidden;            /* 패널은 클리핑만, 스크롤은 본문이 담당(헤더 고정) */
   display: flex;
@@ -725,6 +822,45 @@ html, body {
 .page-flow-toggle img,
 .page-flow-expand img { width: 32px; height: 32px; display: block; }
 .page-flow-locate img { width: 16px; height: 16px; display: block; }
+
+/* 패널 확대/축소 — 패널 우측 하단 플로팅 고정 (시안: 40×75 카드) */
+.page-flow-zoom-ctrl {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 40px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.page-flow-zoom-btn {
+  width: 100%;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.page-flow-zoom-btn:hover { background: #f3f4f6; }
+.page-flow-zoom-divider {
+  width: 100%;
+  height: 1px;
+  background: #e5e7eb;
+}
 
 /* 헤더 우측 도구 묶음 */
 .page-flow-header-tools { display: flex; align-items: center; gap: 2px; }
@@ -810,58 +946,13 @@ html, body {
   line-height: 1.7;
 }
 
-/* ─── 우하단 통합 토글바 (Description / Flow 재열기) — Figma 시안 ─── */
-.pdk-dock {
-  position: fixed;
-  right: 16px;
-  bottom: 16px;
-  z-index: 101;
-  display: flex;
-  gap: 8px;
-}
-.pdk-dock-btn {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: background 0.15s ease, color 0.15s ease;
-}
-.pdk-dock-btn:hover { background: #ebedf1; color: #6b7280; }
-.pdk-dock-btn svg { display: block; }
-/* hover 라벨 (버튼 위에 표시) */
-.pdk-dock-btn::after {
-  content: attr(data-label);
-  position: absolute;
-  bottom: calc(100% + 8px);
-  right: 0;
-  padding: 8px 12px;
-  background: #374151;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1;
-  border-radius: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-}
-.pdk-dock-btn:hover::after { opacity: 0.8; }
 
 /* ─── 우상단 Description 패널 (번호 리스트) — Figma 시안 ─── */
 .page-detail {
   position: fixed;
   right: 16px;
-  top: 16px;
-  width: 280px;
+  top: 84px;                     /* 상단 바 아래로 */
+  width: 420px;
   max-height: 42vh;
   display: flex;
   flex-direction: column;
