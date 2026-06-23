@@ -15,6 +15,50 @@
 
 <!-- 새 릴리즈는 이 줄 아래에 추가 -->
 
+## v9 — /pdk-flow 기능 플로우 커맨드 + 엔진 플로우 Dock (2026-06-23)
+
+### 요약
+- **`/pdk-flow` 커맨드 신규** — 기능(feature) 단위 사용자 여정을 정의하고 소속 화면을 묶는 상위 플로우를 등록합니다.
+- **플로우 Dock** — 좌측 페이지 목록 패널 상단에 `[전체] [도착 인증] [1회권 구매]` 같은 칩 버튼이 표시됩니다.
+- **다이어그램 필터링** — 플로우 칩을 클릭하면 해당 플로우의 소속 화면만 다이어그램에 표시됩니다. 플로우 외부 연결은 ghost 노드(점선)로 컨텍스트를 유지합니다. "전체"를 클릭하면 기존처럼 모든 화면이 표시됩니다.
+- **패널 타이틀 갱신** — 플로우 선택 시 FLOW DIAGRAM 타이틀이 `FLOW — <플로우명>`으로 변경됩니다.
+- **모달(크게보기)** 도 선택된 플로우 필터를 반영합니다.
+- **`config/flows.js`** 신규 설정 파일 — `window.PDK_FLOWS` 배열로 플로우 데이터를 관리합니다.
+
+### 코드 변경(자동)
+- `engine/common.js`: `PDK_FLOWS` 읽기, `activeFlowId` 상태 관리, 플로우 Dock UI 렌더(`injectPageNav` 확장), `buildFlowGraph(filterFlowId)` 필터링 지원, `rerenderFlowDiagram()` 동적 재렌더, 패널 타이틀 갱신, 모달 재렌더 플래그 관리.
+- `engine/common.css`: `.flow-dock`, `.flow-dock-label`, `.flow-dock-chips`, `.flow-dock-chip` 스타일 추가.
+- `.claude/commands/pdk-flow.md`: 신규 커맨드.
+- `.claude/commands/pdk-init.md`: `config/flows.js` 보장 단계(4-b) + 로더에 `flows.js` 추가.
+- `.claude/commands/pdk-update.md`: 보존 대상에 `config/flows.js` 추가.
+- `templates/*.html` (4개): 로더에 `config/flows.js` 추가.
+- `README.md`: 커맨드 6종으로 갱신, 폴더 구조에 `flows.js` 추가.
+
+### 마이그레이션(필요 시)
+- `index.html` 및 각 화면 HTML의 스크립트 로더 `files` 배열에 `'config/flows.js'`를 `'config/screens.js'` 뒤에 추가한다.
+  ```js
+  var files = ['config/devices.js', 'config/project.js', 'config/screens.js', 'config/flows.js', 'engine/common.js'];
+  ```
+- `config/flows.js`가 없으면 빈 상태로 생성한다:
+  ```js
+  window.PDK_FLOWS = [];
+  ```
+
+## v8 — 상단 바 + 플로우 줌 + PRD 바로가기 (2026-06-09)
+
+### 요약
+- **상단 바** 추가 — 좌측에 현재 화면 정보(이름·ID·Figma 링크), 중앙에 프로젝트명·설명, 우측에 Description/Flow 토글 + PRD 바로가기 버튼.
+- **플로우 패널 줌** — 패널 우측 하단에 `＋`/`−` 버튼으로 다이어그램 확대/축소.
+- **PRD 바로가기** — `config/project.js`에 `prdFile`이 설정되면 상단 바에 PRD 문서 보기 버튼 표시.
+
+### 코드 변경(자동)
+- `engine/common.js`: `injectTopBar()`, `applyPanelFlowZoom()`, PRD 버튼 로직 추가.
+- `engine/common.css`: `.pdk-topbar-*`, `.page-flow-zoom-*` 스타일 추가.
+- `engine/icons/`: 상단 바·줌 관련 SVG 아이콘 추가.
+
+### 마이그레이션(필요 시)
+- 없음.
+
 ## v7 — 플로우·Description 패널 이동·width 리사이즈 (2026-06-09)
 
 ### 요약

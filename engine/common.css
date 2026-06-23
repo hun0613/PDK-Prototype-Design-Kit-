@@ -670,6 +670,49 @@ html, body {
   user-select: none;
 }
 
+/* ── 플로우 Dock (FLOW 필터 칩) ── */
+.flow-dock {
+  flex-shrink: 0;
+  padding: 12px 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+.flow-dock-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+  letter-spacing: 0.3px;
+  margin-bottom: 8px;
+}
+.flow-dock-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 12px;
+}
+.flow-dock-chip {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 15px;
+  background: #ffffff;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.flow-dock-chip:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+.flow-dock-chip.is-active {
+  background: #3182f6;
+  color: #ffffff;
+  border-color: #3182f6;
+}
+
 /* 스크롤 본문 */
 .page-nav-scroll {
   flex: 1;

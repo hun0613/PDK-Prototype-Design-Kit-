@@ -28,7 +28,7 @@ RELEASES.md             # 릴리즈노트(읽기 + 사용자 사본 갱신)
 
 ## 보존 대상 (절대 안 건드림)
 ```
-config/project.js, config/screens.js, config/devices.js   # 내 설정·디바이스
+config/project.js, config/screens.js, config/devices.js, config/flows.js   # 내 설정·디바이스·플로우
 config/pdk-version.json                                    # 내 버전 기록(이 커맨드가 갱신)
 index.html, *.html, assets/mockups/, README.md            # 내 화면·자산·프로젝트 README
 custom/                                                    # 공통 파일에 가한 내 수정(patch) 보관소 → 동기화 후 재적용

@@ -1,6 +1,6 @@
 # PDK — Prototype Design Kit
 
-비개발자(기획자)가 **클론 → Claude 실행 → 슬래시 커맨드 5개**만으로
+비개발자(기획자)가 **클론 → Claude 실행 → 슬래시 커맨드 6개**만으로
 화면설계서(페이지 목록 + 유저플로우 + Description + 스켈레톤 + 피그마 디자인)를 만드는 **무빌드 정적 템플릿**.
 
 - 빌드/서버 불필요 — HTML 파일을 브라우저로 열면 바로 동작
@@ -19,6 +19,7 @@
 /pdk-init                                  # 프로젝트 이름·설명·디바이스 선택 → 빈 골격 생성
 /pdk-mockup [디바이스명] [소스]            # (선택) 커스텀 디바이스 목업 추가
 /pdk-screen [카테고리] [화면ID] [화면이름] # 화면을 유저플로우 순서대로 등록 (반복)
+/pdk-flow [플로우ID] [플로우이름]          # 기능(feature) 단위 플로우 등록 → 다이어그램 필터링
 /pdk-wireframe [화면ID]                    # 화면별 스켈레톤 UI + 설명 자동 작성
 /pdk-figma-sync [화면ID] [figma url]       # 스켈레톤에 Figma 디자인 입히기
 ```
@@ -29,13 +30,14 @@
 
 ---
 
-## 커맨드 5종
+## 커맨드 6종
 
 | 커맨드 | 하는 일 |
 |---|---|
 | `/pdk-init` | 이름·설명·디바이스(데스크탑/모바일/토스프론트2/반응형)를 받아 `config/project.js`와 `index.html` 빈 골격 생성 |
 | `/pdk-mockup` | 이미지 폴더 또는 Figma URL을 참고해 커스텀 디바이스 목업(프레임+캔버스 규격)을 등록 |
 | `/pdk-screen` | 카테고리·ID·이름 + 진입/이동(분기) 질문 → 화면 HTML 생성, 목록·플로우·Description 자동 갱신 |
+| `/pdk-flow` | 기능(feature) 단위 사용자 여정을 정의하고 소속 화면을 묶어 플로우 다이어그램 필터링 지원 |
 | `/pdk-wireframe` | 대화형으로 스켈레톤 UI 구성 + Description 자동 작성(디자인 제외, 기능·흐름만) |
 | `/pdk-figma-sync` | Figma 시안을 가져와 스켈레톤에 디자인 적용 (`designed: true`) |
 
@@ -128,11 +130,12 @@ config/                사용자가 채우는 단일 소스 (커맨드가 자동
   project.js           프로젝트명·설명·선택 디바이스
   devices.js           디바이스 레지스트리(내장 4종 + 커스텀)
   screens.js           화면 메타·Description·플로우 연결
+  flows.js             기능 플로우 정의(화면 상위 그룹 · 다이어그램 필터링)
 engine/                엔진(직접 수정 불필요)
-  common.css           디바이스 목업 + 사이드바 + 스켈레톤 스타일
-  common.js            페이지목록·플로우·Description 자동 렌더
+  common.css           디바이스 목업 + 사이드바 + 플로우 Dock + 스켈레톤 스타일
+  common.js            페이지목록·플로우·Description·플로우 Dock 자동 렌더
 templates/             화면/인덱스 골격 템플릿
-.claude/commands/      슬래시 커맨드 5종
+.claude/commands/      슬래시 커맨드 6종
 assets/                범용 아이콘 + 커스텀 목업 프레임(assets/mockups/)
 index.html             진입 화면 (초기엔 빈 골격, /pdk-init 이 생성·갱신)
 docs/                  GUIDE, 설계·계획 문서
@@ -153,6 +156,7 @@ docs/                  GUIDE, 설계·계획 문서
 
 ```
 /pdk-screen   →  화면 등록 (이름·ID만, 플로우/목록 자동)      designed: false
+/pdk-flow     →  기능 플로우 등록 (화면 그룹 → 다이어그램 필터)
 /pdk-wireframe →  스켈레톤 UI + 기능 Description (디자인 제외)  designed: false
 /pdk-figma-sync → Figma 디자인 적용                            designed: true
 ```

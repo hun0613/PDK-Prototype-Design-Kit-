@@ -105,6 +105,10 @@
   // description: [{ text, target }] 형식. target은 hover 시 강조할 UI의 CSS 선택자.
   //              빈 배열([])이면 empty state UI 표시.
   const CATEGORIES = Array.isArray(window.PDK_SCREENS) ? window.PDK_SCREENS : [];
+  const FLOWS = Array.isArray(window.PDK_FLOWS) ? window.PDK_FLOWS : [];
+
+  // 현재 선택된 플로우 ID (null = 전체 보기)
+  var activeFlowId = null;
 
   // 현재 페이지 파일명 + 쿼리스트링 (모달 상태 구분용: file.html?modal=1)
   // window.PDK_CURRENT 가 지정되면 해당 화면 href로 강제 (샘플/프리뷰 페이지가
@@ -159,21 +163,51 @@
       groupsHtml = `<div class="nav-empty-row">아직 화면이 없습니다.<br><code>/pdk-screen</code> 으로 추가하세요.</div>`;
     }
 
+    // 플로우 Dock (PDK_FLOWS가 있을 때만 표시)
+    let flowDockHtml = '';
+    if (FLOWS.length > 0) {
+      const chips = FLOWS.map(f =>
+        `<button class="flow-dock-chip" data-flow-id="${escapeHtml(f.id)}" title="${escapeHtml(f.description || '')}">${escapeHtml(f.label)}</button>`
+      ).join('');
+      flowDockHtml = `
+        <div class="flow-dock">
+          <div class="flow-dock-label">FLOW</div>
+          <div class="flow-dock-chips">
+            <button class="flow-dock-chip is-active" data-flow-id="">전체</button>
+            ${chips}
+          </div>
+        </div>`;
+    }
+
     const nav = document.createElement('aside');
     nav.className = 'page-nav';
     nav.innerHTML = `
+      ${flowDockHtml}
       <div class="page-nav-scroll">
         <div class="page-nav-cols"><span>PAGE NAME</span><span>UI DESIGN</span></div>
         ${groupsHtml}
       </div>
     `;
 
-    // 행 클릭 → 페이지 이동
+    // 행 클릭 → 페이지 이동 + 플로우 필터 해제(전체로 복귀)
     nav.addEventListener('click', (e) => {
       const row = e.target.closest('.nav-row');
       if (row && row.dataset.href) {
         location.href = row.dataset.href;
       }
+    });
+
+    // 플로우 Dock 칩 클릭 → 다이어그램 필터링
+    nav.querySelectorAll('.flow-dock-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const flowId = chip.dataset.flowId || null;
+        activeFlowId = flowId;
+        // 활성 칩 갱신
+        nav.querySelectorAll('.flow-dock-chip').forEach(c => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        // 플로우 다이어그램 재렌더
+        rerenderFlowDiagram();
+      });
     });
 
     document.body.appendChild(nav);
@@ -380,8 +414,17 @@
     return found && found.page && found.page.id ? sid(found.page.id) : null;
   }
 
-  function buildFlowGraph() {
-    const pages = flatPages();
+  function buildFlowGraph(filterFlowId) {
+    const allPages = flatPages();
+    // 플로우 필터: filterFlowId가 있으면 해당 플로우의 소속 화면만 표시
+    var pages;
+    if (filterFlowId) {
+      const flow = FLOWS.find(f => f.id === filterFlowId);
+      const screenSet = flow ? new Set(flow.screens || []) : new Set();
+      pages = allPages.filter(p => screenSet.has(p.id));
+    } else {
+      pages = allPages;
+    }
     const idSet = new Set(pages.map(p => p.id));
     const targetSet = new Set();
     pages.forEach(p => ((p.flow && p.flow.to) || []).forEach(t => targetSet.add(t.screen)));
@@ -572,6 +615,61 @@
     }, true);
   }
 
+  // 플로우 다이어그램 재렌더 (Dock 칩 전환 시 호출)
+  async function rerenderFlowDiagram() {
+    if (!window.mermaid) return;
+    var body = document.querySelector('.page-flow-body');
+    var panel = document.querySelector('.page-flow');
+    if (!body || !panel) return;
+
+    // 기존 Mermaid SVG를 새 그래프 텍스트로 교체
+    var graphText = buildFlowGraph(activeFlowId);
+    // mermaid.render()로 새 SVG를 받아 교체 (id는 유니크해야 함)
+    var renderId = 'pdk-flow-' + Date.now();
+    try {
+      var result = await window.mermaid.render(renderId, graphText);
+      body.innerHTML = '<div class="mermaid">' + result.svg + '</div>';
+      // 패널 타이틀 갱신 (플로우명 표시)
+      var titleEl = document.querySelector('.page-flow-title');
+      if (titleEl) {
+        var activeFlow = activeFlowId && FLOWS.find(function (f) { return f.id === activeFlowId; });
+        titleEl.textContent = activeFlow ? 'FLOW — ' + activeFlow.label : 'FLOW DIAGRAM';
+      }
+      var svg = body.querySelector('svg');
+      if (svg) {
+        svg.style.maxWidth = 'none';
+        var vb = (svg.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+        if (vb.length === 4 && vb[2] && vb[3]) {
+          panelFlowNatW = vb[2];
+          panelFlowNatH = vb[3];
+          svg.setAttribute('width', vb[2]);
+          svg.setAttribute('height', vb[3]);
+          svg.style.width = Math.round(vb[2] * panelFlowZoom) + 'px';
+          svg.style.height = Math.round(vb[3] * panelFlowZoom) + 'px';
+        }
+      }
+      // 노드 클릭 바인딩 재연결
+      window.__PDK_NODE_HREF = buildNodeHrefMap();
+      body.querySelectorAll('.node').forEach(function (node) {
+        node.style.cursor = 'pointer';
+        node.addEventListener('click', function () {
+          var nid = node.id.replace(/^flowchart-/, '').replace(/-\d+$/, '');
+          window.__flowGo(nid);
+        });
+      });
+      // 현재 노드 중앙으로
+      requestAnimationFrame(function () { requestAnimationFrame(centerCurrentFlowNode); });
+    } catch (e) { /* noop */ }
+
+    // 모달도 다음 열기 시 재렌더되도록 플래그 리셋
+    var modalPre = document.querySelector('.mermaid-modal');
+    if (modalPre) {
+      modalPre.removeAttribute('data-processed');
+      modalPre.textContent = graphText;
+    }
+    window.__pdkModalRendered = false;
+  }
+
   function injectFlowDiagram() {
     const aside = document.createElement('aside');
     aside.className = 'page-flow is-loading';
@@ -590,7 +688,7 @@
       </div>
       <div class="page-flow-body">
         <div class="page-flow-loading">화면 플로우를 불러오는 중…</div>
-        <pre class="mermaid">${buildFlowGraph()}</pre>
+        <pre class="mermaid">${buildFlowGraph(activeFlowId)}</pre>
       </div>
       <div class="page-flow-zoom-ctrl">
         <button class="page-flow-zoom-btn" type="button" data-panel-zoom="in" aria-label="확대" title="확대">＋</button>
@@ -643,7 +741,7 @@
             <button type="button" class="page-flow-modal-close" aria-label="닫기">✕</button>
           </div>
         </div>
-        <div class="page-flow-modal-body"><pre class="mermaid mermaid-modal">${buildFlowGraph()}</pre><div class="page-flow-modal-loading">화면 플로우를 불러오는 중…</div></div>
+        <div class="page-flow-modal-body"><pre class="mermaid mermaid-modal">${buildFlowGraph(activeFlowId)}</pre><div class="page-flow-modal-loading">화면 플로우를 불러오는 중…</div></div>
       </div>
     `;
     document.body.appendChild(modal);
@@ -652,7 +750,9 @@
     const zoomLabel = modal.querySelector('.page-flow-modal-zoom');
     enableFlowPan(modalBody);
 
-    let modalNatW = 0, modalNatH = 0, modalZoom = 1, modalRendered = false;
+    let modalNatW = 0, modalNatH = 0, modalZoom = 1;
+    // 모달 렌더 플래그 — window에 노출해 rerenderFlowDiagram()에서 리셋 가능
+    window.__pdkModalRendered = false;
 
     function applyModalZoom(recenter) {
       const svg = modalBody.querySelector('svg');
@@ -671,8 +771,8 @@
       applyModalZoom(true);
     }
     async function ensureModalRendered() {
-      if (modalRendered || !window.mermaid) return;
-      modalRendered = true;
+      if (window.__pdkModalRendered || !window.mermaid) return;
+      window.__pdkModalRendered = true;
       try {
         window.mermaid.initialize({
           startOnLoad: false, securityLevel: 'loose', theme: 'neutral',
@@ -690,6 +790,11 @@
     async function openFlowModal() {
       modal.classList.add('is-open');
       modal.setAttribute('aria-hidden', 'false');
+      // 플로우 필터 변경 시 모달 그래프도 갱신
+      var modalPre = modal.querySelector('.mermaid-modal');
+      if (!window.__pdkModalRendered && modalPre) {
+        modalPre.textContent = buildFlowGraph(activeFlowId);
+      }
       await ensureModalRendered();
       fitModalZoom();
     }

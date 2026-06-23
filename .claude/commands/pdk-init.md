@@ -53,6 +53,14 @@ window.PDK_PROJECT = {
 window.PDK_SCREENS = [];
 ```
 
+### 4-b) `config/flows.js` 보장
+- 파일이 **없으면** 빈 상태로 생성한다. 이미 있으면 **유지**(기존 플로우 보존).
+
+```js
+// 기능 플로우는 /pdk-flow 로 추가됩니다.
+window.PDK_FLOWS = [];
+```
+
 ### 5) 엔진 확인
 - `engine/common.css`, `engine/common.js`가 있는지 `Glob`으로 확인한다. 없으면 사용자에게 "엔진 파일이 없습니다 — PDK 템플릿이 맞는지 확인하세요"라고 경고한다(생성하지 말 것).
 
@@ -84,7 +92,7 @@ window.PDK_SCREENS = [];
   <script>
     (function () {
       var v = Date.now();
-      var files = ['config/devices.js', 'config/project.js', 'config/screens.js', 'engine/common.js'];
+      var files = ['config/devices.js', 'config/project.js', 'config/screens.js', 'config/flows.js', 'engine/common.js'];
       for (var i = 0; i < files.length; i++) document.write('<scr' + 'ipt src="' + files[i] + '?_=' + v + '"></scr' + 'ipt>');
     })();
   </script>
