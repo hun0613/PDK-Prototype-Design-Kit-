@@ -12,6 +12,21 @@
     return 'engine/';
   })();
 
+  // ── 프로젝트 루트 경로 ────────────────────
+  // 화면 HTML은 pages/ 안에, index.html은 루트에 있다.
+  // config의 href는 항상 "루트 기준"(예: 'pages/scr-main-001.html')이므로,
+  // 현재 문서 위치와 무관하게 루트를 기준으로 URL을 만들어야 한다.
+  var ROOT_BASE = ENGINE_BASE.replace(/[^/]*\/$/, '');   // ".../engine/" → ".../"
+
+  // 루트 기준 href → 현재 문서에서 열 수 있는 URL
+  function pageUrl(href) {
+    var h = String(href || '');
+    if (/^(https?:)?\/\//.test(h) || h.charAt(0) === '/') return h;   // 절대경로는 그대로
+    return ROOT_BASE + h;
+  }
+  // href에서 파일명만 (루트/pages 어디에 있든 현재 화면 판별에 사용)
+  function baseName(u) { return String(u || '').split('/').pop(); }
+
   // ── 상단 상태바 시계 ─────────────────────
   function updateClock() {
     const el = document.querySelector('.status-bar .time');
@@ -24,80 +39,132 @@
   updateClock();
   setInterval(updateClock, 1000 * 30);
 
-  // ── 패널 이동(헤더 드래그) + width 리사이즈(좌측 테두리) ──
-  // 우측 도킹된 .page-flow / .page-detail 을 팝업처럼 자유 이동하고, 좌측 테두리로 폭 조절.
-  function makePanelMovableResizable(panel, header) {
-    if (!panel || !header) return;
-    const MIN_W = 220;
+  // ── 패널 이동 + 8방향 리사이즈 + 위치·크기 세션 저장 ──
+  // .page-flow / .page-detail 을 팝업처럼 이동하고, 네 변·네 모서리로 크기를 조절한다.
+  // 바꾼 위치·크기는 sessionStorage에 저장돼 새로고침·화면 이동 후에도 유지된다
+  // (탭/브라우저를 닫으면 초기 배치로 돌아간다).
+  var PANEL_MIN_W = 260, PANEL_MIN_H = 150;
+  var PANEL_STORE = 'pdk:panel:';
+  var RESIZE_DIRS = ['n', 's', 'e', 'w', 'nw', 'ne', 'sw', 'se'];
 
-    // right/bottom 앵커 → left/top 절대좌표로 1회 전환(이동·리사이즈 공통)
+  function loadPanelGeom(key) {
+    try {
+      var g = JSON.parse(sessionStorage.getItem(PANEL_STORE + key) || 'null');
+      if (!g || typeof g.left !== 'number' || typeof g.width !== 'number') return null;
+      return g;
+    } catch (_) { return null; }   // 프라이빗 모드 등 저장소 접근 불가
+  }
+  function savePanelGeom(key, panel) {
+    if (!key) return;
+    try {
+      var r = panel.getBoundingClientRect();
+      sessionStorage.setItem(PANEL_STORE + key, JSON.stringify({
+        left: Math.round(r.left), top: Math.round(r.top),
+        width: Math.round(r.width), height: Math.round(r.height),
+      }));
+    } catch (_) {}
+  }
+
+  function makePanelFloating(panel, header, key) {
+    if (!panel || !header) return;
+
+    // right/bottom 앵커 + vh 높이 → left/top/width/height 절대값으로 1회 전환
     function detach() {
       if (panel.dataset.pdkDetached) return;
-      const r = panel.getBoundingClientRect();
-      panel.style.left = r.left + 'px';
-      panel.style.top = r.top + 'px';
+      var r = panel.getBoundingClientRect();
+      setGeom(r.left, r.top, r.width, r.height);
+    }
+    function setGeom(left, top, w, h) {
       panel.style.right = 'auto';
       panel.style.bottom = 'auto';
-      panel.style.maxHeight = 'none';   // 이동 후 잘림 방지
-      panel.style.height = r.height + 'px';
+      panel.style.maxHeight = 'none';   // 42vh/46vh 제약 해제 → 높이 자유 조절
+      panel.style.left = Math.round(left) + 'px';
+      panel.style.top = Math.round(top) + 'px';
+      panel.style.width = Math.round(w) + 'px';
+      panel.style.height = Math.round(h) + 'px';
       panel.dataset.pdkDetached = '1';
     }
 
-    // 1) 헤더 드래그 → 패널 이동 (헤더의 버튼 클릭은 제외)
+    // 저장된 배치 복원 — 창이 작아졌을 수 있으므로 현재 뷰포트에 맞춰 보정
+    var saved = key && loadPanelGeom(key);
+    if (saved) {
+      var w = Math.max(PANEL_MIN_W, Math.min(saved.width, window.innerWidth));
+      var h = Math.max(PANEL_MIN_H, Math.min(saved.height, window.innerHeight));
+      setGeom(
+        Math.max(0, Math.min(saved.left, window.innerWidth - 40)),
+        Math.max(0, Math.min(saved.top, window.innerHeight - 40)),
+        w, h
+      );
+    }
+
+    // 포인터 드래그 공통 처리 (capture로 패널 밖으로 나가도 계속 추적)
+    function onDrag(el, e, move) {
+      e.preventDefault();
+      e.stopPropagation();
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      function up() {
+        el.removeEventListener('pointermove', move);
+        el.removeEventListener('pointerup', up);
+        el.removeEventListener('pointercancel', up);
+        savePanelGeom(key, panel);       // 조작이 끝난 시점의 배치를 저장
+      }
+      el.addEventListener('pointermove', move);
+      el.addEventListener('pointerup', up);
+      el.addEventListener('pointercancel', up);
+    }
+
+    // 1) 헤더 드래그 → 이동 (헤더의 버튼 클릭은 제외)
     header.style.cursor = 'move';
     header.addEventListener('pointerdown', function (e) {
       if (e.button !== 0 || e.target.closest('button')) return;
-      e.preventDefault();
       detach();
-      const r = panel.getBoundingClientRect();
-      const offX = e.clientX - r.left, offY = e.clientY - r.top;
-      try { header.setPointerCapture(e.pointerId); } catch (_) {}
-      function move(ev) {
-        let nl = ev.clientX - offX, nt = ev.clientY - offY;
-        nl = Math.max(0, Math.min(nl, window.innerWidth - 40));
-        nt = Math.max(0, Math.min(nt, window.innerHeight - 40));
+      var r = panel.getBoundingClientRect();
+      var offX = e.clientX - r.left, offY = e.clientY - r.top;
+      onDrag(header, e, function (ev) {
+        // 완전히 화면 밖으로 나가 다시 잡을 수 없게 되는 것만 막는다
+        var nl = Math.max(0, Math.min(ev.clientX - offX, window.innerWidth - 40));
+        var nt = Math.max(0, Math.min(ev.clientY - offY, window.innerHeight - 40));
         panel.style.left = nl + 'px';
         panel.style.top = nt + 'px';
-      }
-      function up() {
-        header.removeEventListener('pointermove', move);
-        header.removeEventListener('pointerup', up);
-      }
-      header.addEventListener('pointermove', move);
-      header.addEventListener('pointerup', up);
+      });
     });
 
-    // 2) 좌측 테두리 그립 → width 조절 (오른쪽 모서리는 고정, 왼쪽으로 늘리고 줄임)
-    const grip = document.createElement('div');
-    grip.className = 'pdk-resize-grip';
-    panel.appendChild(grip);
-    grip.addEventListener('pointerdown', function (e) {
-      if (e.button !== 0) return;
-      e.preventDefault();
-      e.stopPropagation();
-      detach();
-      const r = panel.getBoundingClientRect();
-      const right0 = r.right;                 // 오른쪽 모서리 고정
-      try { grip.setPointerCapture(e.pointerId); } catch (_) {}
-      function move(ev) {
-        let nl = Math.max(0, ev.clientX);
-        let w = right0 - nl;
-        if (w < MIN_W) { w = MIN_W; nl = right0 - MIN_W; }
-        panel.style.left = nl + 'px';
-        panel.style.width = w + 'px';
-      }
-      function up() {
-        grip.removeEventListener('pointermove', move);
-        grip.removeEventListener('pointerup', up);
-      }
-      grip.addEventListener('pointermove', move);
-      grip.addEventListener('pointerup', up);
+    // 2) 네 변 + 네 모서리 핸들 → 크기 조절
+    RESIZE_DIRS.forEach(function (dir) {
+      var handle = document.createElement('div');
+      handle.className = 'pdk-rz pdk-rz-' + dir;
+      panel.appendChild(handle);
+      handle.addEventListener('pointerdown', function (e) {
+        if (e.button !== 0) return;
+        detach();
+        var r = panel.getBoundingClientRect();
+        var x0 = e.clientX, y0 = e.clientY;
+        var right0 = r.right, bottom0 = r.bottom;
+        onDrag(handle, e, function (ev) {
+          var left = r.left, top = r.top, w = r.width, h = r.height;
+          var dx = ev.clientX - x0, dy = ev.clientY - y0;
+
+          if (dir.indexOf('e') > -1) {
+            w = Math.max(PANEL_MIN_W, r.width + dx);
+          } else if (dir.indexOf('w') > -1) {
+            left = Math.max(0, Math.min(r.left + dx, right0 - PANEL_MIN_W));
+            w = right0 - left;                 // 오른쪽 모서리 고정
+          }
+          if (dir.indexOf('s') > -1) {
+            h = Math.max(PANEL_MIN_H, r.height + dy);
+          } else if (dir.indexOf('n') > -1) {
+            top = Math.max(0, Math.min(r.top + dy, bottom0 - PANEL_MIN_H));
+            h = bottom0 - top;                 // 아래 모서리 고정
+          }
+          setGeom(left, top, w, h);
+        });
+      });
     });
   }
 
   // ── 화면 이동 헬퍼 ──────────────────────
   window.go = function (href) {
-    location.href = href;
+    location.href = pageUrl(href);
   };
 
   // ── 개발용 페이지 네비게이션 사이드바 ─────
@@ -126,8 +193,9 @@
     let byFile = null;
     for (const cat of CATEGORIES) {
       for (const p of cat.pages) {
-        if (p.href === current) return { page: p, category: cat.name || cat.category };
-        if (!byFile && p.href.split('?')[0] === file) byFile = { page: p, category: cat.name || cat.category };
+        const hrefKey = baseName(p.href);
+        if (hrefKey === current) return { page: p, category: cat.name || cat.category };
+        if (!byFile && hrefKey.split('?')[0] === file) byFile = { page: p, category: cat.name || cat.category };
       }
     }
     return byFile;
@@ -142,7 +210,7 @@
     CATEGORIES.forEach(cat => {
       let rows = '';
       (cat.pages || []).forEach(p => {
-        const active = current === p.href;
+        const active = current === baseName(p.href);
         // 디자인 확정(designed) 여부가 우선 — 미확정이면 선택 상태여도 체크(X), 마이너스 유지
         const badgeFile = !p.designed ? 'badge-pending' : (active ? 'badge-active' : 'badge-done');
         rows += `
@@ -193,7 +261,7 @@
     nav.addEventListener('click', (e) => {
       const row = e.target.closest('.nav-row');
       if (row && row.dataset.href) {
-        location.href = row.dataset.href;
+        location.href = pageUrl(row.dataset.href);
       }
     });
 
@@ -290,7 +358,7 @@
     var prdEl = bar.querySelector('.pdk-topbar-prd');
     if (prdEl && proj.prdFile) {
       prdEl.addEventListener('click', function () {
-        window.open(ENGINE_BASE + '../docs/prd/' + proj.prdFile, '_blank');
+        window.open(ROOT_BASE + 'docs/prd/' + proj.prdFile, '_blank');
       });
     }
   }
@@ -377,7 +445,7 @@
     });
 
     document.body.appendChild(detail);
-    makePanelMovableResizable(detail, detail.querySelector('.page-detail-header'));
+    makePanelFloating(detail, detail.querySelector('.page-detail-header'), 'detail');
   }
 
   // ── 우하단 통합 dock (Description / 화면 플로우 표시 토글) ──
@@ -406,7 +474,7 @@
   window.__flowGo = function (nodeId) {
     const map = window.__PDK_NODE_HREF || {};
     const href = map[nodeId];
-    if (href) location.href = href;
+    if (href) location.href = pageUrl(href);
   };
 
   function currentFlowNode() {
@@ -429,7 +497,10 @@
     const targetSet = new Set();
     pages.forEach(p => ((p.flow && p.flow.to) || []).forEach(t => targetSet.add(t.screen)));
 
-    const lines = ['graph TD', 's0(( ))'];
+    // 진입점(어떤 화면의 to 에도 없는 화면)이 있을 때만 시작 터미널을 만든다.
+    // 모든 화면이 서로를 가리키는 순환 플로우에서 s0 가 고아 노드로 떠 있는 것을 막는다.
+    const hasEntry = pages.some(p => !targetSet.has(p.id));
+    const lines = hasEntry ? ['graph TD', 's0(( ))'] : ['graph TD'];
     const screenNids = [], actionNids = [], decisionNids = [], ghostNids = [];
     const ghostSeen = new Set(), diamondSeen = new Map();
     let aCount = 0;
@@ -494,7 +565,7 @@
     if (actionNids.length)   lines.push(`class ${actionNids.join(',')} action`);
     if (decisionNids.length) lines.push(`class ${decisionNids.join(',')} decision`);
     if (ghostNids.length)    lines.push(`class ${ghostNids.join(',')} ghost`);
-    lines.push('class s0 term');
+    if (hasEntry) lines.push('class s0 term');
 
     // 스타일 정의
     lines.push('classDef screen fill:#3182F6,stroke:#2f74e0,color:#ffffff;');
@@ -698,8 +769,8 @@
     `;
     document.body.appendChild(aside);
 
-    // 패널 이동(헤더) + width 리사이즈(좌측 테두리)
-    makePanelMovableResizable(aside, aside.querySelector('.page-flow-header'));
+    // 패널 이동(헤더) + 8방향 리사이즈 + 배치 세션 저장
+    makePanelFloating(aside, aside.querySelector('.page-flow-header'), 'flow');
 
     // 드래그(grab) 패닝 활성화
     enableFlowPan(aside.querySelector('.page-flow-body'));
@@ -836,6 +907,69 @@
     }
   }
 
+  // ── 조건 분기 케이스 전환 (상단 라디오 패널) ─────────
+  // 화면 하나가 조건에 따라 다른 UI를 보이는 경우(등록 있음/없음, 성공/실패 등),
+  // config의 page.cases 를 읽어 목업 위에 라디오 패널을 만들고 케이스를 전환한다.
+  //   config:  cases: [{ id: 'has-data', label: '등록 있음' }, { id: 'empty', label: '등록 없음' }]
+  //   화면HTML: 해당 요소에 data-case="has-data" (여러 케이스면 공백 구분: data-case="a b")
+  // data-case 가 없는 요소는 항상 보인다(공통 UI).
+  function applyCase(caseId) {
+    var root = document.querySelector('.device-screen .pdk-screen')
+      || document.querySelector('.device-screen');
+    if (!root) return;
+    root.setAttribute('data-active-case', caseId);
+    root.querySelectorAll('[data-case]').forEach(function (el) {
+      var list = String(el.getAttribute('data-case') || '').split(/\s+/).filter(Boolean);
+      el.hidden = list.length > 0 && list.indexOf(caseId) === -1;
+    });
+  }
+
+  function injectCasePanel() {
+    var found = findCurrentPage(currentKey());
+    var page = found && found.page;
+    var cases = page && Array.isArray(page.cases) ? page.cases.filter(function (c) { return c && c.id; }) : [];
+    if (cases.length < 2) return;               // 선택지가 1개 이하면 분기가 아니다
+    var stage = document.querySelector('.device-stage');
+    var mockup = stage && stage.querySelector('.device-mockup');
+    if (!stage || !mockup) return;
+
+    // 기본 케이스: default:true 인 항목, 없으면 첫 항목
+    var initial = (cases.filter(function (c) { return c.default; })[0] || cases[0]).id;
+
+    var panel = document.createElement('div');
+    panel.className = 'pdk-case-panel';
+    panel.innerHTML =
+      '<div class="pdk-case-panel-title">' + escapeHtml(page.label || '조건 분기') + '</div>'
+      + '<div class="pdk-case-panel-divider"></div>'
+      + cases.map(function (c) {
+        return '<button class="pdk-case-option' + (c.id === initial ? ' is-active' : '') + '"'
+          + ' type="button" data-case-id="' + escapeHtml(c.id) + '"'
+          + (c.description ? ' title="' + escapeHtml(c.description) + '"' : '') + '>'
+          + '<span class="pdk-case-radio"><span class="pdk-case-radio-dot"></span></span>'
+          + '<span>' + escapeHtml(c.label || c.id) + '</span>'
+          + '</button>';
+      }).join('');
+
+    stage.classList.add('has-case-panel');
+    stage.insertBefore(panel, mockup);
+
+    // 상단 바 높이는 프로젝트명·설명 길이에 따라 달라진다 → 실제 높이를 재서 여백 확보
+    // (CSS의 padding-top: 72px 는 상단 바가 없을 때를 위한 기본값)
+    var topbar = document.querySelector('.pdk-topbar');
+    if (topbar) stage.style.paddingTop = Math.round(topbar.getBoundingClientRect().height + 16) + 'px';
+
+    panel.addEventListener('click', function (e) {
+      var opt = e.target.closest('.pdk-case-option');
+      if (!opt) return;
+      panel.querySelectorAll('.pdk-case-option').forEach(function (o) {
+        o.classList.toggle('is-active', o === opt);
+      });
+      applyCase(opt.dataset.caseId);
+    });
+
+    applyCase(initial);
+  }
+
   // ── 디바이스 목업 적용 (config: PDK_PROJECT / PDK_DEVICES) ──
   function activeDeviceKey() {
     const proj = window.PDK_PROJECT || {};
@@ -864,7 +998,16 @@
     function fit() {
       const outerW = d.width + bezel * 2, outerH = d.height + bezel * 2;
       const availW = Math.max(260, window.innerWidth - 640);  // 좌(280)+우(280) 패널 여유
-      const availH = Math.max(340, window.innerHeight - 90);
+      // 세로 여유: 기본 90px. 케이스 패널이 있으면 스테이지 여백 + 패널 높이를 실측해 뺀다.
+      let overhead = 90;
+      const stageEl = document.querySelector('.device-stage');
+      const casePanel = document.querySelector('.pdk-case-panel');
+      if (stageEl && casePanel) {
+        const cs = getComputedStyle(stageEl);
+        overhead = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)
+          + casePanel.getBoundingClientRect().height + 12 + 10;   // 12=패널 아래 여백
+      }
+      const availH = Math.max(340, window.innerHeight - overhead);
       const scale = Math.min(1, availW / outerW, availH / outerH);
       root.style.setProperty('--pdk-device-scale', scale.toFixed(3));
     }
@@ -910,8 +1053,9 @@
   }
 
   function init() {
+    injectTopBar();        // 케이스 패널이 상단 바 높이를 재야 하므로 먼저
+    injectCasePanel();     // applyDevice 보다 먼저 — 패널 높이가 목업 스케일 계산에 반영되도록
     applyDevice();
-    injectTopBar();
     injectPageNav();
     injectPageDetail();
     injectFlowDiagram();

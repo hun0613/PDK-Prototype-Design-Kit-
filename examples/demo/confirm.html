@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>본인인증 확인 (DEMO-CFM-001)</title>
+  <link rel="stylesheet" href="../../engine/common.css" />
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="pdk-screen">
+
+            <div class="pdk-w-header">
+              <button class="pdk-w-btn pdk-w-btn-sm is-ghost pdk-back"
+                      onclick="go('examples/demo/form.html')">←</button>
+              <div class="pdk-w-header-title pdk-title">본인인증</div>
+            </div>
+
+            <div class="pdk-w-body">
+              <span class="pdk-w-title">입력 내용을<br />확인해주세요</span>
+
+              <!-- 요약 카드 -->
+              <div class="pdk-w-card pdk-summary">
+                <div class="pdk-w-row">
+                  <span class="pdk-w-item-sub">관계</span>
+                  <div class="pdk-w-spacer"></div>
+                  <span class="pdk-w-item-main">부모</span>
+                </div>
+                <div class="pdk-w-divider"></div>
+                <div class="pdk-w-row">
+                  <span class="pdk-w-item-sub">이름</span>
+                  <div class="pdk-w-spacer"></div>
+                  <span class="pdk-w-item-main">박성모</span>
+                </div>
+                <div class="pdk-w-divider"></div>
+                <div class="pdk-w-row">
+                  <span class="pdk-w-item-sub">휴대폰</span>
+                  <div class="pdk-w-spacer"></div>
+                  <span class="pdk-w-item-main">010-1234-5678</span>
+                </div>
+              </div>
+
+              <div class="pdk-w-banner pdk-notice">
+                <div class="pdk-w-icon"></div>
+                <span>본인인증 후에는 보호자 정보를 수정할 수 없습니다.</span>
+              </div>
+
+              <div class="pdk-w-row">
+                <button class="pdk-w-btn is-link">약관 다시 보기</button>
+              </div>
+            </div>
+
+            <div class="pdk-w-footer is-raised">
+              <button class="pdk-w-btn is-secondary pdk-w-btn-block"
+                      onclick="go('examples/demo/form.html')">수정하기</button>
+              <button class="pdk-w-btn is-primary pdk-w-btn-block pdk-btn-verify"
+                      onclick="document.querySelector('.pdk-modal-confirm').hidden = false">인증하기</button>
+            </div>
+
+            <!-- 확인 모달 (Dialog) -->
+            <div class="pdk-w-dim pdk-modal-confirm" hidden>
+              <div class="pdk-w-modal">
+                <span class="pdk-w-subtitle">본인인증을 진행할까요?</span>
+                <span class="pdk-w-caption">인증 창으로 이동합니다. 완료 후 자동으로 돌아옵니다.</span>
+                <button class="pdk-w-btn is-primary pdk-w-btn-block"
+                        onclick="go('examples/demo/done.html')">진행하기</button>
+                <button class="pdk-w-btn is-ghost pdk-w-btn-block"
+                        onclick="document.querySelector('.pdk-modal-confirm').hidden = true">취소</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div>
+  </div>
+
+  <script src="_config.js"></script>
+  <script>window.PDK_CURRENT = 'confirm.html';</script>
+  <script src="../../engine/common.js"></script>
+</body>
+</html>

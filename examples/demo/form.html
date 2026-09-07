@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>보호자 등록 (DEMO-REG-001)</title>
+  <link rel="stylesheet" href="../../engine/common.css" />
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="pdk-screen">
+
+            <div class="pdk-w-header">
+              <button class="pdk-w-btn pdk-w-btn-sm is-ghost pdk-back"
+                      onclick="go('examples/demo/list.html')">←</button>
+              <div class="pdk-w-header-title pdk-title">보호자 등록</div>
+            </div>
+
+            <div class="pdk-w-body">
+              <!-- 내 정보 (Card) -->
+              <div class="pdk-w-card pdk-myinfo">
+                <span class="pdk-w-caption">내 정보</span>
+                <div class="pdk-w-row">
+                  <div class="pdk-w-col">
+                    <span class="pdk-w-item-sub">이름</span>
+                    <span class="pdk-w-item-main">김치민</span>
+                  </div>
+                  <div class="pdk-w-col">
+                    <span class="pdk-w-item-sub">환자번호</span>
+                    <span class="pdk-w-item-main">12345667788</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pdk-w-divider"></div>
+
+              <!-- 입력 폼 -->
+              <div class="pdk-w-field pdk-field-relation">
+                <label class="pdk-w-label">관계</label>
+                <select class="pdk-w-select">
+                  <option>선택해주세요</option>
+                  <option>배우자</option>
+                  <option>부모</option>
+                  <option>자녀</option>
+                </select>
+              </div>
+
+              <div class="pdk-w-field pdk-field-name">
+                <label class="pdk-w-label">이름</label>
+                <input class="pdk-w-input" placeholder="보호자 이름을 입력해주세요" />
+              </div>
+
+              <div class="pdk-w-field pdk-field-phone">
+                <label class="pdk-w-label">휴대폰</label>
+                <input class="pdk-w-input" placeholder="010-0000-0000" />
+              </div>
+
+              <div class="pdk-w-field pdk-field-memo">
+                <label class="pdk-w-label">메모 <span class="pdk-w-caption">(선택)</span></label>
+                <textarea class="pdk-w-textarea" placeholder="보호자에게 전달할 내용을 입력해주세요"></textarea>
+              </div>
+
+              <label class="pdk-w-check is-checked pdk-agree">알림 수신에 동의합니다</label>
+              <label class="pdk-w-check is-radio">문자로 받기</label>
+            </div>
+
+            <div class="pdk-w-footer is-raised">
+              <!-- 케이스: 입력 중 → 비활성 -->
+              <button class="pdk-w-btn is-primary pdk-w-btn-block is-disabled pdk-btn-submit-off"
+                      data-case="editing">등록 요청</button>
+              <!-- 케이스: 입력 완료 → 활성 -->
+              <button class="pdk-w-btn is-primary pdk-w-btn-block pdk-btn-submit"
+                      data-case="filled" onclick="document.querySelector('.pdk-sheet-agree').hidden = false">등록 요청</button>
+            </div>
+
+            <!-- 약관 동의 바텀시트 (입력 완료 케이스) -->
+            <div class="pdk-w-sheet pdk-sheet-agree" hidden>
+              <span class="pdk-w-subtitle">약관 동의</span>
+              <label class="pdk-w-check">보호자 정보 제공 동의</label>
+              <label class="pdk-w-check">환자 정보 제공 동의</label>
+              <button class="pdk-w-btn is-primary pdk-w-btn-block"
+                      onclick="go('examples/demo/confirm.html')">동의하고 등록요청</button>
+              <button class="pdk-w-btn is-ghost pdk-w-btn-block"
+                      onclick="document.querySelector('.pdk-sheet-agree').hidden = true">닫기</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div>
+  </div>
+
+  <script src="_config.js"></script>
+  <script>window.PDK_CURRENT = 'form.html';</script>
+  <script src="../../engine/common.js"></script>
+</body>
+</html>

@@ -30,39 +30,41 @@
     window.PDK_PROJECT = { name: '테스트프로젝트', description: '키오스크 프로토타입 예제입니다.', device: 'tossfront2', prdFile: 'sample.html' };
     window.PDK_SCREENS = [
       { category: '1회권 구매', pages: [
-        { id: 'LCN-LND-001', label: '랜딩페이지', href: 'lcn-lnd-001.html', designed: false, figmaLink: '',
+        { id: 'LCN-LND-001', label: '랜딩페이지', href: 'examples/lcn-lnd-001.html', designed: false, figmaLink: '',
           description: [],
           flow: { to: [ { screen: 'LCN-MAN-001', via: '화면 터치' } ] } },
-        { id: 'LCN-MAN-001', label: '메인페이지', href: 'kiosk.html', designed: false,
+        { id: 'LCN-MAN-001', label: '메인페이지', href: 'examples/kiosk.html', designed: false,
           figmaLink: 'https://www.figma.com/design/UfaTo8FaMLnsqzAvGkNUQq/?node-id=434-2072',
           description: [
-            { text: '도착 인증 버튼 클릭 → 인증방법 선택페이지 (LCN-ATH-001)로 이동', target: '.pdk-btn-auth' },
-            { text: '1회권 구매 버튼 클릭 → 1회권상품 선택페이지 (LCN-PCH-001)로 이동', target: '.pdk-btn-buy' },
+            { text: '도착 인증 → 인증방법 선택 (LCN-ATH-001)', target: '.pdk-btn-auth' },
+            { text: '1회권 구매 → 1회권상품 선택 (LCN-PCH-001)', target: '.pdk-btn-buy' },
             { text: '공지 배너 문구는 기기에서 수정 가능', target: '.pdk-banner' },
             { text: '30초 무동작 시 랜딩페이지로 자동 이동', target: '' },
           ],
           flow: { to: [ { screen: 'LCN-ATH-001', via: '도착 인증' } ] } },
       ] },
       { category: '도착인증', pages: [
-        { id: 'LCN-ATH-001', label: '인증방법 선택', href: 'a.html', designed: true,
+        { id: 'LCN-ATH-001', label: '인증방법 선택', href: 'examples/a.html', designed: true,
           description: [],
           flow: { to: [ { screen: 'LCN-ATH-002', via: 'QR 인증' } ] } },
-        { id: 'LCN-ATH-002', label: 'QR 출력', href: 'b.html', designed: false,
+        { id: 'LCN-ATH-002', label: 'QR 출력', href: 'examples/b.html', designed: false,
           description: [],
           flow: { to: [ { screen: 'LCN-ATH-003', via: '인증 시도' } ] } },
-        { id: 'LCN-ATH-003', label: 'QR 인증 실패', href: 'c.html', designed: false,
+        { id: 'LCN-ATH-003', label: 'QR 인증 실패', href: 'examples/c.html', designed: false,
           description: [],
           flow: { to: [ { screen: 'LCN-PCH-001', via: '1회권 구매로 전환' } ] } },
       ] },
       { category: '1회권 구매', pages: [
-        { id: 'LCN-PCH-001', label: '1회권 상품 선택', href: 'd.html', designed: true,
+        { id: 'LCN-PCH-001', label: '1회권 상품 선택', href: 'examples/d.html', designed: true,
           description: [],
           flow: { to: [ { screen: 'LCN-PCH-002', via: '상품 선택' } ] } },
-        { id: 'LCN-PCH-002', label: '휴대폰번호 입력', href: 'e.html', designed: true,
+        { id: 'LCN-PCH-002', label: '휴대폰번호 입력', href: 'examples/e.html', designed: true,
           description: [],
           flow: { to: [ { screen: 'LCN-MAN-001', via: '결제 완료', kind: 'auto' } ] } },
       ] },
     ];
+    // href는 루트 기준 — 이 예제들은 examples/ 안에 있으므로 examples/ 접두.
+    // (실제 프로젝트의 화면은 pages/ 안에 생성되므로 pages/ 접두가 된다)
     window.PDK_CURRENT = 'kiosk.html';
   </script>
   <script src="../engine/common.js"></script>

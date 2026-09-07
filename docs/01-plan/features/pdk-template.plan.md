@@ -34,7 +34,7 @@ status: Draft
 
 ### 1.3 Related Documents
 
-- 기존 현황: `docs/PROJECT_STATUS.md` (골프 프로토타입 작업 기록 — 패턴 참고용)
+- 기존 현황: `docs/reference/legacy-lconnect-prototype.md` (골프 프로토타입 작업 기록 — 패턴 참고용 동결 문서)
 - 엔진 원본: `scripts/common.js`, `styles/common.css`
 
 ---

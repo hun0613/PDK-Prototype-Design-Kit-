@@ -1,7 +1,21 @@
-# 엘커넥트 × 토스 프론트2 프로토타입 — 작업 현황
+# [참고자료 · 동결] 엘커넥트 × 토스 프론트2 프로토타입 작업 기록
 
-> 컨텍스트 초기화 시 이 파일만 읽어도 이어서 작업할 수 있도록 정리.
-> 마지막 갱신: 2026-05-28
+> ⚠️ **이 문서는 현재 프로젝트의 현황이 아닙니다.**
+>
+> PDK의 **출발점이 된 별개 프로젝트**(엘커넥트 골프장 × 토스 프론트2 키오스크, 2026-05-28 시점)의
+> 작업 기록이며, 화면 패턴·디자인 토큰·상호작용 규칙을 **참고**하기 위해 보존한 **동결 문서**입니다.
+> 내용은 그 시점 그대로이며 갱신되지 않습니다.
+>
+> **읽을 때 주의**
+> - 여기 나오는 `scripts/common.js` · `styles/common.css` 경로는 **PDK 이전 구조**입니다.
+>   현재 PDK의 엔진은 `engine/common.js` · `engine/common.css` 이고, 화면 데이터는
+>   `common.js`에 하드코딩된 `CATEGORIES`가 아니라 `config/screens.js`(`window.PDK_SCREENS`)에 있습니다.
+> - 여기 적힌 Git 원격·화면 파일 목록·Figma 파일 키는 **그 프로젝트의 것**입니다.
+> - 내 프로젝트의 현재 상태는 `config/*.js`와 `index.html`이 단일 소스입니다.
+>
+> **지금 필요한 문서**
+> - 사용법: [`docs/GUIDE.md`](../GUIDE.md) · 개요: [`README.md`](../../README.md)
+> - 변경 이력: [`RELEASES.md`](../../RELEASES.md)
 
 ---
 
@@ -12,7 +26,6 @@
 - **기술**: 정적 **HTML / CSS / JS** (빌드/번들 없음, 즉시 미리보기 가능)
 - **폰트**: Pretendard (CDN, common.css에서 import)
 - **Git 원격**: `http://git.hanuriit.co.kr/biz-planning/lconnect-toss-project.git`
-- **로컬 경로**: `C:\Users\THEBESTPAY\Desktop\내손키\엘커넥트`
 
 ---
 
@@ -57,7 +70,7 @@
 ├── scripts/
 │   └── common.js               개발 사이드바 자동 주입 + CATEGORIES
 └── docs/
-    ├── PROJECT_STATUS.md       (이 파일)
+    ├── PROJECT_STATUS.md       (당시 경로 — 현재 이 문서)
     ├── .bkit-memory.json
     └── .pdca-status.json
 ```
@@ -425,16 +438,14 @@ const CATEGORIES = [
 
 ---
 
-## 15. 컨텍스트 복구 시 빠르게 시작하는 방법
+## 15. 이 기록에서 가져갈 만한 패턴
 
-1. **이 파일** (`docs/PROJECT_STATUS.md`) 우선 읽기
-2. `scripts/common.js`의 **CATEGORIES** 배열 확인 → 페이지 상태 파악
-3. 현재 작업이 모호하면 사용자에게 어떤 페이지를 작업 중인지 확인 요청
-4. Figma 시안 적용 작업 시:
-   - `mcp__5a5476d4-...__get_design_context` + `get_metadata` 호출
-   - 노드 ID는 사용자가 보내는 Figma URL에서 추출
-5. 패턴 통일:
-   - 헤더 (뒤로/홈)
-   - 카운트다운이 있다면 0에서 정지 + 의도는 description에 명시
-   - 누름 효과는 자동 (글로벌)
-   - 스크롤 영역은 자동 스크롤바 숨김
+PDK로 새 화면을 만들 때 참고할 수 있는, 위 프로젝트에서 굳어진 규칙들:
+
+- 헤더 패턴 — 좌상단 뒤로가기 / 우상단 홈 (§6.1, §6.2)
+- 카운트다운 화면은 프로토타입에서 0에서 정지시키고, 실제 이동 의도는 Description에 명시 (§9)
+- 누름 효과·스크롤바 숨김은 공용 CSS에서 전역 처리 (§6.4, §6.5)
+- Description hover 시 dim/highlight 되는 요소 구조 (§10) — 현재 PDK 엔진에도 같은 방식으로 남아 있음
+- 스와이프 가능 요소의 pointer 이벤트 + 러버밴드 패턴 (§10)
+
+> 실제 작업 절차는 이 문서가 아니라 [`docs/GUIDE.md`](../GUIDE.md)와 `/pdk-*` 커맨드를 따르세요.

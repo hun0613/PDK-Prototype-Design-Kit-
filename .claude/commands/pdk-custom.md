@@ -16,17 +16,21 @@ allowed-tools: Read, Write, Edit, Bash, Glob
 
 ## 공통 경로 (추출 대상)
 ```
-engine/  templates/  .claude/commands/  docs/GUIDE.md
+engine/  templates/  .claude/commands/
+docs/GUIDE.md  docs/UPDATING.md  docs/MAINTAINING.md  docs/reference/
 ```
+> 이 목록은 `/pdk-update` 의 「공통 경로 매니페스트」와 같아야 한다. 달라지면 그쪽을 기준으로 맞춘다.
 
 ## 절차
 
 ### 1) upstream 보장 + 최신 참조
 ```bash
 git remote get-url upstream 2>/dev/null || \
-  git remote add upstream http://git.hanuriit.co.kr/biz-planning/thebestpay-prototype-design-kit.git
+  git remote add upstream <PDK 원본 URL>
 git fetch upstream
 ```
+- `<PDK 원본 URL>` 은 `.claude/commands/pdk-update.md` 의 「고정값」에 적힌 주소를 읽어서 쓴다
+  (주소의 단일 출처 — 여기에 다시 적어 두지 않는다).
 - 브랜치: 인자 `$1` 있으면 그것, 없으면 `main`. git 저장소/네트워크 불가면 알리고 중단.
 
 ### 2) baseline 결정 (★중요)

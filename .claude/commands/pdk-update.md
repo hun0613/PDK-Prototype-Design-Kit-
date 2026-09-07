@@ -14,6 +14,8 @@ allowed-tools: Read, Write, Edit, Bash, Glob
 
 ## 고정값
 - PDK 원본 URL: `http://git.hanuriit.co.kr/biz-planning/thebestpay-prototype-design-kit.git`
+  - ★ **이 값이 PDK 원본 주소의 단일 출처다.** `/pdk-init`도 (origin이 원본인지 판별할 때) 이 줄을 읽어 쓴다.
+    주소가 바뀌면 여기만 고친다.
 - 동기화 브랜치: 인자 `$1` 있으면 그것, 없으면 `main`
 - 버전 파일: `config/pdk-version.json` (현재 프로젝트가 적용한 마지막 릴리즈)
 
@@ -23,6 +25,9 @@ engine/                 # 레이아웃·기능 엔진
 templates/              # 화면/인덱스 골격 템플릿
 .claude/commands/       # 슬래시 커맨드 (이 커맨드 자신 포함)
 docs/GUIDE.md           # 사용 가이드
+docs/UPDATING.md        # 업데이트·최초 설치 안내
+docs/MAINTAINING.md     # 유지보수·개선 요청 안내
+docs/reference/         # 동결 참고자료(과거 프로토타입 작업 기록 등)
 RELEASES.md             # 릴리즈노트(읽기 + 사용자 사본 갱신)
 ```
 
@@ -30,7 +35,7 @@ RELEASES.md             # 릴리즈노트(읽기 + 사용자 사본 갱신)
 ```
 config/project.js, config/screens.js, config/devices.js, config/flows.js   # 내 설정·디바이스·플로우
 config/pdk-version.json                                    # 내 버전 기록(이 커맨드가 갱신)
-index.html, *.html, assets/mockups/, README.md            # 내 화면·자산·프로젝트 README
+index.html, pages/, *.html, assets/mockups/, README.md    # 내 화면·자산·프로젝트 README
 custom/                                                    # 공통 파일에 가한 내 수정(patch) 보관소 → 동기화 후 재적용
 ```
 
@@ -81,7 +86,7 @@ git fetch upstream
 
 ### 5) 코드·레이아웃 반영 (파일 동기화)
 ```bash
-git checkout upstream/<branch> -- engine templates .claude/commands docs/GUIDE.md RELEASES.md
+git checkout upstream/<branch> -- engine templates .claude/commands docs/GUIDE.md docs/UPDATING.md docs/MAINTAINING.md docs/reference RELEASES.md
 ```
 - 워킹트리+인덱스가 upstream 버전으로 갱신(스테이징). 보존 대상은 매니페스트에 없으므로 유지.
 

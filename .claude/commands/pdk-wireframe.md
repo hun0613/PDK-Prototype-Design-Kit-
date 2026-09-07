@@ -1,52 +1,187 @@
 ---
-description: 화면 설계 — 대화형으로 스켈레톤 UI를 구성하고 Description을 자동 작성(요소↔target 매핑, 디자인/CSS 제외)
+description: 화면 설계 — 대화형으로 흑백 와이어프레임 UI(실제 문구·컴포넌트)를 구성하고 Description을 자동 작성
 argument-hint: [화면ID]
 allowed-tools: Read, Write, Edit, AskUserQuestion, Glob
 ---
 
-# /pdk-wireframe — 화면 설계 (스켈레톤 + Description)
+# /pdk-wireframe — 화면 설계 (와이어프레임 UI + Description)
 
-`$1`=화면ID. 해당 화면을 **대화형으로 설계**한다. 결과로 화면 HTML에는 **스켈레톤 UI**(회색 블록 수준의
-레이아웃/요소 자리)가 들어가고, `config/screens.js`의 해당 화면 `description[]`이 **자동 작성**된다.
+`$1`=화면ID. 해당 화면을 **대화형으로 설계**한다. 결과로 화면 HTML에는 **흑백 와이어프레임 UI**
+(실제 문구·버튼·목록·입력칸이 들어간 진짜 화면)가 들어가고, `config/screens.js`의 해당 화면
+`description[]`이 **자동 작성**된다.
 Description 항목에 마우스를 올리면 해당 요소가 강조(나머지 dim)되도록 **요소↔target 매핑**을 부여한다.
 
-> 중요한 원칙: **디자인/CSS(색·폰트·간격·이미지 등 시각 스타일)는 다루지 않는다.** 그건 `/pdk-figma-sync`가 Figma에서 입힌다.
-> 여기서는 **무엇이 있고(요소) / 무슨 역할이며(기능) / 어디로 이어지는지(흐름)** 만 정의한다.
+> ★ **회색 블록(스켈레톤)으로 만들지 않는다.** 회색 덩어리만으로는 기획 의도가 전달되지 않는다.
+> **실제 문구를 넣은 실제 UI**로 만든다 — 버튼에는 버튼 이름, 목록에는 예시 항목, 입력칸에는 라벨과 placeholder.
+>
+> 대신 **색은 쓰지 않는다(흑백).** 색·브랜드·아이콘·이미지 등 **시각 디자인은 `/pdk-figma-sync`** 가 Figma에서 입힌다.
+> 여기서 정하는 것은 **무엇이 있고(요소) / 무슨 역할이며(기능) / 어디로 이어지는지(흐름)** 다.
 
 ## 절차
 
 ### 1) 대상 화면 확인
 - `config/screens.js`에서 `$1`(화면ID)로 page를 찾는다. 없으면 "먼저 /pdk-screen 으로 등록하세요"라고 안내하고 중단.
 - 그 화면의 `label`, `context`, `flow.to`(다음 이동/버튼)를 읽어 설계의 출발점으로 삼는다.
+- config에는 있는데 `page.href`(`pages/...html`) **파일이 없으면**, `templates/_screen.blank.html` 로 **먼저 생성**한 뒤 진행한다.
 
 ### 2) 대화형 구성
 - 화면에 어떤 요소가 필요한지 사용자와 짧게 주고받으며 정한다. 막막해하면 `context`와 `flow`를 근거로 **초안을 먼저 제안**한다.
   - 예: 헤더(뒤로/홈), 타이틀, 리스트/카드, 입력 필드, 키패드, 하단 CTA 버튼 등.
 - 각 요소마다 **역할(기능)**과 **연결(클릭 시 이동 등)**을 확인한다. 연결은 이미 `flow.to`에 있으면 그것과 일치시킨다.
+- ★ **조건 분기를 반드시 확인한다** — "이 화면이 상황에 따라 다르게 보이나요?"
+  - 예: 목록이 **있을 때 / 없을 때**, 인증 **성공 / 실패**, 권한 **있음 / 없음**, 상태 **대기 / 완료**
+  - 분기가 있으면 **케이스 목록**(id·표시이름)을 정하고, 어느 것이 기본인지 확인한다.
+  - 분기는 **다른 화면으로 나뉘는 것(`flow.to`의 branch)과 다르다.** 여기서 다루는 것은
+    **같은 화면 안에서 UI만 달라지는** 경우다. 화면 자체가 갈라지면 `/pdk-screen`의 분기로 처리한다.
 
-### 3) 화면 HTML 작성 (스켈레톤)
+### 3) 화면 HTML 작성 (흑백 와이어프레임 UI)
+
 - 대상 화면의 HTML 파일(`page.href`)을 열어 `.device-screen` 내부를 **단일 래퍼 `.pdk-screen`** 으로 교체한다.
-  - ★ W-3 규칙: 스켈레톤 루트는 반드시 `.device-screen`의 **직속 단일 자식 `.pdk-screen`** 이어야 한다(hover dim이 이 구조를 가정).
-- 요소는 스켈레톤 수준으로만 표현한다. 공용 유틸 사용 권장:
-  - `.pdk-sk-title`(제목 자리), `.pdk-sk-line`(텍스트 줄), `.pdk-sk-hero`(큰 영역), `.pdk-sk-box`(박스/카드), `.pdk-sk-btn`(버튼)
-- **각 의미 요소에 안정적 역할 클래스 `.pdk-<역할>`을 부여**한다(Description 매핑 키).
-  - 예: `.pdk-btn-next`, `.pdk-list`, `.pdk-input`, `.pdk-back`, `.pdk-home`
-  - ★ W-4 규칙: 한 화면에 같은 역할이 2개 이상이면 `-1`, `-2` 접미(예: `.pdk-btn-next-2`).
-- 시각 스타일(색/폰트/여백 등)은 넣지 않는다. 레이아웃 골격만(`.pdk-sk-*` 유틸로 충분).
+  - ★ W-3 규칙: 루트는 반드시 `.device-screen`의 **직속 단일 자식 `.pdk-screen`** 이어야 한다(hover dim이 이 구조를 가정).
+
+#### ★ 화면 골격은 항상 3단 구조 — 목업을 꽉 채우기 위한 규칙
+```
+.pdk-screen                 ← 캔버스를 꽉 채움(absolute inset:0). padding·gap 금지
+├─ .pdk-w-header            ← 상단 고정 (뒤로/타이틀/우측 액션)
+├─ .pdk-w-body              ← 남는 높이 전부 차지 + 여기서만 스크롤
+└─ .pdk-w-footer            ← 하단 고정 (CTA). 필요하면 .is-raised
+```
+- **루트(`.pdk-screen`)에 `padding`·`gap`·`height`를 주지 않는다.** 엔진이 캔버스에 정확히 맞춰 놓았다.
+  루트에 여백을 주면 헤더·하단 CTA·전체폭 목록이 가장자리에 닿지 못해 "꽉 안 찬" 화면이 된다.
+- **여백은 각 단이 갖는다** — header `8px 16px`, body `16px`, footer `16px`. 추가 여백을 덧대지 않는다.
+- **스크롤은 `.pdk-w-body` 하나만 담당한다.** 다른 곳에 `overflow`를 주지 않는다.
+  (본문에 `min-height: 0` 이 걸려 있어야 하단 CTA가 화면 밖으로 밀리지 않는다 — 키트가 이미 처리)
+- 헤더·푸터가 필요 없는 화면이면 그 단을 생략해도 된다. 단 **본문은 항상 `.pdk-w-body`** 에 담는다.
+- 보조 유틸
+  - `.pdk-w-sticky` — 본문 안에서 상단에 붙는 영역(탭·필터). 본문 여백을 자동 보정한다.
+  - `.pdk-w-bleed` — 좌우 여백을 무시하고 **화면 폭을 꽉 채우는** 요소(전체폭 목록·배너·이미지).
+- 화면 전용 `<style>`로 `position`·`width`·`height`를 다시 지정하지 않는다. 레이아웃이 틀어지는 가장 흔한 원인이다.
+- **엔진의 와이어프레임 UI 키트(`.pdk-w-*`)를 조합**해 만든다. 화면마다 CSS를 새로 짜지 않는다.
+  이 키트는 **shadcn/ui 의 디자인 토큰·컴포넌트 치수를 순수 CSS로 이식**한 것이다
+  (React·Tailwind 의존성 없음). shadcn 컴포넌트를 안다면 그 구조 그대로 생각하면 된다.
+
+| shadcn 대응 | PDK 클래스 |
+|---|---|
+| (레이아웃) | `.pdk-w-header`(+`.pdk-w-header-title`) · `.pdk-w-body`(스크롤) · `.pdk-w-footer` · `.pdk-w-row` · `.pdk-w-col` · `.pdk-w-spacer` |
+| Separator | `.pdk-w-divider` |
+| (타이포) | `.pdk-w-title` · `.pdk-w-subtitle` · `.pdk-w-text` · `.pdk-w-caption` |
+| Tabs | `.pdk-w-tabs` > `.pdk-w-tab`(+`.is-active`) |
+| Card | `.pdk-w-card` · 목록은 `.pdk-w-list` > `.pdk-w-item`(+`.pdk-w-item-main` / `.pdk-w-item-sub`) |
+| Avatar | `.pdk-w-avatar` · 이미지 자리 `.pdk-w-thumb` · 아이콘 자리 `.pdk-w-icon` |
+| Button | `.pdk-w-btn` + `.is-primary` / `.is-secondary` / `.is-ghost` / `.is-link` / `.is-disabled`, 크기 `.pdk-w-btn-sm` / `-lg` / `-icon` / `-block` |
+| Input · Label · Textarea | `.pdk-w-field` > `.pdk-w-label` + `.pdk-w-input` / `.pdk-w-textarea` / `.pdk-w-select` |
+| Checkbox · RadioGroup | `.pdk-w-check`(+`.is-radio` / `.is-checked`) |
+| Badge | `.pdk-w-badge`(+`.is-strong` / `.is-outline`) |
+| Alert | `.pdk-w-banner` |
+| (빈 상태) | `.pdk-w-empty` |
+| Dialog · Sheet · Toast | `.pdk-w-dim` > `.pdk-w-modal` · `.pdk-w-sheet` · `.pdk-w-toast` |
+
+- 버튼은 **기본이 outline**(테두리)이다. 화면의 주 행동 1개에만 `.is-primary`(검정 채움)를 쓴다.
+
+- **실제 문구를 넣는다.** `Lorem ipsum`·`텍스트`·빈 블록 금지.
+  - 버튼: `다음` `결제하기` 처럼 실제 레이블
+  - 목록: 그럴듯한 예시 항목 **2~3개**(많이 넣어 화면을 채우지 않는다)
+  - 입력: 라벨 + placeholder (`휴대폰 번호`, `010-0000-0000`)
+  - 숫자·금액·날짜도 예시값으로 (`12,000원`, `2026-06-01`)
+- **각 의미 요소에 역할 클래스 `.pdk-<역할>`을 함께 부여**한다(Description 매핑 키).
+  - 예: `<button class="pdk-w-btn is-primary pdk-btn-next">다음</button>`
+  - ★ W-4 규칙: 한 화면에 같은 역할이 2개 이상이면 `-1`, `-2` 접미.
+- **금지 사항**
+  - 색상 지정 금지 — 브랜드색·강조색·상태색 모두. 키트 토큰(`--pdk-*`, shadcn 무채색 테마)만 쓴다.
+    상태 구분이 필요하면 색이 아니라 **`.pdk-w-badge` 문구**(승인완료 / 승인대기)로 표현한다.
+  - 이미지·아이콘 파일 참조 금지 — `.pdk-w-thumb` / `.pdk-w-icon` 자리표시로 대신한다.
+  - 화면 전용 `<style>`은 **레이아웃 보정(정렬·간격·너비)** 에 한해 최소한만. 색·폰트·그림자는 넣지 않는다.
+- 동작(탭 전환, 모달 열기 등)이 이해에 필요하면 **짧은 인라인 `<script>`** 로 붙여도 된다.
+  단, **조건 분기 전환은 엔진이 처리**하므로 직접 만들지 않는다(아래 `data-case` 참고).
 
 예시:
 ```html
 <div class="pdk-screen">
-  <div class="pdk-sk-title pdk-title"></div>
-  <div class="pdk-sk-box pdk-list"></div>
-  <button class="pdk-sk-btn pdk-btn-next">다음</button>
+  <!-- 상단 고정 -->
+  <div class="pdk-w-header">
+    <button class="pdk-w-btn pdk-w-btn-sm is-ghost pdk-back">←</button>
+    <div class="pdk-w-header-title pdk-title">가족 관리</div>
+  </div>
+
+  <!-- 본문(여기서만 스크롤) -->
+  <div class="pdk-w-body">
+    <div class="pdk-w-sticky">
+      <div class="pdk-w-tabs pdk-tabs">
+        <button class="pdk-w-tab is-active">내 보호자</button>
+        <button class="pdk-w-tab">내 환자</button>
+      </div>
+    </div>
+
+    <div class="pdk-w-banner pdk-banner">보호자가 승인하면 대리 예약·결제가 가능합니다.</div>
+
+    <div class="pdk-w-list pdk-guard-list" data-case="has-data">
+      <div class="pdk-w-item">
+        <div class="pdk-w-avatar"></div>
+        <div class="pdk-w-col">
+          <span class="pdk-w-item-main">박성모</span>
+          <span class="pdk-w-item-sub">부모</span>
+        </div>
+        <div class="pdk-w-spacer"></div>
+        <span class="pdk-w-badge is-strong">승인완료</span>
+      </div>
+    </div>
+
+    <div class="pdk-w-empty pdk-empty" data-case="empty">등록된 보호자가 없습니다</div>
+  </div>
+
+  <!-- 하단 고정 -->
+  <div class="pdk-w-footer is-raised">
+    <button class="pdk-w-btn is-primary pdk-w-btn-block pdk-btn-add">보호자 추가</button>
+  </div>
 </div>
 ```
+
 
 ### 4) Description 자동 작성 (`config/screens.js`)
 - 대상 page의 `description`을 **기능·동작·흐름 중심**으로 채운다. 각 항목은 `{ text, target }`.
   - `text`: 그 요소가 무슨 역할인지/누르면 어떻게 되는지(이동 대상 화면ID 포함 권장). **디자인 묘사 금지.**
   - `target`: 3)에서 부여한 `.pdk-<역할>` 셀렉터.
+
+#### 조건 분기가 있으면 `cases` 를 함께 기록한다
+```js
+cases: [
+  { id: 'has-data', label: '등록 있음', default: true },
+  { id: 'empty',    label: '등록 없음' },
+],
+```
+- `id` 는 HTML의 `data-case` 값과 **정확히 일치**해야 한다(영문 소문자·하이픈 권장).
+- `label` 은 라디오에 표시될 짧은 이름. `default: true` 가 없으면 첫 항목이 기본이다.
+- **2개 이상일 때만** 라디오 패널이 나타난다(1개면 분기가 아니므로 넣지 않는다).
+- ★ **케이스 전용 항목은 Description 문구 앞에 `[케이스이름] ` 를 붙인다.**
+  - 형식: `[<케이스 label>] <설명>` — 대괄호 안은 `cases[].label` 을 **그대로** 쓴다(id 아님).
+  - 여러 케이스에 걸치면 `·` 로 묶는다: `[등록 없음·오류] 다시 시도`
+  - **공통 요소(`data-case` 없음)에는 붙이지 않는다.** 접두사가 없다는 것이 곧 "항상 보임"을 뜻한다.
+  - 예:
+    ```js
+    { text: '목록 — 최근 이용 매장',      target: '.pdk-list' },      // 공통이면 접두사 없음
+    { text: '[등록 있음] 항목 카드 목록',   target: '.pdk-list' },
+    { text: '[등록 없음] 빈 상태 안내',     target: '.pdk-empty' },
+    { text: '[등록 없음·오류] 다시 시도',   target: '.pdk-retry' },
+    ```
+  - 이렇게 두면 목록만 훑어도 **어느 상태의 UI인지** 바로 구분되고, 숨겨진 케이스의 항목에
+    hover 강조가 안 걸리는 이유도 설명된다(라디오로 그 케이스를 켜야 보인다).
+
+#### ★ Description 문안 규칙 — 간단명료하게, 짧게
+Description은 **읽는 문서가 아니라 화면을 훑기 위한 라벨**이다. 길면 패널에서 읽히지 않는다.
+
+- **한 항목 = 한 요소 = 한 문장.** 한 항목에 두 가지를 설명하지 않는다(나누면 hover 매핑도 정확해진다).
+- **길이: 30자 내외, 최대 50자.** 패널 기본 폭(420px)에서 한 줄~두 줄 분량이다. 넘으면 줄여 쓴다.
+- **형식은 둘 중 하나로 고정한다.**
+  - `<요소> — <역할>` 예: `공지 배너 — 기기에서 문구 수정`
+  - `<액션> → <결과·이동>` 예: `결제하기 → 결제 진행 (SCR-PAY-001)`
+  - 조건 분기 화면에서 **특정 케이스에만 보이는 요소**는 앞에 케이스를 붙인다:
+    `[<케이스이름>] <위 두 형식 중 하나>` 예: `[등록 없음] 빈 상태 안내`
+    (접두사도 길이에 포함되므로 `cases[].label` 은 짧게 짓는다)
+- **빼는 것**: 배경 설명·이유·디자인 묘사, `~할 수 있습니다` 같은 늘어지는 어미. 명사형이나 화살표로 끝낸다.
+  - 나쁨: `사용자가 하단의 결제하기 버튼을 누르면 결제가 진행되며 결제 화면으로 이동하게 됩니다`
+  - 좋음: `결제하기 → 결제 진행 (SCR-PAY-001)`
+- **화면 전체에 대한 설명은 항목이 아니라 `context`에 둔다.**
+- **항목 수도 과하지 않게 — 8개 내외.** 의미 있는 요소만 넣고, 자잘한 장식 요소는 빼거나 묶는다.
 - 예:
 ```js
 description: [
@@ -58,9 +193,19 @@ description: [
 
 ### 5) 검증 안내
 - 화면 HTML을 열어 우측 Description 항목에 hover 시 해당 요소가 강조(나머지 dim)되는지 확인하도록 안내.
+- 조건 분기를 넣었으면 **목업 위 라디오로 케이스를 전환**해 각 상태가 의도대로 보이는지 확인하도록 안내.
 - `designed`는 **false 유지**(디자인은 아직 미반영). 디자인은 `/pdk-figma-sync [화면ID] [figma url]`로 입힌다.
 
 ## 주의
-- 디자인/CSS는 절대 작성하지 않는다(피그마 위임). 스켈레톤은 무채색 골격만.
+- **실제 UI로 만든다** — 회색 블록·빈 자리·더미 텍스트로 채우지 않는다. 실제 문구가 들어가야 기획 의도가 전달된다.
+- **색은 쓰지 않는다(흑백).** 색·이미지·브랜드 요소는 `/pdk-figma-sync`가 입힌다.
+- 화면 전용 CSS는 레이아웃 보정에 한해 최소한만. 컴포넌트는 `.pdk-w-*` 키트를 쓴다.
+- **3단 골격(header/body/footer)을 지킨다.** 루트에 padding·gap·height 를 주면 목업에 꽉 차지 않거나 UI가 틀어진다.
 - `.pdk-screen` 단일 래퍼 + `.pdk-<역할>` 셀렉터 + `description.target` 일치를 반드시 지킨다.
+- 케이스 전환 UI(라디오)와 표시/숨김 로직은 **엔진이 만든다.** 화면 HTML에 중복 구현하지 않는다.
+- ★ **`data-case` 를 붙인 요소를 스크립트로 따로 열고 닫지 말 것.** 엔진이 케이스 전환 때 그 요소의
+  `hidden` 을 덮어쓰므로, 모달·바텀시트처럼 버튼으로 여는 요소에 `data-case` 를 같이 주면 즉시 열려 버린다.
+  → **여는 버튼 쪽에만** `data-case` 를 주고, 모달·시트 자체에는 붙이지 않는다.
+- `cases[].id` 와 HTML의 `data-case` 값이 어긋나면 그 요소는 **어느 케이스에서도 보이지 않는다.** 반드시 대조한다.
 - `flow.to`(이동 관계)는 이미 `/pdk-screen`에서 정의됨 — 여기서 새로 만들지 말고 Description 문구에 반영만 한다.
+- Description은 **짧고 명료하게**(30자 내외·최대 50자). 설명이 길어지면 문장을 다듬지 말고 **항목을 나누거나 덜어낸다.**

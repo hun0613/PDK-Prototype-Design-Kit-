@@ -54,7 +54,7 @@ window.PDK_PROJECT = { name: '내 프로젝트', device: 'mobile' };
 // 3) 화면 목록 (좌측 레일 / Description / Flow 가 전부 여기서 생성됨)
 window.PDK_SCREENS = [
   { category: '지갑', pages: [
-    { id: 'APP-WLT-001', label: '내 지갑', href: 'mobile.html', designed: true,
+    { id: 'APP-WLT-001', label: '내 지갑', href: 'pages/app-wlt-001.html', designed: true,
       figmaLink: 'https://figma.com/...',
       description: [
         { text: '잔액 카드', target: '.pdk-card' },     // target = 화면 안 요소의 CSS 선택자(hover 강조)
@@ -64,15 +64,17 @@ window.PDK_SCREENS = [
   ] },
 ];
 
-// 4) 지금 보고 있는 화면이 무엇인지 (화면 href 와 동일하게)
-window.PDK_CURRENT = 'mobile.html';
+// 4) 지금 보고 있는 화면이 무엇인지 (화면 파일명)
+window.PDK_CURRENT = 'app-wlt-001.html';
 ```
 
 | 필드 | 의미 |
 |------|------|
+| `href` | **프로젝트 루트 기준 경로.** 화면은 `pages/` 안에 만들어지므로 `pages/...` 가 된다 (이 예제 파일들은 `examples/` 안에 있어서 `examples/...`). |
 | `id` / `label` | 화면 ID / 이름 (레일·플로우에 표시) |
 | `designed` | `true`=반영(초록 체크) / `false`=미반영(회색 −) |
 | `figmaLink` | 헤더의 `↗ Figma` 버튼 연결 |
+| `description[].text` | 요소의 역할/이동을 **짧게** — 30자 내외(최대 50자), 한 항목에 한 요소. `결제하기 → 결제 진행 (SCR-PAY-001)` 형태 |
 | `description[].target` | 마우스 올리면 강조할 화면 속 요소의 CSS 선택자 |
 | `flow.to[]` | `screen`(이동 대상 id), `via`(액션 라벨), `kind:'auto'`(점선=자동 이동) |
 

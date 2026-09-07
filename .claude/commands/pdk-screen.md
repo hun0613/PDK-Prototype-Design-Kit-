@@ -38,12 +38,14 @@ allowed-tools: Read, Write, Edit, AskUserQuestion, Glob
   flow: { to: [ /* (3-c) 다음 이동 */ ] },
 }
 ```
-- `href` = 화면ID를 소문자로 바꾼 파일명. 예: `SCR-MAIN-001` → `scr-main-001.html`. (사용자가 원하면 다른 파일명 허용)
+- `href` = **`pages/` + 화면ID를 소문자로 바꾼 파일명**. 예: `SCR-MAIN-001` → `pages/scr-main-001.html`.
+  (파일명은 사용자가 원하면 바꿔도 되지만 **`pages/` 안에 두는 규칙은 유지**한다. `index.html`만 루트에 있다.)
+- href는 **항상 프로젝트 루트 기준**으로 적는다 — 엔진이 이 값을 루트 기준으로 해석해 이동 링크를 만든다.
 
 **(b) 진입 출처 연결 — ★중요: 간선은 `to`가 유일 소스다.**
 - "출처 화면 → 이 화면" 연결은 **출처 화면의 `flow.to`** 에 추가한다(이 화면에 `from`을 저장하지 말 것).
 - 출처 화면을 ID 또는 이름으로 `config/screens.js`에서 찾아 그 `flow.to`에 `{ screen: '<이 화면ID>', via: '<버튼/조건>' }` 추가.
-- 출처 화면이 아직 등록 전이면: 연결을 보류하고 "출처 화면(<ID>)을 만들 때 자동으로 이어집니다"라고 안내(유저플로우 순서대로 만들면 출처가 먼저 생긴다). 진입점이면 생략.
+- 출처 화면이 아직 등록 전이면 **보류하지 말고 아래 「화면 파일 즉시 생성 규칙」으로 그 화면을 먼저 만든 뒤** 연결한다. 진입점이면 생략.
 
 **(c) 다음 이동 — 이 화면의 `flow.to` 항목**
 - 단순 이동: `{ screen: '<목적지ID>', via: '<버튼/조건>' }`
@@ -53,20 +55,53 @@ allowed-tools: Read, Write, Edit, AskUserQuestion, Glob
   { screen: 'SCR-FAIL-001', via: '실패', branch: '결제 성공 여부' },
   ```
 - 자동 이동(점선): `{ screen: '<목적지ID>', via: '카운트다운/확인', kind: 'auto' }`
-- 목적지가 아직 미등록 ID여도 그대로 적는다 → 플로우에 **ghost(점선) 노드**로 표시되고, 나중에 등록되면 자동 연결된다.
+- 목적지가 아직 등록 전이면 **아래 「화면 파일 즉시 생성 규칙」으로 그 화면도 함께 만든다.** 미등록 상태로 남겨 ghost(점선) 노드로 미루지 않는다.
 
 ### 4) 화면 HTML 생성
-- `templates/_screen.blank.html`을 복사해 `{{SCREEN_NAME}}`·`{{SCREEN_ID}}`를 치환하고 `<href>` 파일명으로 저장한다.
-- 템플릿이 없으면 동일 구조(`.placeholder-screen` 안에 이름·ID)로 직접 작성한다.
-- 화면 안에는 **이름·ID만** 표기한다(UI는 `/pdk-wireframe`, 디자인은 `/pdk-figma-sync`).
+- `pages/` 디렉토리가 없으면 만든다.
+- `templates/_screen.blank.html`을 복사해 `{{SCREEN_NAME}}`·`{{SCREEN_ID}}`를 치환하고 `<href>` 경로(`pages/<파일명>.html`)로 저장한다.
+- 템플릿이 없으면 동일 구조(`.placeholder-screen` 안에 이름·ID)로 직접 작성한다. 이때 **공통 경로는 `../` 로 참조**한다:
+  `<link rel="stylesheet" href="../engine/common.css">`, 로더 배열은
+  `['../config/devices.js', '../config/project.js', '../config/screens.js', '../config/flows.js', '../engine/common.js']`.
+- 화면 안에는 **이름·ID만** 표기한다(UI는 `/pdk-wireframe`가 흑백 와이어프레임으로, 디자인은 `/pdk-figma-sync`가 채운다).
 
 ### 5) 안내
 - 추가된 화면ID/이름/카테고리, 만든 파일명, 연결(진입/다음) 요약.
 - `index.html` 또는 방금 만든 화면을 열면 페이지 목록·플로우·Description에 자동 반영됨을 알린다.
 - 다음 화면을 이어서 `/pdk-screen`으로 등록하도록 안내. 모든 화면 등록 후 `/pdk-wireframe`로 진행.
 
+## 화면 파일 즉시 생성 규칙 (★ 공용 — 다른 커맨드도 이 절차를 따른다)
+
+**작업 중 새 화면 ID가 언급되면, 그 화면의 config 항목과 HTML 파일을 그 자리에서 만든다.**
+"나중에 만들면 자동으로 이어집니다"로 미루지 않는다 — 미등록 화면은 플로우에 ghost(점선)로만 남고,
+그 상태가 쌓이면 실제로 몇 개의 화면을 만들어야 하는지 알 수 없게 된다.
+
+**대상**: 이번 작업에서 언급됐지만 `config/screens.js`에 없는 화면
+(진입 출처 · 다음 이동 목적지 · `/pdk-flow`의 소속 화면 등).
+
+**절차 — 화면 1개당**
+1. **이름과 카테고리**를 물어본다. ID는 언급된 값을 쓰고, 없으면 `SCR-<카테고리약어>-<3자리>` 규칙으로 제안한다.
+2. `config/screens.js`에 page 객체를 추가한다 — `designed: false`, `description: []`, `flow: { to: [] }`,
+   `href: 'pages/<화면ID 소문자>.html'`.
+3. `templates/_screen.blank.html` 로 **`pages/<파일명>.html` 을 실제로 생성한다**(4단계와 동일).
+4. ★ **자동 생성된 화면의 진입·이동은 여기서 캐묻지 않는다.** 지금 다루는 연결만 반영하고 나머지 `flow.to`는 비워 둔다.
+   (그 화면을 `/pdk-screen`·`/pdk-wireframe`로 다시 실행할 때 이어서 채운다.
+   이 규칙이 없으면 "다음 화면은?"이 꼬리를 물어 끝나지 않는다.)
+5. 이렇게 **자동 생성한 화면 목록을 마지막 안내에 따로 보고**한다 — 사용자가 뒤에 채울 것을 알 수 있게.
+
+## 간선(이동) 기록 규칙 (★ 공용 — `/pdk-flow` 도 이 규칙을 따른다)
+
+- **간선의 유일한 저장 위치는 출발 화면의 `flow.to` 다.** 도착 화면에 `from`을 만들지 않는다.
+- 항목 형태는 3-(c)와 같다 — 단순 이동 `{ screen, via }`, 분기 `{ screen, via, branch }`, 자동 이동 `{ screen, via, kind: 'auto' }`.
+- ★ **중복 금지**: 같은 출발→도착 쌍이 이미 있으면 **새로 추가하지 않는다.**
+  기존 항목의 `via`·`branch`·`kind`를 **덮어쓰지도 않는다**(이미 구체적으로 적힌 정보가 더 정확하다).
+  라벨을 고쳐야 하면 사용자에게 확인한 뒤 기존 항목을 수정한다.
+- 간선을 쓰는 커맨드는 `/pdk-screen`(진입·다음 이동)과 `/pdk-flow`(여정 순서 잇기) 둘 뿐이다.
+  둘 다 이 규칙을 지키면 어느 쪽으로 시작해도 결과가 같다.
+
 ## 주의
 - `description`은 비워둔다(빈 배열). 내용은 `/pdk-wireframe`가 채운다.
 - `designed: false` 고정(디자인은 `/pdk-figma-sync` 이후 true).
 - `to`만이 간선 소스다. `from` 필드는 만들지 않는다.
 - 기존 화면/연결을 덮어쓰지 말고 **추가만** 한다.
+- 언급된 화면은 **빠짐없이 HTML까지 만들어져 있어야 한다.** 등록만 하고 파일을 만들지 않는 상태로 끝내지 않는다.

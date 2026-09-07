@@ -42,7 +42,8 @@ argument-hint: [디바이스명] [소스경로(이미지 폴더 또는 Figma URL
 
 ### 5) 안내 & (선택) 미리보기
 - 등록 완료를 알리고, `/pdk-init`에서 `$1`을 선택할 수 있음을 안내.
-- 원하면 `preview-<$1>.html`을 다른 preview 파일과 동일 패턴으로 생성해 바로 확인하게 한다
+- 원하면 `pages/preview-<$1>.html`을 다른 화면 파일과 동일 패턴으로 생성해 바로 확인하게 한다
+  (`index.html`을 제외한 모든 페이지 HTML은 `pages/`에 두고, 공통 경로는 `../`로 참조)
   (config 로드 후 인라인으로 `window.PDK_PROJECT.device='<$1>'` 설정).
 
 ## 참고 / 한계

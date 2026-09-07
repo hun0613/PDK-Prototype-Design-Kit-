@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>보호자 목록 (DEMO-LST-001)</title>
+  <link rel="stylesheet" href="../../engine/common.css" />
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="pdk-screen">
+
+            <div class="pdk-w-header">
+              <button class="pdk-w-btn pdk-w-btn-sm is-ghost pdk-back" onclick="history.back()">←</button>
+              <div class="pdk-w-header-title pdk-title">가족 관리</div>
+              <button class="pdk-w-btn pdk-w-btn-icon is-ghost pdk-help">?</button>
+            </div>
+
+            <div class="pdk-w-body">
+              <div class="pdk-w-sticky">
+                <div class="pdk-w-tabs pdk-tabs">
+                  <button class="pdk-w-tab is-active">내 보호자</button>
+                  <button class="pdk-w-tab">내 환자</button>
+                </div>
+              </div>
+
+              <div class="pdk-w-banner pdk-banner">
+                <div class="pdk-w-icon"></div>
+                <span>보호자가 승인하면 대리 예약·결제·주차관리가 가능합니다.</span>
+              </div>
+
+              <!-- 케이스: 등록 있음 -->
+              <div class="pdk-w-list pdk-guard-list" data-case="has-data">
+                <div class="pdk-w-item">
+                  <div class="pdk-w-avatar"></div>
+                  <div class="pdk-w-col">
+                    <span class="pdk-w-item-main">박성모</span>
+                    <span class="pdk-w-item-sub">부모</span>
+                  </div>
+                  <div class="pdk-w-spacer"></div>
+                  <span class="pdk-w-badge is-strong">승인완료</span>
+                </div>
+                <div class="pdk-w-item">
+                  <div class="pdk-w-avatar"></div>
+                  <div class="pdk-w-col">
+                    <span class="pdk-w-item-main">김성모</span>
+                    <span class="pdk-w-item-sub">배우자</span>
+                  </div>
+                  <div class="pdk-w-spacer"></div>
+                  <span class="pdk-w-badge">승인대기</span>
+                </div>
+                <div class="pdk-w-item">
+                  <div class="pdk-w-avatar"></div>
+                  <div class="pdk-w-col">
+                    <span class="pdk-w-item-main">이성모</span>
+                    <span class="pdk-w-item-sub">자녀</span>
+                  </div>
+                  <div class="pdk-w-spacer"></div>
+                  <span class="pdk-w-badge is-outline">승인거절</span>
+                </div>
+                <button class="pdk-w-btn pdk-w-btn-sm pdk-w-btn-block pdk-btn-resend">재요청</button>
+              </div>
+
+              <!-- 케이스: 등록 없음 -->
+              <div class="pdk-w-empty pdk-empty" data-case="empty">등록된 보호자가 없습니다</div>
+
+              <!-- 케이스: 오류 -->
+              <div class="pdk-w-empty pdk-error" data-case="error">목록을 불러오지 못했습니다</div>
+
+              <!-- 두 케이스 공용 -->
+              <button class="pdk-w-btn is-ghost pdk-w-btn-block pdk-retry" data-case="empty error">다시 시도</button>
+            </div>
+
+            <div class="pdk-w-footer is-raised">
+              <button class="pdk-w-btn is-primary pdk-w-btn-block pdk-btn-add"
+                      onclick="go('examples/demo/form.html')">보호자 추가</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div>
+  </div>
+
+  <script src="_config.js"></script>
+  <script>window.PDK_CURRENT = 'list.html';</script>
+  <script src="../../engine/common.js"></script>
+</body>
+</html>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{SCREEN_NAME}} ({{SCREEN_ID}})</title>
-  <link rel="stylesheet" href="engine/common.css" />
+  <link rel="stylesheet" href="../engine/common.css" />
 </head>
 <body>
   <!-- 카운트다운형 화면 변형. {{SECONDS}}초 후 자동 이동(프로토타입은 0에서 정지).
@@ -26,11 +26,12 @@
     </div>
   </div>
 
-  <!-- config·엔진을 캐시 없이 순서대로 로드 (변경 즉시 반영) -->
+  <!-- 화면 HTML은 pages/ 안에 생성되므로 공통 경로는 ../ 로 참조한다.
+       config·엔진을 캐시 없이 순서대로 로드 (변경 즉시 반영) -->
   <script>
     (function () {
       var v = Date.now();
-      var files = ['config/devices.js', 'config/project.js', 'config/screens.js', 'config/flows.js', 'engine/common.js'];
+      var files = ['../config/devices.js', '../config/project.js', '../config/screens.js', '../config/flows.js', '../engine/common.js'];
       for (var i = 0; i < files.length; i++) {
         document.write('<scr' + 'ipt src="' + files[i] + '?_=' + v + '"></scr' + 'ipt>');
       }

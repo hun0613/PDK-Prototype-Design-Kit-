@@ -40,7 +40,7 @@ M0 준비 ─ M1 클린업 ─ M2 엔진 일반화 ─┬─ M3 /pdk-init
 | 항목 | 내용 |
 |---|---|
 | 목표 | 재사용 틀만 남기고 골프 전용 자산 제거 |
-| 작업 | 골프 화면 18개 HTML 삭제 · 골프/브랜드 assets 삭제 · 스토리보드 pptx 삭제 · `PROJECT_STATUS.md`는 패턴 참고용으로 보존 또는 일반화 |
+| 작업 | 골프 화면 18개 HTML 삭제 · 골프/브랜드 assets 삭제 · 스토리보드 pptx 삭제 · `PROJECT_STATUS.md`는 패턴 참고용으로 보존 또는 일반화 (→ `docs/reference/legacy-lconnect-prototype.md`로 이동·동결됨) |
 | 완료 기준 | 엔진(`common.css`/`common.js`)·범용 자산만 남음, git 히스토리로 골프 보존 |
 | 의존성 | M0 |
 | 리스크 | 엔진 의존 코드 동반 삭제 → 단계별 미리보기 점검 |

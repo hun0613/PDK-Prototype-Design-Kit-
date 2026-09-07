@@ -78,7 +78,7 @@
     window.PDK_PROJECT = { name: '모바일 테스트', device: 'mobile' };
     window.PDK_SCREENS = [
       { category: '지갑', pages: [
-        { id: 'APP-WLT-001', label: '내 지갑(홈)', href: 'mobile.html', designed: true,
+        { id: 'APP-WLT-001', label: '내 지갑(홈)', href: 'examples/mobile.html', designed: true,
           figmaLink: 'https://www.figma.com/design/UfaTo8FaMLnsqzAvGkNUQq/?node-id=434-2072',
           description: [
             { text: '상태바 + 앱바(뒤로가기/타이틀)', target: '.pdk-appbar' },
@@ -92,18 +92,20 @@
           ] } },
       ] },
       { category: '결제', pages: [
-        { id: 'APP-PAY-001', label: 'QR 결제', href: 'a.html', designed: false,
+        { id: 'APP-PAY-001', label: 'QR 결제', href: 'examples/a.html', designed: false,
           description: [],
           flow: { to: [ { screen: 'APP-WLT-001', via: '완료', kind: 'auto' } ] } },
-        { id: 'APP-CHG-001', label: '충전 금액 입력', href: 'b.html', designed: false,
+        { id: 'APP-CHG-001', label: '충전 금액 입력', href: 'examples/b.html', designed: false,
           description: [],
           flow: { to: [ { screen: 'APP-WLT-001', via: '충전 완료', kind: 'auto' } ] } },
       ] },
       { category: '기타', pages: [
-        { id: 'APP-HIS-001', label: '거래 내역', href: 'c.html', designed: true, description: [] },
-        { id: 'APP-SET-001', label: '설정', href: 'd.html', designed: false, description: [] },
+        { id: 'APP-HIS-001', label: '거래 내역', href: 'examples/c.html', designed: true, description: [] },
+        { id: 'APP-SET-001', label: '설정', href: 'examples/d.html', designed: false, description: [] },
       ] },
     ];
+    // href는 루트 기준 — 이 예제들은 examples/ 안에 있으므로 examples/ 접두.
+    // (실제 프로젝트의 화면은 pages/ 안에 생성되므로 pages/ 접두가 된다)
     window.PDK_CURRENT = 'mobile.html';
   </script>
   <script src="../engine/common.js"></script>

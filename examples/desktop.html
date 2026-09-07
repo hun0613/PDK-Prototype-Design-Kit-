@@ -76,7 +76,7 @@
     window.PDK_PROJECT = { name: '데스크탑 테스트', device: 'desktop' };
     window.PDK_SCREENS = [
       { category: '랜딩', pages: [
-        { id: 'WEB-LND-001', label: '홈(랜딩)', href: 'desktop.html', designed: true,
+        { id: 'WEB-LND-001', label: '홈(랜딩)', href: 'examples/desktop.html', designed: true,
           figmaLink: 'https://www.figma.com/design/UfaTo8FaMLnsqzAvGkNUQq/?node-id=434-2072',
           description: [
             { text: '상단 GNB — 로고 / 메뉴 / 로그인 버튼', target: '.pdk-topbar' },
@@ -90,16 +90,18 @@
           ] } },
       ] },
       { category: '온보딩', pages: [
-        { id: 'WEB-SGN-001', label: '회원가입', href: 'a.html', designed: false,
+        { id: 'WEB-SGN-001', label: '회원가입', href: 'examples/a.html', designed: false,
           description: [],
           flow: { to: [ { screen: 'WEB-DSH-001', via: '가입 완료' } ] } },
-        { id: 'WEB-DSH-001', label: '대시보드', href: 'b.html', designed: false, description: [] },
+        { id: 'WEB-DSH-001', label: '대시보드', href: 'examples/b.html', designed: false, description: [] },
       ] },
       { category: '정보', pages: [
-        { id: 'WEB-PRC-001', label: '요금제', href: 'c.html', designed: true, description: [] },
-        { id: 'WEB-SUP-001', label: '고객지원', href: 'd.html', designed: false, description: [] },
+        { id: 'WEB-PRC-001', label: '요금제', href: 'examples/c.html', designed: true, description: [] },
+        { id: 'WEB-SUP-001', label: '고객지원', href: 'examples/d.html', designed: false, description: [] },
       ] },
     ];
+    // href는 루트 기준 — 이 예제들은 examples/ 안에 있으므로 examples/ 접두.
+    // (실제 프로젝트의 화면은 pages/ 안에 생성되므로 pages/ 접두가 된다)
     window.PDK_CURRENT = 'desktop.html';
   </script>
   <script src="../engine/common.js"></script>

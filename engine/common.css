@@ -38,6 +38,75 @@ html, body {
 }
 
 /* ─── 디바이스 목업 (실제 토스 프론트2) ─────── */
+/* ── 조건 분기 케이스 패널 (page.cases 가 2개 이상일 때 엔진이 주입) ── */
+/* hidden 요소는 display 지정(flex 등)을 이겨야 하므로 !important */
+[hidden] { display: none !important; }
+
+.device-stage.has-case-panel {
+  flex-direction: column;
+  padding-top: 72px;            /* 상단 바 아래로 */
+}
+.pdk-case-panel {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  font-family: "Pretendard", -apple-system, sans-serif;
+  position: relative;
+  z-index: 60;
+}
+.pdk-case-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #232323;
+  white-space: nowrap;
+}
+.pdk-case-panel-divider {
+  width: 1px;
+  height: 20px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+.pdk-case-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.pdk-case-radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #e2e2e2;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pdk-case-radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: transparent;
+}
+.pdk-case-option.is-active { color: #232323; font-weight: 600; }
+.pdk-case-option.is-active .pdk-case-radio { border-color: #3182f6; }
+.pdk-case-option.is-active .pdk-case-radio-dot { background: #3182f6; }
+
 .device-stage {
   width: 100vw;
   min-height: 100vh;
@@ -831,7 +900,10 @@ html, body {
   cursor: grab;
   user-select: none;          /* 드래그 패닝 중 텍스트 선택 방지 */
   background: #f9fafb;
-  padding: 10px;
+  /* 오른쪽 6px는 리사이즈 핸들 자리 — 스크롤바를 그만큼 안쪽으로 들이고
+     padding으로 보정해 실제 여백(10px)은 그대로 유지한다 */
+  padding: 10px 4px 10px 10px;
+  margin-right: 6px;
 }
 .page-flow-body:active { cursor: grabbing; }
 .page-flow-body::-webkit-scrollbar { width: 9px; height: 9px; }
@@ -1048,7 +1120,9 @@ html, body {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0 12px 12px;
+  /* 오른쪽 6px는 리사이즈 핸들 자리 (여백 12px는 그대로) */
+  padding: 0 6px 12px 12px;
+  margin-right: 6px;
 }
 .page-detail-body::-webkit-scrollbar { width: 8px; }
 .page-detail-body::-webkit-scrollbar-track { background: transparent; margin: 4px 0; }
@@ -1404,17 +1478,25 @@ html, body {
 }
 
 /* 패널 width 리사이즈 그립 (좌측 테두리) — .page-flow / .page-detail 공통 */
-.pdk-resize-grip {
+/* 패널 리사이즈 핸들 — 네 변 + 네 모서리 (.page-flow / .page-detail 공용) */
+.pdk-rz {
   position: absolute;
-  left: 0;
-  top: 0;
-  width: 7px;
-  height: 100%;
-  cursor: ew-resize;
   z-index: 6;
   touch-action: none;
 }
-.pdk-resize-grip:hover { background: rgba(49, 130, 246, 0.18); }
+.pdk-rz-n { top: 0; left: 0; right: 0; height: 6px; cursor: ns-resize; }
+.pdk-rz-s { bottom: 0; left: 0; right: 0; height: 6px; cursor: ns-resize; }
+.pdk-rz-w { left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
+.pdk-rz-e { right: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
+.pdk-rz-n:hover, .pdk-rz-s:hover,
+.pdk-rz-w:hover, .pdk-rz-e:hover { background: rgba(49, 130, 246, 0.18); }
+
+/* 모서리는 변 위에 겹쳐 대각 커서가 우선하도록 */
+.pdk-rz-nw, .pdk-rz-ne, .pdk-rz-sw, .pdk-rz-se { width: 14px; height: 14px; z-index: 7; }
+.pdk-rz-nw { top: 0; left: 0; cursor: nwse-resize; }
+.pdk-rz-se { bottom: 0; right: 0; cursor: nwse-resize; }
+.pdk-rz-ne { top: 0; right: 0; cursor: nesw-resize; }
+.pdk-rz-sw { bottom: 0; left: 0; cursor: nesw-resize; }
 
 /* 하단 시스템 문의 푸터 (저작권 표기처럼 작게, 화면 하단 중앙 고정) */
 .pdk-sys-footer {
@@ -1447,16 +1529,256 @@ html, body {
    ※ W-3 규칙: 스켈레톤 루트는 .device-screen 의 직속 단일 자식 .pdk-screen 이어야 한다.
      (Description hover dimming이 device-screen.firstElementChild 를 화면 래퍼로 가정)
    ───────────────────────────────────────────── */
+/* 화면 루트 — 디바이스 캔버스를 정확히 꽉 채운다.
+   ★ absolute + inset:0 : 부모(.device-screen)가 고정 크기이므로 100%보다 안전하다
+     (부모 padding·flex 영향으로 높이가 무너지지 않는다).
+   ★ 루트에는 padding/gap 을 두지 않는다 — 헤더·시트·전체폭 목록이 가장자리까지 닿아야 한다.
+     여백은 아래 .pdk-w-header / .pdk-w-body / .pdk-w-footer 가 각자 갖는다. */
 .pdk-screen {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 28px;
+  overflow: hidden;
+  padding: 0;
+  gap: 0;
   background: #ffffff;
 }
+/* ─────────────────────────────────────────────
+   PDK 와이어프레임 UI 키트 (.pdk-w-*)
+   /pdk-wireframe 산출물의 기본 컴포넌트.
+
+   ▸ shadcn/ui 의 디자인 토큰·컴포넌트 치수를 **순수 CSS로 이식**한 것.
+     (React·Radix·Tailwind 의존성 없음 — PDK 의 무빌드 원칙 유지)
+   ▸ shadcn 기본 테마는 채도 0 의 무채색이라 와이어프레임의 "흑백" 원칙과 그대로 맞는다.
+     색·브랜드·이미지 등 시각 디자인은 /pdk-figma-sync 가 Figma 에서 입힌다.
+   ▸ 화면 HTML 은 이 클래스를 조합만 하고, 화면 전용 CSS 는 레이아웃 보정 정도로 최소화한다.
+   ▸ 역할 클래스(.pdk-<역할>)를 함께 붙인다 → Description hover 매핑 유지.
+   ───────────────────────────────────────────── */
+.pdk-screen {
+  /* shadcn 시맨틱 토큰 (light) — 출처: ui.shadcn.com/docs/theming */
+  --pdk-background: oklch(1 0 0);
+  --pdk-foreground: oklch(0.145 0 0);
+  --pdk-card: oklch(1 0 0);
+  --pdk-primary: oklch(0.205 0 0);
+  --pdk-primary-foreground: oklch(0.985 0 0);
+  --pdk-secondary: oklch(0.97 0 0);
+  --pdk-muted: oklch(0.97 0 0);
+  --pdk-muted-foreground: oklch(0.556 0 0);
+  --pdk-accent: oklch(0.97 0 0);
+  --pdk-border: oklch(0.922 0 0);
+  --pdk-input: oklch(0.922 0 0);
+  --pdk-ring: oklch(0.708 0 0);
+  /* --radius: 0.625rem → sm 6 / md 8 / lg 10 / xl 14 (shadcn 파생 규칙) */
+  --pdk-radius: 0.625rem;
+  --pdk-radius-sm: calc(var(--pdk-radius) - 4px);
+  --pdk-radius-md: calc(var(--pdk-radius) - 2px);
+  --pdk-radius-lg: var(--pdk-radius);
+  --pdk-radius-xl: calc(var(--pdk-radius) + 4px);
+  --pdk-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --pdk-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+
+  font-family: "Pretendard", -apple-system, sans-serif;
+  background: var(--pdk-background);
+  color: var(--pdk-foreground);
+  font-size: 14px;
+  line-height: 1.4286;
+}
+
+/* 레이아웃 — 헤더 / 스크롤 본문 / 하단 고정 */
+.pdk-w-header {
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0; min-height: 52px;
+  padding: 8px 16px;
+  background: var(--pdk-background);
+  border-bottom: 1px solid var(--pdk-border);
+}
+.pdk-w-header-title { flex: 1; min-width: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+/* 본문 — 남는 높이를 전부 차지하고 여기서만 스크롤한다.
+   min-height:0 이 없으면 flex 자식이 줄어들지 않아 하단 CTA가 화면 밖으로 밀린다. */
+.pdk-w-body {
+  flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden;
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 16px;
+}
+/* 하단 고정 영역 — 스크롤과 무관하게 항상 보인다 */
+.pdk-w-footer {
+  flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;
+  padding: 16px;
+  background: var(--pdk-background);
+}
+.pdk-w-footer.is-raised {           /* 본문 위에 떠 있는 CTA 바 */
+  border-radius: var(--pdk-radius-xl) var(--pdk-radius-xl) 0 0;
+  box-shadow: 0 -2px 8px rgb(0 0 0 / 0.08);
+}
+/* 본문 안에서 상단에 붙는 영역(탭·필터 등) */
+.pdk-w-sticky {
+  position: sticky; top: -16px; z-index: 10;
+  margin: -16px -16px 0; padding: 16px;
+  background: var(--pdk-background);
+}
+/* 좌우 여백을 무시하고 화면 폭을 꽉 채우는 요소(전체폭 목록·배너 등) */
+.pdk-w-bleed { margin-left: -16px; margin-right: -16px; }
+.pdk-w-row { display: flex; align-items: center; gap: 8px; }
+.pdk-w-col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.pdk-w-spacer { flex: 1; }
+.pdk-w-divider { height: 1px; background: var(--pdk-border); }
+
+/* 텍스트 */
+.pdk-w-title { font-size: 24px; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; }
+.pdk-w-subtitle { font-size: 16px; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; }
+.pdk-w-text { font-size: 14px; }
+.pdk-w-caption { font-size: 14px; color: var(--pdk-muted-foreground); }
+
+/* 탭 — TabsList / TabsTrigger */
+.pdk-w-tabs {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 36px; padding: 4px; gap: 2px;
+  border-radius: var(--pdk-radius-lg);
+  background: var(--pdk-muted); color: var(--pdk-muted-foreground);
+}
+.pdk-w-tab {
+  display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;
+  padding: 4px 12px; border: none; background: none; cursor: pointer;
+  border-radius: var(--pdk-radius-md);
+  font: 500 14px/1.4286 inherit; color: inherit;
+}
+.pdk-w-tab.is-active {
+  background: var(--pdk-background); color: var(--pdk-foreground);
+  box-shadow: var(--pdk-shadow);
+}
+
+/* 목록 · 카드 — Card */
+.pdk-w-list { display: flex; flex-direction: column; gap: 8px; }
+.pdk-w-item,
+.pdk-w-card {
+  border: 1px solid var(--pdk-border); border-radius: var(--pdk-radius-xl);
+  background: var(--pdk-card); box-shadow: var(--pdk-shadow);
+}
+.pdk-w-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+.pdk-w-card { display: flex; flex-direction: column; gap: 6px; padding: 16px; }
+.pdk-w-item-main { font-size: 14px; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+.pdk-w-item-sub { font-size: 14px; color: var(--pdk-muted-foreground); }
+
+/* 이미지·아이콘 자리표시 — 대각선으로 "자리"임을 표시 */
+.pdk-w-thumb, .pdk-w-avatar, .pdk-w-icon {
+  flex-shrink: 0; border: 1px solid var(--pdk-border); background: var(--pdk-muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: var(--pdk-muted-foreground);
+  background-image: linear-gradient(135deg, transparent 47%, var(--pdk-border) 47%, var(--pdk-border) 53%, transparent 53%);
+}
+.pdk-w-thumb { width: 64px; height: 64px; border-radius: var(--pdk-radius-md); }
+.pdk-w-avatar { width: 40px; height: 40px; border-radius: 50%; }
+.pdk-w-icon { width: 24px; height: 24px; border-radius: var(--pdk-radius-sm); }
+
+/* 버튼 — Button (h-9 / px-4 / text-sm / font-medium / rounded-md) */
+.pdk-w-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  white-space: nowrap; height: 36px; padding: 0 16px;
+  border-radius: var(--pdk-radius-md);
+  font: 500 14px/1 inherit;
+  color: var(--pdk-foreground);
+  background: var(--pdk-background);
+  border: 1px solid var(--pdk-input);
+  box-shadow: var(--pdk-shadow-sm);
+  cursor: pointer;
+  transition: background-color .15s, color .15s;
+}
+.pdk-w-btn:hover { background: var(--pdk-accent); }
+.pdk-w-btn.is-primary {
+  background: var(--pdk-primary); color: var(--pdk-primary-foreground);
+  border-color: transparent; box-shadow: var(--pdk-shadow);
+}
+.pdk-w-btn.is-primary:hover { opacity: 0.9; }
+.pdk-w-btn.is-secondary {
+  background: var(--pdk-secondary); color: var(--pdk-foreground); border-color: transparent;
+}
+.pdk-w-btn.is-ghost { border-color: transparent; background: none; box-shadow: none; }
+.pdk-w-btn.is-ghost:hover { background: var(--pdk-accent); }
+.pdk-w-btn.is-link {
+  border-color: transparent; background: none; box-shadow: none;
+  text-decoration: underline; text-underline-offset: 4px; padding: 0; height: auto;
+}
+.pdk-w-btn.is-disabled, .pdk-w-btn:disabled { opacity: 0.5; pointer-events: none; }
+.pdk-w-btn-block { width: 100%; }
+.pdk-w-btn-sm { height: 32px; padding: 0 12px; font-size: 12px; }
+.pdk-w-btn-lg { height: 40px; padding: 0 32px; }
+.pdk-w-btn-icon { width: 36px; height: 36px; padding: 0; }
+
+/* 입력 — Input (h-9 / px-3 / rounded-md / focus ring) */
+.pdk-w-field { display: flex; flex-direction: column; gap: 8px; }
+.pdk-w-label { font-size: 14px; font-weight: 500; line-height: 1.2; }
+.pdk-w-input, .pdk-w-textarea, .pdk-w-select {
+  width: 100%; box-sizing: border-box; height: 36px; padding: 4px 12px;
+  font: 400 14px/1.4286 inherit; color: var(--pdk-foreground);
+  background: transparent;
+  border: 1px solid var(--pdk-input); border-radius: var(--pdk-radius-md);
+  box-shadow: var(--pdk-shadow-sm);
+}
+.pdk-w-textarea { height: auto; min-height: 64px; padding: 8px 12px; resize: none; }
+.pdk-w-input::placeholder, .pdk-w-textarea::placeholder { color: var(--pdk-muted-foreground); }
+.pdk-w-input:focus-visible, .pdk-w-textarea:focus-visible, .pdk-w-select:focus-visible {
+  outline: none; box-shadow: 0 0 0 1px var(--pdk-ring);
+}
+.pdk-w-check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.pdk-w-check::before {
+  content: ""; width: 16px; height: 16px; flex-shrink: 0;
+  border: 1px solid var(--pdk-primary); border-radius: var(--pdk-radius-sm);
+  box-shadow: var(--pdk-shadow-sm);
+}
+.pdk-w-check.is-radio::before { border-radius: 50%; }
+.pdk-w-check.is-checked::before { background: var(--pdk-primary); border-color: var(--pdk-primary); }
+
+/* 상태 — Badge / Alert / Empty */
+.pdk-w-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 10px; border: 1px solid transparent; border-radius: var(--pdk-radius-md);
+  font-size: 12px; font-weight: 600; line-height: 1.3333;
+  background: var(--pdk-secondary); color: var(--pdk-foreground);
+}
+.pdk-w-badge.is-strong { background: var(--pdk-primary); color: var(--pdk-primary-foreground); box-shadow: var(--pdk-shadow); }
+.pdk-w-badge.is-outline { background: none; border-color: var(--pdk-border); }
+.pdk-w-banner {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 16px; border: 1px solid var(--pdk-border); border-radius: var(--pdk-radius-lg);
+  background: var(--pdk-background); font-size: 14px; color: var(--pdk-muted-foreground);
+}
+.pdk-w-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; padding: 40px 16px; min-height: 140px;
+  border: 1px dashed var(--pdk-border); border-radius: var(--pdk-radius-xl);
+  font-size: 14px; color: var(--pdk-muted-foreground); text-align: center;
+}
+
+/* 오버레이 — Dialog / Sheet / Toast (화면 안에 절대배치) */
+.pdk-w-dim {
+  position: absolute; inset: 0; z-index: 20;
+  background: rgb(0 0 0 / 0.8);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.pdk-w-modal {
+  width: 100%; max-width: 320px;
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 24px; background: var(--pdk-background);
+  border: 1px solid var(--pdk-border); border-radius: var(--pdk-radius-lg);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+}
+.pdk-w-sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 24px; background: var(--pdk-background);
+  border-top: 1px solid var(--pdk-border);
+  box-shadow: 0 -8px 24px rgb(0 0 0 / 0.12);
+}
+.pdk-w-toast {
+  position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 30;
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px; border-radius: var(--pdk-radius-lg);
+  background: var(--pdk-primary); color: var(--pdk-primary-foreground);
+  font-size: 14px; white-space: nowrap; box-shadow: var(--pdk-shadow);
+}
+
+/* ── (구) 스켈레톤 블록 — 이전 버전 화면 호환용. 신규 설계에는 위 .pdk-w-* 를 쓴다 ── */
 /* 회색 블록/라인/박스 — 시각 스타일은 미니멀 (실제 디자인은 Figma에서) */
 .pdk-skeleton,
 .pdk-sk-box { background: #e9ecef; border-radius: 12px; }
