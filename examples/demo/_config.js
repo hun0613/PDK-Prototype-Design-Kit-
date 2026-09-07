@@ -13,6 +13,7 @@ window.PDK_DEVICES = {
   desktop:    { label: '데스크탑',    type: 'frame', width: 1440, height: 1024, bezel: 10, radius: 20, bezelColor: '#404040' },
   mobile:     { label: '모바일',      type: 'frame', width: 360,  height: 782,  bezel: 10, radius: 40, bezelColor: '#404040' },
   tossfront2: { label: '토스프론트2', type: 'kiosk', width: 400,  height: 640,  radius: 18 },
+  responsive: { label: '반응형',      toggle: ['desktop', 'mobile'], default: 'mobile' },
 };
 
 window.PDK_PROJECT = {

@@ -1032,7 +1032,16 @@
         b.addEventListener('click', () => { window.__pdkVariant = k; applyDevice(); refreshToggleActive(respDev); });
         wrap.appendChild(b);
       });
-      document.body.appendChild(wrap);
+      // 상단 바의 우측 도구 영역에 넣는다.
+      // (예전처럼 body에 fixed로 띄우면 상단 바(z-index 150) 아래로 깔려 클릭이 막힌다)
+      const tools = document.querySelector('.pdk-topbar-tools');
+      if (tools) {
+        tools.insertBefore(wrap, tools.firstChild);
+      } else {
+        // 상단 바가 없는 페이지(예제 등) — 화면 좌상단에 떠 있는 형태로 대체
+        wrap.classList.add('is-floating');
+        document.body.appendChild(wrap);
+      }
     }
     refreshToggleActive(respDev);
   }
