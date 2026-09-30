@@ -24,6 +24,8 @@
 /pdk-figma-sync [화면ID] [figma url]       # Figma 디자인 적용
 ```
 
+> 순서: **init → screen → flow → wireframe → figma-sync** (mockup은 필요할 때만, init 전에)
+
 4. `index.html`을 브라우저로 열어 확인한다.
 
 > 클론 직후는 **빈 상태**다 — 등록된 화면이 없고 `index.html`은 빈 골격이다.
@@ -39,7 +41,7 @@
 |---|---|
 | `/pdk-init` | 이름·설명·디바이스·PRD 문서·push 레포를 받아 `config/project.js` 와 `index.html` 빈 골격 생성 |
 | `/pdk-mockup` | 이미지 폴더나 Figma URL을 참고해 커스텀 디바이스 목업 등록 |
-| `/pdk-screen` | 화면 등록 + 진입·이동(분기) 연결. 대화 중 언급된 미등록 화면도 **즉시 생성** |
+| `/pdk-screen` | 화면 등록 + 진입·이동(분기) 연결. 대화 중 언급된 미등록 화면도 **즉시 생성**. 기존 화면ID만 주면 비어 있는 항목을 **보강** |
 | `/pdk-flow` | 기능 단위 여정 정의 → 다이어그램 필터링. 여정 순서대로 이동(간선)도 확인 후 연결 |
 | `/pdk-wireframe` | 흑백 와이어프레임 UI(실제 문구·컴포넌트) + Description 자동 작성. 조건 분기는 목업 위 라디오로 전환 |
 | `/pdk-figma-sync` | Figma 시안을 와이어프레임에 적용 (`designed: true`) |

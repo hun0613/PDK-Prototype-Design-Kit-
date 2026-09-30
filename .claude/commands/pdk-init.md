@@ -156,6 +156,7 @@ window.PDK_FLOWS = [];
 - 7)의 원격 정리 결과를 함께 알린다. `origin`을 지운 경우 push하려면 먼저 내 레포를 만들고
   `git remote add origin <주소>` 를 실행하면 된다고 안내한다.
 - 다음 단계 안내: **`/pdk-screen [카테고리] [화면ID] [화면이름]`** 으로 화면을 유저플로우 순서대로 추가(화면 파일은 `pages/`에 생성됨).
+  전체 순서도 함께 보여준다: `/pdk-init` → `/pdk-screen` → `/pdk-flow` → `/pdk-wireframe` → `/pdk-figma-sync`
 
 ## 주의
 - 디자인/CSS 세부는 다루지 않는다(이후 `/pdk-figma-sync`가 담당).

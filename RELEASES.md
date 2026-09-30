@@ -15,6 +15,31 @@
 
 <!-- 새 릴리즈는 이 줄 아래에 추가 -->
 
+## v21 — 작업 순서 확정 (init → screen → flow → wireframe → figma-sync) · /pdk-screen 보강 모드 (2026-09-30)
+
+### 요약
+- PDK의 공식 작업 순서를 **`/pdk-init` → `/pdk-screen` → `/pdk-flow` → `/pdk-wireframe` → `/pdk-figma-sync`** 로 확정하고,
+  모든 커맨드의 "다음 단계" 안내와 문서를 이 순서에 맞췄습니다.
+  - 가이드(`docs/GUIDE.md`)에 빠져 있던 **`/pdk-flow` 단계(3단계)** 를 추가했습니다. 체크리스트에도 넣었습니다.
+  - `/pdk-screen` 이 끝나면 `/pdk-wireframe` 가 아니라 **`/pdk-flow`** 를 다음 단계로 안내합니다.
+  - `/pdk-flow` 가 끝나면 **`/pdk-wireframe`** 를 다음 단계로 안내합니다.
+- **`/pdk-screen <기존 화면ID>` 보강 모드**를 추가했습니다.
+  - 이전에는 이미 있는 화면 ID를 주면 "중복"이라며 다른 ID를 요구했습니다. 그런데 `/pdk-flow` 는
+    새로 만든 화면을 "`/pdk-screen <화면ID>` 로 마저 채우라"고 안내하고 있어서, **안내대로 하면 막혔습니다.**
+  - 이제 기존 화면 ID를 주면 **비어 있는 항목(맥락·진입·다음 이동)만** 물어서 채웁니다.
+    이미 적힌 내용과 간선은 덮어쓰지 않고, 와이어프레임·디자인이 들어간 화면 HTML도 건드리지 않습니다.
+
+### 코드 변경(자동)
+- `.claude/commands/pdk-screen.md`: 1) 인자 확인에서 기존 ID → 보강 모드 분기, 「기존 화면 보강 모드」 절 추가,
+  다음 단계 안내를 `/pdk-flow` 로 변경.
+- `.claude/commands/pdk-flow.md`: 전체 순서 명시, 등록 화면이 없을 때 안내, 다음 단계 안내를 `/pdk-wireframe` 로 변경.
+- `.claude/commands/pdk-init.md`: 다음 단계 안내에 전체 순서 표시.
+- `docs/GUIDE.md`: 3단계 `/pdk-flow` 추가(이후 단계 번호 한 칸씩 밀림), `/pdk-screen` 보강 사용법, 체크리스트 갱신.
+- `README.md`: 퀵스타트에 순서 한 줄, 커맨드 표에 보강 모드 설명.
+
+### 마이그레이션(필요 시)
+- 없음. 커맨드·문서만 바뀌며 `config/`·`pages/` 는 영향이 없다.
+
 ## v20 — 반응형 디바이스 토글을 상단 바로 이동 (2026-09-07)
 
 ### 요약
