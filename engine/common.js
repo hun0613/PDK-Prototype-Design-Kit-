@@ -39,13 +39,22 @@
   updateClock();
   setInterval(updateClock, 1000 * 30);
 
-  // ── 패널 이동 + 8방향 리사이즈 + 위치·크기 세션 저장 ──
-  // .page-flow / .page-detail 을 팝업처럼 이동하고, 네 변·네 모서리로 크기를 조절한다.
-  // 바꾼 위치·크기는 sessionStorage에 저장돼 새로고침·화면 이동 후에도 유지된다
-  // (탭/브라우저를 닫으면 초기 배치로 돌아간다).
+  // ── 오른쪽 패널 섹션(dock) + 떼어내기 · 다시 붙이기 ─────────
+  // Description / Flow 패널은 기본으로 오른쪽 섹션(.pdk-dock)에 붙어 위아래로 섹션을 나눠 채운다.
+  //   · 헤더를 잡고 섹션 밖으로 끌면 떠 있는 패널(.is-floating)이 된다 — 이동 + 8방향 크기 조절.
+  //     섹션에 남은 패널이 빈 높이를 채우고, 둘 다 떠나면 섹션이 사라진다(목업 영역이 넓어짐).
+  //   · 떠 있는 패널을 섹션 위로 끌어오면 위/아래 절반 중 놓은 쪽에 다시 붙는다.
+  //     헤더의 "다시 붙이기" 버튼은 원래 순서(Description 위 · Flow 아래)로 붙인다.
+  //   · 두 패널 사이 구분선을 끌면 위아래 비율이 바뀐다.
+  // 붙은 순서·비율·떠 있는 위치는 sessionStorage 에 저장(탭을 닫으면 초기 배치로).
   var PANEL_MIN_W = 260, PANEL_MIN_H = 150;
   var PANEL_STORE = 'pdk:panel:';
+  var DOCK_STORE = 'pdk:dock';
+  var DOCK_W = 420;
+  var DRAG_THRESHOLD = 5;               // 이만큼 움직여야 드래그로 본다(헤더 클릭과 구분)
   var RESIZE_DIRS = ['n', 's', 'e', 'w', 'nw', 'ne', 'sw', 'se'];
+  var PANEL_SEL = { detail: '.page-detail', flow: '.page-flow' };
+  var PANEL_BASE_ORDER = ['detail', 'flow'];
 
   function loadPanelGeom(key) {
     try {
@@ -65,82 +74,265 @@
     } catch (_) {}
   }
 
-  function makePanelFloating(panel, header, key) {
+  // order: 섹션에 붙은 패널 키(위→아래) · ratio: 위 패널이 차지하는 비율(null = 자동)
+  var dockState = (function () {
+    try {
+      var s = JSON.parse(sessionStorage.getItem(DOCK_STORE) || 'null');
+      if (s && Array.isArray(s.order)) return { order: s.order, ratio: typeof s.ratio === 'number' ? s.ratio : null };
+    } catch (_) {}
+    return { order: PANEL_BASE_ORDER.slice(), ratio: null };
+  })();
+  function saveDockState() {
+    try { sessionStorage.setItem(DOCK_STORE, JSON.stringify(dockState)); } catch (_) {}
+  }
+
+  function panelEl(key) { return document.querySelector(PANEL_SEL[key]); }
+
+  function getDock() {
+    var dock = document.querySelector('.pdk-dock');
+    if (!dock) {
+      dock = document.createElement('aside');
+      dock.className = 'pdk-dock';
+      dock.innerHTML = '<div class="pdk-dock-drop" aria-hidden="true"></div>';
+      document.body.appendChild(dock);
+    }
+    return dock;
+  }
+
+  function clearGeom(panel) {
+    ['left', 'top', 'right', 'bottom', 'width', 'height', 'maxHeight', 'flex'].forEach(function (p) { panel.style[p] = ''; });
+  }
+  function setGeom(panel, left, top, w, h) {
+    panel.style.right = 'auto';
+    panel.style.bottom = 'auto';
+    panel.style.maxHeight = 'none';
+    panel.style.flex = '';
+    panel.style.left = Math.round(left) + 'px';
+    panel.style.top = Math.round(top) + 'px';
+    panel.style.width = Math.round(w) + 'px';
+    panel.style.height = Math.round(h) + 'px';
+  }
+
+  // 섹션에 붙이기 — at: 'top' | 'bottom' | 없으면 원래 순서
+  function dockPanel(key, at) {
+    var panel = panelEl(key);
+    if (!panel) return;
+    var order = dockState.order.filter(function (k) { return k !== key; });
+    if (at === 'top') order.unshift(key);
+    else if (at === 'bottom') order.push(key);
+    else {
+      order.push(key);
+      order.sort(function (a, b) { return PANEL_BASE_ORDER.indexOf(a) - PANEL_BASE_ORDER.indexOf(b); });
+    }
+    dockState.order = order;
+    dockState.ratio = null;                 // 구성이 바뀌면 비율은 자동으로
+    saveDockState();
+    panel.classList.remove('is-floating');
+    panel.classList.add('is-docked');
+    clearGeom(panel);
+    renderDock();
+    queueFit();
+  }
+
+  // 떼어내기 — rect 위치에 떠 있는 패널로
+  function floatPanel(key, rect) {
+    var panel = panelEl(key);
+    if (!panel) return;
+    dockState.order = dockState.order.filter(function (k) { return k !== key; });
+    dockState.ratio = null;
+    saveDockState();
+    panel.classList.remove('is-docked');
+    panel.classList.add('is-floating');
+    document.body.appendChild(panel);
+    setGeom(panel, rect.left, rect.top, rect.width, rect.height);
+    renderDock();
+    queueFit();
+  }
+
+  // 섹션 안 배치 — 붙은 패널을 순서대로 놓고 높이를 나눈다. 섹션의 왼쪽 x(비었으면 null)를 돌려준다.
+  function renderDock() {
+    var dock = getDock();
+    var keys = dockState.order.filter(function (k) {
+      var p = panelEl(k);
+      return p && p.classList.contains('is-docked');
+    });
+
+    // DOM 순서 맞추기 — 이미 맞으면 옮기지 않는다(옮기면 스크롤·패닝 위치가 초기화된다)
+    var divider = dock.querySelector('.pdk-dock-divider');
+    var current = Array.prototype.filter.call(dock.children, function (c) {
+      return c.classList.contains('page-detail') || c.classList.contains('page-flow');
+    });
+    var want = keys.map(panelEl);
+    if (current.length !== want.length || current.some(function (c, i) { return c !== want[i]; })) {
+      want.forEach(function (p) { dock.appendChild(p); });
+    }
+
+    var visible = want.filter(function (p) { return !p.classList.contains('is-hidden'); });
+    dock.classList.toggle('is-empty', visible.length === 0);
+
+    // 구분선 — 보이는 패널이 둘일 때만, 둘 사이에
+    if (visible.length === 2) {
+      if (!divider) divider = createDivider(dock);
+      if (divider.previousElementSibling !== visible[0] || divider.nextElementSibling !== visible[1]) {
+        dock.insertBefore(divider, visible[1]);
+      }
+      divider.hidden = false;
+    } else if (divider) {
+      divider.hidden = true;
+    }
+
+    if (visible.length === 1) {
+      visible[0].style.flex = '1 1 auto';
+      visible[0].style.maxHeight = '';
+    } else if (visible.length === 2) {
+      var first = visible[0], second = visible[1];
+      var avail = dock.clientHeight - (divider ? divider.offsetHeight : 0);
+      var h1;
+      if (dockState.ratio != null) {
+        h1 = dockState.ratio * avail;
+      } else if (first.classList.contains('page-detail')) {
+        // 자동: Description 이 위면 내용만큼, 최대 절반
+        first.style.flex = '0 0 auto';
+        first.style.maxHeight = Math.floor(avail / 2) + 'px';
+        h1 = first.offsetHeight;
+        first.style.maxHeight = '';
+      } else {
+        h1 = avail / 2;
+      }
+      h1 = Math.max(Math.min(PANEL_MIN_H, avail / 2), Math.min(h1, avail - PANEL_MIN_H));
+      first.style.flex = '0 0 ' + Math.floor(h1) + 'px';
+      second.style.flex = '1 1 0';
+    }
+    return visible.length ? dock.getBoundingClientRect().left : null;
+  }
+
+  // 두 패널 사이 구분선 — 끌어서 위아래 비율 조절
+  function createDivider(dock) {
+    var divider = document.createElement('div');
+    divider.className = 'pdk-dock-divider';
+    divider.setAttribute('role', 'separator');
+    divider.title = '끌어서 높이 조절';
+    divider.addEventListener('pointerdown', function (e) {
+      if (e.button !== 0) return;
+      divider.classList.add('is-active');
+      trackDrag(e, function (ev) {
+        var r = dock.getBoundingClientRect();
+        var avail = r.height - divider.offsetHeight;
+        var h1 = Math.max(PANEL_MIN_H, Math.min(ev.clientY - r.top, avail - PANEL_MIN_H));
+        dockState.ratio = h1 / avail;
+        renderDock();
+      }, function () {
+        divider.classList.remove('is-active');
+        saveDockState();
+      });
+    });
+    return divider;
+  }
+
+  // 포인터 드래그 공통 — window 에서 추적한다
+  // (드래그 중 패널을 섹션 안팎으로 옮기면 pointer capture 가 풀리므로 capture 를 쓰지 않는다)
+  function trackDrag(e, move, end) {
+    e.preventDefault();
+    e.stopPropagation();
+    document.body.classList.add('pdk-is-dragging');
+    function up(ev) {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      document.body.classList.remove('pdk-is-dragging');
+      if (end) end(ev);
+    }
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  }
+
+  // 포인터가 섹션 자리(오른쪽 DOCK_W 영역) 위인지 + 위/아래 절반
+  function dockDropAt(x, y) {
+    var dock = getDock();
+    var r = dock.getBoundingClientRect();
+    var top = r.height ? r.top : 95;
+    if (x < window.innerWidth - DOCK_W || y < top) return null;
+    var hasVisible = !dock.classList.contains('is-empty');
+    if (!hasVisible) return 'top';
+    return y < top + (window.innerHeight - top) / 2 ? 'top' : 'bottom';
+  }
+  function showDrop(at) {
+    var dock = getDock();
+    dock.classList.toggle('is-drop-target', !!at);
+    dock.classList.toggle('is-drop-top', at === 'top');
+    dock.classList.toggle('is-drop-bottom', at === 'bottom');
+  }
+
+  function registerPanel(panel, header, key) {
     if (!panel || !header) return;
 
-    // right/bottom 앵커 + vh 높이 → left/top/width/height 절대값으로 1회 전환
-    function detach() {
-      if (panel.dataset.pdkDetached) return;
-      var r = panel.getBoundingClientRect();
-      setGeom(r.left, r.top, r.width, r.height);
-    }
-    function setGeom(left, top, w, h) {
-      panel.style.right = 'auto';
-      panel.style.bottom = 'auto';
-      panel.style.maxHeight = 'none';   // 42vh/46vh 제약 해제 → 높이 자유 조절
-      panel.style.left = Math.round(left) + 'px';
-      panel.style.top = Math.round(top) + 'px';
-      panel.style.width = Math.round(w) + 'px';
-      panel.style.height = Math.round(h) + 'px';
-      panel.dataset.pdkDetached = '1';
+    // 다시 붙이기 버튼 (떠 있을 때만 보인다 — CSS)
+    var redock = panel.querySelector('.pdk-redock');
+    if (redock) redock.addEventListener('click', function () { dockPanel(key); });
+
+    // 처음 위치 — 저장된 상태를 따른다(기본은 섹션에 붙음)
+    if (dockState.order.indexOf(key) > -1) {
+      panel.classList.add('is-docked');
+      getDock().appendChild(panel);
+    } else {
+      panel.classList.add('is-floating');
+      var saved = loadPanelGeom(key);
+      var w = saved ? saved.width : DOCK_W, h = saved ? saved.height : 360;
+      w = Math.max(PANEL_MIN_W, Math.min(w, window.innerWidth));
+      h = Math.max(PANEL_MIN_H, Math.min(h, window.innerHeight));
+      var left = saved ? saved.left : window.innerWidth - DOCK_W - w - 32;
+      var top = saved ? saved.top : 120;
+      setGeom(panel,
+        Math.max(0, Math.min(left, window.innerWidth - 40)),
+        Math.max(0, Math.min(top, window.innerHeight - 40)), w, h);
     }
 
-    // 저장된 배치 복원 — 창이 작아졌을 수 있으므로 현재 뷰포트에 맞춰 보정
-    var saved = key && loadPanelGeom(key);
-    if (saved) {
-      var w = Math.max(PANEL_MIN_W, Math.min(saved.width, window.innerWidth));
-      var h = Math.max(PANEL_MIN_H, Math.min(saved.height, window.innerHeight));
-      setGeom(
-        Math.max(0, Math.min(saved.left, window.innerWidth - 40)),
-        Math.max(0, Math.min(saved.top, window.innerHeight - 40)),
-        w, h
-      );
-    }
-
-    // 포인터 드래그 공통 처리 (capture로 패널 밖으로 나가도 계속 추적)
-    function onDrag(el, e, move) {
-      e.preventDefault();
-      e.stopPropagation();
-      try { el.setPointerCapture(e.pointerId); } catch (_) {}
-      function up() {
-        el.removeEventListener('pointermove', move);
-        el.removeEventListener('pointerup', up);
-        el.removeEventListener('pointercancel', up);
-        savePanelGeom(key, panel);       // 조작이 끝난 시점의 배치를 저장
-      }
-      el.addEventListener('pointermove', move);
-      el.addEventListener('pointerup', up);
-      el.addEventListener('pointercancel', up);
-    }
-
-    // 1) 헤더 드래그 → 이동 (헤더의 버튼 클릭은 제외)
+    // 1) 헤더 드래그 — 붙어 있으면 떼어내고, 놓은 곳이 섹션이면 다시 붙인다 (헤더의 버튼 클릭은 제외)
     header.style.cursor = 'move';
     header.addEventListener('pointerdown', function (e) {
       if (e.button !== 0 || e.target.closest('button')) return;
-      detach();
-      var r = panel.getBoundingClientRect();
-      var offX = e.clientX - r.left, offY = e.clientY - r.top;
-      onDrag(header, e, function (ev) {
-        // 완전히 화면 밖으로 나가 다시 잡을 수 없게 되는 것만 막는다
+      var r0 = panel.getBoundingClientRect();
+      var offX = e.clientX - r0.left, offY = e.clientY - r0.top;
+      var x0 = e.clientX, y0 = e.clientY;
+      var dragging = false;
+      trackDrag(e, function (ev) {
+        if (!dragging) {
+          if (Math.abs(ev.clientX - x0) < DRAG_THRESHOLD && Math.abs(ev.clientY - y0) < DRAG_THRESHOLD) return;
+          dragging = true;
+          panel.classList.add('is-dragging');
+          if (panel.classList.contains('is-docked')) {
+            // 붙어 있던 패널 → 지금 크기로 떼어낸다(너무 길면 화면의 60%로)
+            floatPanel(key, { left: r0.left, top: r0.top, width: r0.width,
+              height: Math.max(PANEL_MIN_H, Math.min(r0.height, window.innerHeight * 0.6)) });
+          }
+        }
         var nl = Math.max(0, Math.min(ev.clientX - offX, window.innerWidth - 40));
         var nt = Math.max(0, Math.min(ev.clientY - offY, window.innerHeight - 40));
         panel.style.left = nl + 'px';
         panel.style.top = nt + 'px';
+        showDrop(dockDropAt(ev.clientX, ev.clientY));
+      }, function (ev) {
+        if (!dragging) return;
+        panel.classList.remove('is-dragging');
+        var at = dockDropAt(ev.clientX, ev.clientY);
+        showDrop(null);
+        if (at) dockPanel(key, at);
+        else savePanelGeom(key, panel);
       });
     });
 
-    // 2) 네 변 + 네 모서리 핸들 → 크기 조절
+    // 2) 네 변 + 네 모서리 핸들 → 크기 조절 (떠 있을 때만 — 붙어 있으면 CSS 로 숨김)
     RESIZE_DIRS.forEach(function (dir) {
       var handle = document.createElement('div');
       handle.className = 'pdk-rz pdk-rz-' + dir;
       panel.appendChild(handle);
       handle.addEventListener('pointerdown', function (e) {
-        if (e.button !== 0) return;
-        detach();
+        if (e.button !== 0 || !panel.classList.contains('is-floating')) return;
         var r = panel.getBoundingClientRect();
         var x0 = e.clientX, y0 = e.clientY;
         var right0 = r.right, bottom0 = r.bottom;
-        onDrag(handle, e, function (ev) {
+        trackDrag(e, function (ev) {
           var left = r.left, top = r.top, w = r.width, h = r.height;
           var dx = ev.clientX - x0, dy = ev.clientY - y0;
 
@@ -156,10 +348,12 @@
             top = Math.max(0, Math.min(r.top + dy, bottom0 - PANEL_MIN_H));
             h = bottom0 - top;                 // 아래 모서리 고정
           }
-          setGeom(left, top, w, h);
-        });
+          setGeom(panel, left, top, w, h);
+        }, function () { savePanelGeom(key, panel); });
       });
     });
+
+    queueFit();
   }
 
   // ── 화면 이동 헬퍼 ──────────────────────
@@ -399,9 +593,12 @@
     detail.innerHTML = `
       <div class="page-detail-header">
         <div class="page-detail-title">DESCRIPTION</div>
+        <div class="page-detail-header-tools">
+        <button class="pdk-redock" type="button" aria-label="다시 붙이기" title="오른쪽 섹션에 다시 붙이기"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 3v10" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 8h3.5M6.5 6l2 2-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <button class="page-detail-close" type="button" aria-label="Description 최소화">
           <img src="${ENGINE_BASE}icons/desc-minimize.svg" width="32" height="32" alt="">
         </button>
+        </div>
       </div>
       <div class="page-detail-body">
         ${descriptionBlock}
@@ -456,7 +653,7 @@
     });
 
     document.body.appendChild(detail);
-    makePanelFloating(detail, detail.querySelector('.page-detail-header'), 'detail');
+    registerPanel(detail, detail.querySelector('.page-detail-header'), 'detail');
   }
 
   // ── 우하단 통합 dock (Description / 화면 플로우 표시 토글) ──
@@ -765,6 +962,7 @@
           <button class="page-flow-expand" type="button" aria-label="크게 보기" title="크게 보기">
             <img src="${ENGINE_BASE}icons/flow-expand.svg" width="32" height="32" alt="">
           </button>
+          <button class="pdk-redock" type="button" aria-label="다시 붙이기" title="오른쪽 섹션에 다시 붙이기"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 3v10" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 8h3.5M6.5 6l2 2-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button class="page-flow-toggle" type="button" aria-label="플로우 최소화"><img src="${ENGINE_BASE}icons/flow-minimize.svg" width="32" height="32" alt=""></button>
         </div>
       </div>
@@ -781,7 +979,7 @@
     document.body.appendChild(aside);
 
     // 패널 이동(헤더) + 8방향 리사이즈 + 배치 세션 저장
-    makePanelFloating(aside, aside.querySelector('.page-flow-header'), 'flow');
+    registerPanel(aside, aside.querySelector('.page-flow-header'), 'flow');
 
     // 드래그(grab) 패닝 활성화
     enableFlowPan(aside.querySelector('.page-flow-body'));
@@ -979,41 +1177,12 @@
     applyCase(initial);
   }
 
-  // ── 화면 배치: 오른쪽 패널 열 + 목업 스테이지 영역 ─────────
-  // 작은 화면(노트북)에서 패널끼리·패널과 목업이 겹치지 않게, 실제 남는 공간을 재서 배치한다.
-  //   오른쪽 열: Description(위) + Flow(아래)를 간격 12px 로 쌓는다. 떼어낸(드래그) 패널은 열에서 빠진다.
-  //   스테이지: 상단 바 아래 · 페이지 목록 오른쪽 · 오른쪽 열 왼쪽 · 하단 문의 문구 위 — 이 영역 안에 목업을 맞춘다.
-  var DOCK_TOP = 84, DOCK_BOTTOM = 16, DOCK_RIGHT = 16, DOCK_GAP = 12;
+  // ── 화면 배치: 목업 스테이지 영역 ─────────
+  // 작은 화면(노트북)에서 패널과 목업이 겹치지 않게, 실제 남는 공간을 재서 배치한다.
+  //   스테이지: 상단 바 아래 · 페이지 목록 오른쪽 · 오른쪽 섹션(.pdk-dock) 왼쪽 · 하단 문의 문구 위 — 이 영역 안에 목업을 맞춘다.
+  //   오른쪽 섹션이 비면(패널이 모두 떠 있거나 닫힘) 화면 오른쪽 끝까지 쓴다.
   var STAGE_BOTTOM = 32;          // 하단 문의 문구 자리
   var STAGE_PAD = 16;             // 스테이지 안쪽 여백(상하좌우)
-
-  function isDocked(panel) {
-    return !!panel && !panel.classList.contains('is-hidden') && !panel.dataset.pdkDetached;
-  }
-
-  // 오른쪽 열 배치 — 붙어 있는 패널의 왼쪽 x 좌표(열이 비면 null)를 돌려준다
-  function layoutDock() {
-    var detail = document.querySelector('.page-detail');
-    var flow = document.querySelector('.page-flow');
-    var dD = isDocked(detail), dF = isDocked(flow);
-    var avail = window.innerHeight - DOCK_TOP - DOCK_BOTTOM;
-
-    if (dD) {
-      detail.style.top = DOCK_TOP + 'px';
-      detail.style.bottom = 'auto';
-      detail.style.height = 'auto';
-      // 둘 다 붙어 있으면 Description 은 내용만큼, 최대 열의 절반까지
-      detail.style.maxHeight = (dF ? Math.floor((avail - DOCK_GAP) / 2) : avail) + 'px';
-    }
-    if (dF) {
-      var top = dD ? DOCK_TOP + detail.offsetHeight + DOCK_GAP : DOCK_TOP;
-      flow.style.top = top + 'px';
-      flow.style.bottom = 'auto';
-      flow.style.height = Math.max(PANEL_MIN_H, window.innerHeight - DOCK_BOTTOM - top) + 'px';
-    }
-    var ref = dD ? detail : (dF ? flow : null);
-    return ref ? ref.getBoundingClientRect().left : null;
-  }
 
   function fitStage() {
     var root = document.documentElement;
@@ -1024,7 +1193,7 @@
     // 1) 스테이지 영역 = 화면에서 상단 바·페이지 목록·오른쪽 열을 뺀 나머지
     var topbar = document.querySelector('.pdk-topbar');
     var nav = document.querySelector('.page-nav');
-    var dockLeft = layoutDock();
+    var dockLeft = renderDock();
     var top = topbar ? Math.round(topbar.getBoundingClientRect().bottom) : 0;
     // (fixed 요소는 offsetParent 가 항상 null 이라 표시 여부는 getClientRects 로 본다)
     var left = nav && nav.getClientRects().length ? Math.round(nav.getBoundingClientRect().right) : 0;
@@ -1064,8 +1233,8 @@
     requestAnimationFrame(function () { fitQueued = false; fitStage(); });
   }
 
-  // 패널 열기·닫기(is-hidden)·떼어내기(data-pdk-detached) → 다시 배치.
-  // style 은 감시하지 않는다(layoutDock 이 style 을 바꾸므로 무한 반복 방지).
+  // 패널 열기·닫기(is-hidden) → 다시 배치. (붙이기·떼어내기는 dockPanel/floatPanel 이 직접 queueFit)
+  // style 은 감시하지 않는다(renderDock 이 style 을 바꾸므로 무한 반복 방지).
   function watchLayout() {
     if (window.__pdkLayoutBound) return;
     window.__pdkLayoutBound = true;
@@ -1073,7 +1242,7 @@
     if (window.MutationObserver) {
       var mo = new MutationObserver(queueFit);
       document.querySelectorAll('.page-detail, .page-flow').forEach(function (p) {
-        mo.observe(p, { attributes: true, attributeFilter: ['class', 'data-pdk-detached'] });
+        mo.observe(p, { attributes: true, attributeFilter: ['class'] });
       });
     }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(queueFit);   // 웹폰트로 상단 바 높이가 바뀔 수 있다
