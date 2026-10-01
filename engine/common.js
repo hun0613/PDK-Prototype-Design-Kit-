@@ -962,12 +962,10 @@
       }).join('');
 
     stage.classList.add('has-case-panel');
-    stage.insertBefore(panel, mockup);
-
-    // 상단 바 높이는 프로젝트명·설명 길이에 따라 달라진다 → 실제 높이를 재서 여백 확보
-    // (CSS의 padding-top: 72px 는 상단 바가 없을 때를 위한 기본값)
-    var topbar = document.querySelector('.pdk-topbar');
-    if (topbar) stage.style.paddingTop = Math.round(topbar.getBoundingClientRect().height + 16) + 'px';
+    // 목업이 .device-fit 으로 감싸져 있으면 그 래퍼 앞에 넣는다
+    var anchor = mockup.parentElement === stage ? mockup : mockup.closest('.device-fit');
+    stage.insertBefore(panel, anchor);
+    // 상단 바 아래 여백은 fitStage() 가 스테이지 영역(--pdk-stage-top)으로 처리한다
 
     panel.addEventListener('click', function (e) {
       var opt = e.target.closest('.pdk-case-option');
@@ -979,6 +977,106 @@
     });
 
     applyCase(initial);
+  }
+
+  // ── 화면 배치: 오른쪽 패널 열 + 목업 스테이지 영역 ─────────
+  // 작은 화면(노트북)에서 패널끼리·패널과 목업이 겹치지 않게, 실제 남는 공간을 재서 배치한다.
+  //   오른쪽 열: Description(위) + Flow(아래)를 간격 12px 로 쌓는다. 떼어낸(드래그) 패널은 열에서 빠진다.
+  //   스테이지: 상단 바 아래 · 페이지 목록 오른쪽 · 오른쪽 열 왼쪽 · 하단 문의 문구 위 — 이 영역 안에 목업을 맞춘다.
+  var DOCK_TOP = 84, DOCK_BOTTOM = 16, DOCK_RIGHT = 16, DOCK_GAP = 12;
+  var STAGE_BOTTOM = 32;          // 하단 문의 문구 자리
+  var STAGE_PAD = 16;             // 스테이지 안쪽 여백(상하좌우)
+
+  function isDocked(panel) {
+    return !!panel && !panel.classList.contains('is-hidden') && !panel.dataset.pdkDetached;
+  }
+
+  // 오른쪽 열 배치 — 붙어 있는 패널의 왼쪽 x 좌표(열이 비면 null)를 돌려준다
+  function layoutDock() {
+    var detail = document.querySelector('.page-detail');
+    var flow = document.querySelector('.page-flow');
+    var dD = isDocked(detail), dF = isDocked(flow);
+    var avail = window.innerHeight - DOCK_TOP - DOCK_BOTTOM;
+
+    if (dD) {
+      detail.style.top = DOCK_TOP + 'px';
+      detail.style.bottom = 'auto';
+      detail.style.height = 'auto';
+      // 둘 다 붙어 있으면 Description 은 내용만큼, 최대 열의 절반까지
+      detail.style.maxHeight = (dF ? Math.floor((avail - DOCK_GAP) / 2) : avail) + 'px';
+    }
+    if (dF) {
+      var top = dD ? DOCK_TOP + detail.offsetHeight + DOCK_GAP : DOCK_TOP;
+      flow.style.top = top + 'px';
+      flow.style.bottom = 'auto';
+      flow.style.height = Math.max(PANEL_MIN_H, window.innerHeight - DOCK_BOTTOM - top) + 'px';
+    }
+    var ref = dD ? detail : (dF ? flow : null);
+    return ref ? ref.getBoundingClientRect().left : null;
+  }
+
+  function fitStage() {
+    var root = document.documentElement;
+    var stage = document.querySelector('.device-stage');
+    var mockup = stage && stage.querySelector('.device-mockup');
+    if (!stage || !mockup) return;
+
+    // 1) 스테이지 영역 = 화면에서 상단 바·페이지 목록·오른쪽 열을 뺀 나머지
+    var topbar = document.querySelector('.pdk-topbar');
+    var nav = document.querySelector('.page-nav');
+    var dockLeft = layoutDock();
+    var top = topbar ? Math.round(topbar.getBoundingClientRect().bottom) : 0;
+    // (fixed 요소는 offsetParent 가 항상 null 이라 표시 여부는 getClientRects 로 본다)
+    var left = nav && nav.getClientRects().length ? Math.round(nav.getBoundingClientRect().right) : 0;
+    var right = dockLeft == null ? 0 : Math.max(0, Math.round(window.innerWidth - dockLeft));
+    root.style.setProperty('--pdk-stage-top', top + 'px');
+    root.style.setProperty('--pdk-stage-left', left + 'px');
+    root.style.setProperty('--pdk-stage-right', right + 'px');
+    root.style.setProperty('--pdk-stage-bottom', STAGE_BOTTOM + 'px');
+    stage.classList.add('is-fitted');
+
+    // 2) 목업을 줄인 크기만큼만 자리를 차지하는 래퍼(.device-fit)로 감싼다
+    //    (transform: scale 은 보이는 크기만 줄이고 자리는 원래 크기로 남겨, 목업이 아래로 밀려 잘렸다)
+    var fitBox = mockup.parentElement;
+    if (!fitBox.classList.contains('device-fit')) {
+      fitBox = document.createElement('div');
+      fitBox.className = 'device-fit';
+      stage.insertBefore(fitBox, mockup);
+      fitBox.appendChild(mockup);
+    }
+
+    // 3) 목업 원래 크기(offset* 는 transform 영향 없음)를 영역에 맞춘다
+    var natW = mockup.offsetWidth, natH = mockup.offsetHeight;
+    if (!natW || !natH) return;
+    var casePanel = stage.querySelector('.pdk-case-panel');
+    var availW = stage.clientWidth - STAGE_PAD * 2;
+    var availH = stage.clientHeight - STAGE_PAD * 2 - (casePanel ? casePanel.offsetHeight + 12 : 0);
+    var scale = Math.max(0.1, Math.min(1, availW / natW, availH / natH));
+    root.style.setProperty('--pdk-device-scale', scale.toFixed(3));
+    fitBox.style.width = Math.floor(natW * scale) + 'px';
+    fitBox.style.height = Math.floor(natH * scale) + 'px';
+  }
+
+  var fitQueued = false;
+  function queueFit() {
+    if (fitQueued) return;
+    fitQueued = true;
+    requestAnimationFrame(function () { fitQueued = false; fitStage(); });
+  }
+
+  // 패널 열기·닫기(is-hidden)·떼어내기(data-pdk-detached) → 다시 배치.
+  // style 은 감시하지 않는다(layoutDock 이 style 을 바꾸므로 무한 반복 방지).
+  function watchLayout() {
+    if (window.__pdkLayoutBound) return;
+    window.__pdkLayoutBound = true;
+    window.addEventListener('resize', queueFit);
+    if (window.MutationObserver) {
+      var mo = new MutationObserver(queueFit);
+      document.querySelectorAll('.page-detail, .page-flow').forEach(function (p) {
+        mo.observe(p, { attributes: true, attributeFilter: ['class', 'data-pdk-detached'] });
+      });
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(queueFit);   // 웹폰트로 상단 바 높이가 바뀔 수 있다
   }
 
   // ── 디바이스 목업 적용 (config: PDK_PROJECT / PDK_DEVICES) ──
@@ -1006,24 +1104,7 @@
     const stage = document.querySelector('.device-stage');
     if (stage) stage.setAttribute('data-device-type', d.type || 'frame');
 
-    function fit() {
-      const outerW = d.width + bezel * 2, outerH = d.height + bezel * 2;
-      const availW = Math.max(260, window.innerWidth - 640);  // 좌(280)+우(280) 패널 여유
-      // 세로 여유: 기본 90px. 케이스 패널이 있으면 스테이지 여백 + 패널 높이를 실측해 뺀다.
-      let overhead = 90;
-      const stageEl = document.querySelector('.device-stage');
-      const casePanel = document.querySelector('.pdk-case-panel');
-      if (stageEl && casePanel) {
-        const cs = getComputedStyle(stageEl);
-        overhead = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)
-          + casePanel.getBoundingClientRect().height + 12 + 10;   // 12=패널 아래 여백
-      }
-      const availH = Math.max(340, window.innerHeight - overhead);
-      const scale = Math.min(1, availW / outerW, availH / outerH);
-      root.style.setProperty('--pdk-device-scale', scale.toFixed(3));
-    }
-    fit();
-    if (!window.__pdkFitBound) { window.addEventListener('resize', fit); window.__pdkFitBound = true; }
+    fitStage();
 
     const proj = window.PDK_PROJECT || {};
     const respDev = devs[proj.device];
@@ -1244,6 +1325,8 @@
     injectFlowDiagram();
     injectSpecModal();
     injectFooter();
+    fitStage();            // 패널이 생긴 뒤 실제 남는 공간으로 다시 배치
+    watchLayout();
   }
 
   if (document.readyState === 'loading') {

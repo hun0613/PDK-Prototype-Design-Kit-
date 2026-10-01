@@ -117,6 +117,22 @@ html, body {
   padding: 40px 20px;
 }
 
+/* 엔진이 배치를 잡은 스테이지 — 상단 바·페이지 목록·오른쪽 패널 열을 뺀 영역만 차지한다 (fitStage)
+   영역 경계는 --pdk-stage-* 변수로 들어온다. 이 안에서만 목업을 가운데 맞추므로 패널과 겹치지 않는다. */
+.device-stage.is-fitted {
+  position: fixed;
+  top: var(--pdk-stage-top, 0px);
+  left: var(--pdk-stage-left, 0px);
+  right: var(--pdk-stage-right, 0px);
+  bottom: var(--pdk-stage-bottom, 0px);
+  width: auto;
+  min-height: 0;
+  padding: 16px;
+  overflow: hidden;
+  background: transparent;    /* 페이지 배경과 같은 톤 유지 */
+}
+.device-stage.is-fitted.has-case-panel { padding-top: 16px; }
+
 .device-mockup {
   position: relative;
   display: flex;
@@ -125,6 +141,18 @@ html, body {
   filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.10));
   transform: scale(var(--pdk-device-scale, 1));   /* 큰 캔버스(데스크탑 등) 뷰포트 맞춤 */
   transform-origin: center center;
+}
+/* 줄인 목업이 차지할 자리 — 크기는 엔진이 (원래 크기 × 배율)로 지정한다.
+   목업은 이 상자의 왼쪽 위를 기준으로 줄어들어 상자를 정확히 채운다. */
+.device-fit {
+  position: relative;
+  flex-shrink: 0;
+}
+.device-fit > .device-mockup {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
 }
 
 /* 우측 카드리더 돌출부 (몸체 뒤에서 옆으로 튀어나옴) */
@@ -1660,8 +1688,9 @@ html, body {
 /* 하단 시스템 문의 푸터 (저작권 표기처럼 작게, 화면 하단 중앙 고정) */
 .pdk-sys-footer {
   position: fixed;
-  bottom: 16px;
-  left: 50%;
+  bottom: 10px;
+  /* 스테이지 영역 가운데 (목업 아래 여백 — --pdk-stage-bottom 안에 들어간다) */
+  left: calc((var(--pdk-stage-left, 0px) + 100vw - var(--pdk-stage-right, 0px)) / 2);
   transform: translateX(-50%);
   z-index: 1;                 /* 사이드바(z 50~60)보다 아래 — 겹치면 패널이 위로 */
   font-size: 10px;
