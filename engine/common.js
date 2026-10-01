@@ -1418,6 +1418,8 @@
     flatPages().forEach(function (p) { pageNames[p.id] = p.label; });
     var tab = curId ? 'page' : 'all';
     var focusId = '';
+    var cellOwner = [];          // render() 가 채운다 — Depth 셀 소속(병합 범위) 표
+    var selectedCell = null;
 
     var modal = document.createElement('div');
     modal.className = 'pdk-spec-modal';
@@ -1445,6 +1447,7 @@
     }
 
     function render() {
+      selectedCell = null;         // 표를 새로 그리면 선택도 초기화
       var all = Array.isArray(window.PDK_SPECS) ? window.PDK_SPECS : [];
       var mine = all.filter(function (r) { return curId && r.pageId === curId; });
       modal.querySelector('[data-spec-tab="page"]').textContent = '이 화면 (' + mine.length + ')';
@@ -1468,16 +1471,20 @@
       var locs = rows.map(function (r) { return Array.isArray(r.location) ? r.location : []; });
       var depth = Math.max(1, Math.max.apply(null, locs.map(function (l) { return l.length; })));
       var span = locs.map(function () { return []; });   // span[i][d]: 0=병합돼 생략, n=rowspan
+      var owner = locs.map(function () { return []; });  // owner[i][d]: (i,d) 를 덮는 Depth 셀이 그려진 행(-1 = 해당 Depth 없음)
       for (var d = 0; d < depth; d++) {
         for (var i = 0; i < rows.length; i++) {
           if (locs[i].length > d && i > 0 && locs[i - 1].length > d && samePrefix(locs[i], locs[i - 1], d)) {
             span[i][d] = 0;
+            owner[i][d] = owner[i - 1][d];
             for (var k = i - 1; k >= 0; k--) { if (span[k][d]) { span[k][d]++; break; } }
           } else {
             span[i][d] = 1;
+            owner[i][d] = locs[i].length > d ? i : -1;
           }
         }
       }
+      cellOwner = owner;
 
       var depthHead = '';
       for (var h = 0; h < depth; h++) depthHead += '<th class="is-depth">' + (h + 1) + 'Depth</th>';
@@ -1491,12 +1498,12 @@
         var cls = [];
         if (tab === 'all' && curId && r.pageId === curId) cls.push('is-current');
         if (focusId && r.id === focusId) cls.push('is-focus');
-        var tr = '<tr data-spec-row="' + escapeHtml(r.id || '') + '"' + (cls.length ? ' class="' + cls.join(' ') + '"' : '') + '>'
+        var tr = '<tr data-i="' + i + '" data-spec-row="' + escapeHtml(r.id || '') + '"' + (cls.length ? ' class="' + cls.join(' ') + '"' : '') + '>'
           + '<td class="is-id">' + escapeHtml(r.id || '') + '</td>';
         for (var d2 = 0; d2 < depth; d2++) {
           var n = span[i][d2];
           if (n === 0) continue;
-          tr += '<td class="is-depth"' + (n > 1 ? ' rowspan="' + n + '"' : '') + '>' + escapeHtml(locs[i][d2] || '') + '</td>';
+          tr += '<td class="is-depth" data-d="' + d2 + '"' + (n > 1 ? ' rowspan="' + n + '"' : '') + '>' + escapeHtml(locs[i][d2] || '') + '</td>';
         }
         var unassigned = isUnassigned(r);
         var pr = String(r.priority || '');
@@ -1526,9 +1533,50 @@
       else body.scrollTop = 0;
     }
     function close() {
+      clearSelection();
       modal.classList.remove('is-open');
       modal.setAttribute('aria-hidden', 'true');
     }
+
+    // ── 셀 선택 → 그 셀에 속한 행 범위 강조 ──
+    //   병합된 Location 셀: 그 셀이 묶은 행 전체 + 상위 Location 셀
+    //   일반 셀: 그 행 + 그 행이 속한 Location 셀들
+    // 해제: 같은 셀 다시 클릭 · 표 밖 빈 곳 클릭 · ESC(선택이 있으면 모달보다 먼저) · 탭 전환
+    function clearSelection() {
+      body.querySelectorAll('.is-sel, .is-sel-row, .is-sel-anc').forEach(function (el) {
+        el.classList.remove('is-sel', 'is-sel-row', 'is-sel-anc');
+      });
+      selectedCell = null;
+    }
+    function depthCell(rowIdx, d) {
+      return body.querySelector('tr[data-i="' + rowIdx + '"] > td[data-d="' + d + '"]');
+    }
+    function selectCell(td) {
+      clearSelection();
+      var tr = td.parentElement;
+      var r0 = +tr.dataset.i, r1 = r0, upTo = cellOwner[r0] ? cellOwner[r0].length : 0;
+      if (td.dataset.d != null) {                       // Location 셀 — 묶은 행 전체
+        r1 = r0 + (+td.getAttribute('rowspan') || 1) - 1;
+        upTo = +td.dataset.d;                           // 자기보다 상위 Depth 만 조상
+      }
+      for (var i = r0; i <= r1; i++) {
+        var row = body.querySelector('tr[data-i="' + i + '"]');
+        if (row) row.classList.add('is-sel-row');
+      }
+      for (var d = 0; d < upTo; d++) {
+        var k = cellOwner[r0] ? cellOwner[r0][d] : -1;
+        var anc = k >= 0 && depthCell(k, d);
+        if (anc) anc.classList.add('is-sel-anc');
+      }
+      td.classList.add('is-sel');
+      selectedCell = td;
+    }
+    body.addEventListener('click', function (e) {
+      var td = e.target.closest('.pdk-spec-table tbody td');
+      if (!td) { clearSelection(); return; }            // 표 밖 빈 곳
+      if (td === selectedCell) { clearSelection(); return; }
+      selectCell(td);
+    });
     window.__pdkOpenSpec = function (specId) {
       if (Array.isArray(window.PDK_SPECS)) open(specId);
       else window.__pdkSpecsReady = function () { open(specId); };   // 로드 전 클릭 → 로드 후 열기
@@ -1538,10 +1586,13 @@
     modal.querySelector('.pdk-spec-close').addEventListener('click', close);
     modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && modal.classList.contains('is-open')) close();
+      if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+        if (selectedCell) clearSelection();             // 선택부터 푼다
+        else close();
+      }
     });
     modal.querySelectorAll('[data-spec-tab]').forEach(function (b) {
-      b.addEventListener('click', function () { tab = b.dataset.specTab; focusId = ''; render(); body.scrollTop = 0; });
+      b.addEventListener('click', function () { tab = b.dataset.specTab; focusId = ''; selectedCell = null; render(); body.scrollTop = 0; });
     });
   }
 
