@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>대시보드 (SCR-MAIN-001)</title>
+  <link rel="stylesheet" href="../../engine/common.css" />
+  <style>
+    /* 레이아웃 보정 — 요약 카드 3열 / 하단 2열 */
+    .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .dash-grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; align-items: start; }
+  </style>
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="pdk-screen">
+            <div class="pdk-w-header pdk-gnb">
+              <div class="pdk-w-icon">로고</div>
+              <span class="pdk-w-subtitle">가맹점센터</span>
+              <div class="pdk-w-row" style="margin-left: 32px;">
+              <button class="pdk-w-btn pdk-w-btn-sm is-secondary" onclick="goScreen('SCR-MAIN-001')">대시보드</button>
+              <button class="pdk-w-btn pdk-w-btn-sm is-ghost" onclick="goScreen('SCR-SALE-001')">매출 관리</button>
+              <button class="pdk-w-btn pdk-w-btn-sm is-ghost" onclick="goScreen('SCR-STL-001')">정산 관리</button>
+              </div>
+              <div class="pdk-w-spacer"></div>
+              <span class="pdk-w-caption">베스트커피 강남점 · 홍길동 사장님</span>
+              <button class="pdk-w-btn pdk-w-btn-sm" onclick="goScreen('SCR-AUTH-001')">로그아웃</button>
+            </div>
+            <div class="pdk-w-body">
+              <div class="pdk-w-banner pdk-notice">[공지] 10/3(금) 개천절 정산분은 10/6(월)에 입금됩니다.</div>
+
+              <div class="pdk-w-row" style="align-items: baseline;">
+                <div class="pdk-w-title">오늘의 매출</div>
+                <span class="pdk-w-caption">2026-09-30 14:20 기준</span>
+              </div>
+
+              <div class="dash-grid pdk-summary">
+                <div class="pdk-w-card">
+                  <span class="pdk-w-caption">오늘 매출</span>
+                  <span class="pdk-w-title">1,284,000원</span>
+                  <span class="pdk-w-caption">어제보다 +12%</span>
+                </div>
+                <div class="pdk-w-card">
+                  <span class="pdk-w-caption">거래 건수</span>
+                  <span class="pdk-w-title">86건</span>
+                  <span class="pdk-w-caption">취소 2건 포함</span>
+                </div>
+                <div class="pdk-w-card">
+                  <span class="pdk-w-caption">다음 정산 예정</span>
+                  <span class="pdk-w-title">3,920,000원</span>
+                  <span class="pdk-w-caption">10/2(목) 입금 예정</span>
+                </div>
+              </div>
+
+              <div class="dash-grid-2">
+                <div class="pdk-w-card pdk-recent">
+                  <div class="pdk-w-row">
+                    <span class="pdk-w-subtitle">최근 거래</span>
+                    <div class="pdk-w-spacer"></div>
+                    <button class="pdk-w-btn pdk-w-btn-sm is-ghost" onclick="goScreen('SCR-SALE-001')">전체보기 →</button>
+                  </div>
+                  <div class="pdk-w-divider"></div>
+                  <div class="pdk-w-row"><span class="pdk-w-text">14:18 · 신용카드</span><div class="pdk-w-spacer"></div><span class="pdk-w-text">12,000원</span><span class="pdk-w-badge">승인</span></div>
+                  <div class="pdk-w-row"><span class="pdk-w-text">14:05 · 간편결제</span><div class="pdk-w-spacer"></div><span class="pdk-w-text">8,500원</span><span class="pdk-w-badge">승인</span></div>
+                  <div class="pdk-w-row"><span class="pdk-w-text">13:52 · 신용카드</span><div class="pdk-w-spacer"></div><span class="pdk-w-text">-4,500원</span><span class="pdk-w-badge is-outline">취소</span></div>
+                </div>
+                <div class="pdk-w-card pdk-settle">
+                  <span class="pdk-w-subtitle">정산 예정</span>
+                  <div class="pdk-w-divider"></div>
+                  <div class="pdk-w-row"><span class="pdk-w-text">10/2(목)</span><div class="pdk-w-spacer"></div><span class="pdk-w-text">3,920,000원</span></div>
+                  <div class="pdk-w-row"><span class="pdk-w-text">10/6(월)</span><div class="pdk-w-spacer"></div><span class="pdk-w-text">2,180,000원</span></div>
+                  <button class="pdk-w-btn pdk-w-btn-block" style="margin-top: 8px;" onclick="goScreen('SCR-STL-001')">정산 내역 보기</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div>
+  </div>
+
+  <script src="_config.js"></script>
+  <script>window.PDK_CURRENT = 'scr-main-001.html';</script>
+  <script src="../../engine/common.js"></script>
+</body>
+</html>

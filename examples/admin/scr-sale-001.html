@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>매출 내역 (SCR-SALE-001)</title>
+  <link rel="stylesheet" href="../../engine/common.css" />
+  <style>
+    /* 레이아웃 보정 — 키트에 표 컴포넌트가 없어 최소한으로 보완 (색은 키트 토큰만) */
+    .sale-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .sale-table th, .sale-table td { padding: 10px 12px; border-bottom: 1px solid var(--pdk-border); text-align: left; }
+    .sale-table th { font-weight: 500; color: var(--pdk-muted-foreground); }
+    .sale-table .num { text-align: right; }
+    /* 레이아웃 보정 — 조회 조건 한 줄 배치 */
+    .filter-grid { display: grid; grid-template-columns: 160px 240px 160px 1fr auto; gap: 12px; align-items: end; }
+  </style>
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="pdk-screen">
+            <div class="pdk-w-header pdk-gnb">
+              <div class="pdk-w-icon">로고</div>
+              <span class="pdk-w-subtitle">가맹점센터</span>
+              <div class="pdk-w-row" style="margin-left: 32px;">
+              <button class="pdk-w-btn pdk-w-btn-sm is-ghost" onclick="goScreen('SCR-MAIN-001')">대시보드</button>
+              <button class="pdk-w-btn pdk-w-btn-sm is-secondary" onclick="goScreen('SCR-SALE-001')">매출 관리</button>
+              <button class="pdk-w-btn pdk-w-btn-sm is-ghost" onclick="goScreen('SCR-STL-001')">정산 관리</button>
+              </div>
+              <div class="pdk-w-spacer"></div>
+              <span class="pdk-w-caption">베스트커피 강남점 · 홍길동 사장님</span>
+              <button class="pdk-w-btn pdk-w-btn-sm" onclick="goScreen('SCR-AUTH-001')">로그아웃</button>
+            </div>
+            <div class="pdk-w-body">
+              <div class="pdk-w-title">매출 내역</div>
+
+              <div class="pdk-w-card pdk-filter">
+                <div class="filter-grid">
+                  <div class="pdk-w-field">
+                    <label class="pdk-w-label">조회 기간</label>
+                    <select class="pdk-w-select"><option>최근 7일</option></select>
+                  </div>
+                  <div class="pdk-w-field">
+                    <label class="pdk-w-label">시작일 ~ 종료일</label>
+                    <input class="pdk-w-input" value="2026-09-24 ~ 2026-09-30" />
+                  </div>
+                  <div class="pdk-w-field">
+                    <label class="pdk-w-label">결제수단</label>
+                    <select class="pdk-w-select"><option>전체</option></select>
+                  </div>
+                  <div class="pdk-w-field">
+                    <label class="pdk-w-label">승인번호</label>
+                    <input class="pdk-w-input" placeholder="승인번호 8자리" />
+                  </div>
+                  <button class="pdk-w-btn is-primary">조회</button>
+                </div>
+              </div>
+
+              <div class="pdk-w-row">
+                <span class="pdk-w-text pdk-total" data-case="has-data">총 128건 · 8,420,000원</span>
+                <div class="pdk-w-spacer"></div>
+                <button class="pdk-w-btn pdk-w-btn-sm pdk-btn-excel">엑셀 다운로드</button>
+              </div>
+
+              <div class="pdk-w-card pdk-sale-table" data-case="has-data" style="padding: 0;">
+                <table class="sale-table">
+                  <thead><tr><th>거래일시</th><th>승인번호</th><th>결제수단</th><th class="num">금액</th><th>상태</th></tr></thead>
+                  <tbody>
+                    <tr onclick="goScreen('SCR-SALE-002')"><td>2026-09-30 14:18</td><td>30012345</td><td>신용카드</td><td class="num">12,000원</td><td><span class="pdk-w-badge">승인</span></td></tr>
+                    <tr onclick="goScreen('SCR-SALE-002')"><td>2026-09-30 14:05</td><td>30012344</td><td>간편결제</td><td class="num">8,500원</td><td><span class="pdk-w-badge">승인</span></td></tr>
+                    <tr onclick="goScreen('SCR-SALE-002')"><td>2026-09-30 13:52</td><td>30012338</td><td>신용카드</td><td class="num">-4,500원</td><td><span class="pdk-w-badge is-outline">취소</span></td></tr>
+                    <tr onclick="goScreen('SCR-SALE-002')"><td>2026-09-30 13:40</td><td>30012331</td><td>신용카드</td><td class="num">23,000원</td><td><span class="pdk-w-badge">승인</span></td></tr>
+                    <tr onclick="goScreen('SCR-SALE-002')"><td>2026-09-30 13:12</td><td>30012320</td><td>간편결제</td><td class="num">6,000원</td><td><span class="pdk-w-badge">승인</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="pdk-w-row pdk-pagination" data-case="has-data" style="justify-content: center;">
+                <button class="pdk-w-btn pdk-w-btn-sm is-ghost">‹</button>
+                <button class="pdk-w-btn pdk-w-btn-sm is-secondary">1</button>
+                <button class="pdk-w-btn pdk-w-btn-sm is-ghost">2</button>
+                <button class="pdk-w-btn pdk-w-btn-sm is-ghost">3</button>
+                <span class="pdk-w-caption">…</span>
+                <button class="pdk-w-btn pdk-w-btn-sm is-ghost">7</button>
+                <button class="pdk-w-btn pdk-w-btn-sm is-ghost">›</button>
+              </div>
+
+              <div class="pdk-w-empty pdk-empty" data-case="empty">
+                <span>조회 기간에 거래가 없습니다.</span>
+                <button class="pdk-w-btn pdk-w-btn-sm">기간 초기화</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div>
+  </div>
+
+  <script src="_config.js"></script>
+  <script>window.PDK_CURRENT = 'scr-sale-001.html';</script>
+  <script src="../../engine/common.js"></script>
+</body>
+</html>

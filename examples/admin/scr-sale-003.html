@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>결제 취소 요청 (SCR-SALE-003)</title>
+  <link rel="stylesheet" href="../../engine/common.css" />
+  <style>
+    /* 레이아웃 보정 — 항목명/값 2열 */
+    .kv { display: grid; grid-template-columns: 160px 1fr; gap: 12px 16px; }
+    /* 레이아웃 보정 — 데스크탑 모달 폭 */
+    .cancel-modal { max-width: 440px; }
+  </style>
+</head>
+<body>
+  <div class="device-stage">
+    <div class="device-mockup">
+      <div class="device-frame">
+        <div class="device-screen">
+          <div class="pdk-screen">
+            <div class="pdk-w-header">
+              <div class="pdk-w-icon">로고</div>
+              <span class="pdk-w-subtitle">가맹점센터</span>
+              <div class="pdk-w-row" style="margin-left: 32px;">
+              <button class="pdk-w-btn pdk-w-btn-sm is-ghost" onclick="goScreen('SCR-MAIN-001')">대시보드</button>
+              <button class="pdk-w-btn pdk-w-btn-sm is-secondary" onclick="goScreen('SCR-SALE-001')">매출 관리</button>
+              <button class="pdk-w-btn pdk-w-btn-sm is-ghost" onclick="goScreen('SCR-STL-001')">정산 관리</button>
+              </div>
+              <div class="pdk-w-spacer"></div>
+              <span class="pdk-w-caption">베스트커피 강남점 · 홍길동 사장님</span>
+              <button class="pdk-w-btn pdk-w-btn-sm" onclick="goScreen('SCR-AUTH-001')">로그아웃</button>
+            </div>
+            <div class="pdk-w-body">
+              <button class="pdk-w-btn is-link" style="align-self: flex-start;">← 매출 내역</button>
+              <div class="pdk-w-row">
+                <div class="pdk-w-title">거래 상세</div>
+                <span class="pdk-w-badge is-strong">승인</span>
+                <div class="pdk-w-spacer"></div>
+                <button class="pdk-w-btn">영수증 출력</button>
+                <button class="pdk-w-btn is-primary">결제 취소</button>
+              </div>
+
+              <div class="pdk-w-card">
+                <span class="pdk-w-subtitle">승인 정보</span>
+                <div class="pdk-w-divider"></div>
+                <div class="kv">
+                  <span class="pdk-w-caption">승인번호</span><span class="pdk-w-text">30012345</span>
+                  <span class="pdk-w-caption">거래일시</span><span class="pdk-w-text">2026-09-30 14:18:22</span>
+                  <span class="pdk-w-caption">결제수단</span><span class="pdk-w-text">신용카드 (신한 ****-1234)</span>
+                  <span class="pdk-w-caption">할부</span><span class="pdk-w-text">일시불</span>
+                  <span class="pdk-w-caption">결제 금액</span><span class="pdk-w-text">12,000원</span>
+                  <span class="pdk-w-caption">공급가액 / 부가세</span><span class="pdk-w-text">10,909원 / 1,091원</span>
+                  <span class="pdk-w-caption">결제 단말</span><span class="pdk-w-text">POS-02 (카운터)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pdk-w-dim">
+              <div class="pdk-w-modal cancel-modal">
+                <div class="pdk-w-subtitle">결제를 취소할까요?</div>
+                <div class="pdk-w-card pdk-cancel-target">
+                  <div class="pdk-w-row"><span class="pdk-w-caption">취소 금액</span><div class="pdk-w-spacer"></div><span class="pdk-w-subtitle">12,000원</span></div>
+                  <div class="pdk-w-row"><span class="pdk-w-caption">승인번호</span><div class="pdk-w-spacer"></div><span class="pdk-w-text">30012345</span></div>
+                </div>
+                <div class="pdk-w-field pdk-cancel-reason">
+                  <label class="pdk-w-label">취소 사유</label>
+                  <select class="pdk-w-select"><option>고객 요청</option><option>중복 결제</option><option>기타</option></select>
+                  <textarea class="pdk-w-textarea" placeholder="상세 사유 (선택)"></textarea>
+                </div>
+                <span class="pdk-w-check pdk-cancel-agree">취소 후에는 되돌릴 수 없음을 확인했습니다</span>
+                <div class="pdk-w-row" style="justify-content: flex-end;">
+                  <button class="pdk-w-btn pdk-btn-close" onclick="goScreen('SCR-SALE-002')">닫기</button>
+                  <button class="pdk-w-btn is-primary pdk-btn-request" onclick="goBranch(this, '취소 결과')">취소 요청</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="device-stand"></div>
+      <div class="device-base"></div>
+    </div>
+  </div>
+
+  <script src="_config.js"></script>
+  <script>window.PDK_CURRENT = 'scr-sale-003.html';</script>
+  <script src="../../engine/common.js"></script>
+</body>
+</html>
