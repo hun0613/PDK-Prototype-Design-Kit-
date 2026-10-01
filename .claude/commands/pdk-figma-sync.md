@@ -40,7 +40,7 @@ argument-hint: [화면ID] [figma url]
 ### 5) config 갱신 (`config/screens.js`)
 - 이 화면의 `designed: true`로 변경.
 - `figmaLink: '<$2 원본 URL>'` 저장(Description 패널의 "Figma 링크"가 채워짐).
-- `description`은 유지(기능 설명). target 셀렉터가 4)에서 보존됐는지 확인.
+- `description`은 유지(기능 설명). target 셀렉터가 4)에서 보존됐는지 확인. 항목의 `spec`(기능명세 ID)도 그대로 둔다.
 - 디자인 적용으로 요소가 늘어 항목을 **새로 추가할 때도** `/pdk-wireframe`의 「Description 문안 규칙」
   (30자 내외·최대 50자, 한 항목 한 요소)을 그대로 따른다. 기존 항목을 길게 늘리지 않는다.
 

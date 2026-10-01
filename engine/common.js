@@ -338,6 +338,9 @@
           + '<button class="pdk-topbar-btn" type="button" data-topbar-toggle="flow" data-tooltip="FLOW DIAGRAM">'
             + '<img src="' + ENGINE_BASE + 'icons/topbar-flow.svg" width="24" height="24" alt="">'
           + '</button>'
+          + '<button class="pdk-topbar-btn pdk-topbar-spec" type="button" data-tooltip="기능명세서">'
+            + '<img src="' + ENGINE_BASE + 'icons/topbar-spec.svg" width="24" height="24" alt="">'
+          + '</button>'
           + prdBtn
         + '</div>'
       + '</div>';
@@ -385,7 +388,7 @@
           ${desc.map((item, i) => `
             <li class="page-detail-item" data-target="${escapeHtml(item.target || '')}">
               <span class="page-detail-item-num">${i + 1}</span>
-              <span class="page-detail-item-text">${escapeHtml(item.text)}</span>
+              <span class="page-detail-item-text">${escapeHtml(item.text)}${specChips(item.spec)}</span>
             </li>
           `).join('')}
         </ol>
@@ -408,6 +411,14 @@
     // 최소화 → 패널 숨김 (우하단 dock 버튼으로 재열기)
     detail.querySelector('.page-detail-close').addEventListener('click', () => {
       detail.classList.add('is-hidden');
+    });
+
+    // 기능명세 ID 칩 → 기능명세서 모달에서 해당 행으로 이동
+    detail.querySelectorAll('.page-detail-spec').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.__pdkOpenSpec) window.__pdkOpenSpec(chip.dataset.spec);
+      });
     });
 
     // 항목 hover → 해당 UI만 또렷, 나머지는 dim
@@ -1052,6 +1063,169 @@
     });
   }
 
+  // ── 기능명세서 (config/specs.js → 상단 바 버튼 + 표 모달) ──
+  // specs.js 는 화면 HTML 로더에 넣지 않고 엔진이 직접 불러온다(기존 화면 수정 불필요).
+  // 파일이 없으면 명세가 없는 상태로 본다.
+  //   행: { id, location: ['1Depth', '2Depth', ...], pageId, target, content, description, priority }
+  function loadSpecs() {
+    if (window.PDK_SPECS || window.__pdkSpecsLoading) return;
+    window.__pdkSpecsLoading = true;
+    var s = document.createElement('script');
+    s.src = ROOT_BASE + 'config/specs.js?_=' + Date.now();
+    s.onload = s.onerror = function () {
+      if (!Array.isArray(window.PDK_SPECS)) window.PDK_SPECS = [];
+      if (window.__pdkSpecsReady) window.__pdkSpecsReady();
+    };
+    document.head.appendChild(s);
+  }
+  loadSpecs();
+
+  // Description 항목의 spec 필드(문자열 또는 배열) → ID 칩
+  function specChips(spec) {
+    var ids = Array.isArray(spec) ? spec : (spec ? [spec] : []);
+    return ids.map(function (id) {
+      return ' <button type="button" class="page-detail-spec" data-spec="' + escapeHtml(id) + '"'
+        + ' title="기능명세서에서 보기">' + escapeHtml(id) + '</button>';
+    }).join('');
+  }
+
+  function injectSpecModal() {
+    var btn = document.querySelector('.pdk-topbar-spec');
+    if (!btn) return;
+    var proj = window.PDK_PROJECT || {};
+    var found = findCurrentPage(currentKey());
+    var curId = found && found.page ? found.page.id : '';
+    var pageNames = {};
+    flatPages().forEach(function (p) { pageNames[p.id] = p.label; });
+    var tab = curId ? 'page' : 'all';
+    var focusId = '';
+
+    var modal = document.createElement('div');
+    modal.className = 'pdk-spec-modal';
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML =
+      '<div class="pdk-spec-panel">'
+        + '<div class="pdk-spec-header">'
+          + '<div class="pdk-spec-title">기능명세서</div>'
+          + '<div class="pdk-spec-meta">' + escapeHtml([proj.code, proj.name].filter(Boolean).join(' · ')) + '</div>'
+          + '<div class="pdk-spec-tabs">'
+            + '<button type="button" data-spec-tab="page"' + (curId ? '' : ' disabled') + '>이 화면</button>'
+            + '<button type="button" data-spec-tab="all">전체</button>'
+          + '</div>'
+          + '<button type="button" class="pdk-spec-close" aria-label="닫기">✕</button>'
+        + '</div>'
+        + '<div class="pdk-spec-body"></div>'
+      + '</div>';
+    document.body.appendChild(modal);
+    var body = modal.querySelector('.pdk-spec-body');
+
+    function isUnassigned(r) { return !r.pageId || r.pageId === '미정'; }
+    function samePrefix(a, b, d) {
+      for (var i = 0; i <= d; i++) if ((a[i] || '') !== (b[i] || '')) return false;
+      return true;
+    }
+
+    function render() {
+      var all = Array.isArray(window.PDK_SPECS) ? window.PDK_SPECS : [];
+      var mine = all.filter(function (r) { return curId && r.pageId === curId; });
+      modal.querySelector('[data-spec-tab="page"]').textContent = '이 화면 (' + mine.length + ')';
+      modal.querySelector('[data-spec-tab="all"]').textContent = '전체 (' + all.length + ')';
+      modal.querySelectorAll('[data-spec-tab]').forEach(function (b) {
+        b.classList.toggle('is-active', b.dataset.specTab === tab);
+      });
+
+      var rows = tab === 'page' ? mine : all;
+      if (!rows.length) {
+        body.innerHTML = '<div class="pdk-spec-empty">'
+          + '<div class="pdk-spec-empty-title">작성된 기능명세가 없습니다</div>'
+          + '<div class="pdk-spec-empty-sub">'
+          + (tab === 'page' ? '<code>/pdk-description ' + escapeHtml(curId) + '</code> 로 이 화면의 기능명세를 작성하세요.'
+                            : '<code>/pdk-description [화면ID]</code> 로 기능명세를 작성하세요.')
+          + '</div></div>';
+        return;
+      }
+
+      // Location 은 엑셀처럼 Depth 열로 펼치고, 같은 상위 경로가 이어지면 병합(rowspan)한다
+      var locs = rows.map(function (r) { return Array.isArray(r.location) ? r.location : []; });
+      var depth = Math.max(1, Math.max.apply(null, locs.map(function (l) { return l.length; })));
+      var span = locs.map(function () { return []; });   // span[i][d]: 0=병합돼 생략, n=rowspan
+      for (var d = 0; d < depth; d++) {
+        for (var i = 0; i < rows.length; i++) {
+          if (locs[i].length > d && i > 0 && locs[i - 1].length > d && samePrefix(locs[i], locs[i - 1], d)) {
+            span[i][d] = 0;
+            for (var k = i - 1; k >= 0; k--) { if (span[k][d]) { span[k][d]++; break; } }
+          } else {
+            span[i][d] = 1;
+          }
+        }
+      }
+
+      var depthHead = '';
+      for (var h = 0; h < depth; h++) depthHead += '<th class="is-depth">' + (h + 1) + 'Depth</th>';
+      var html = '<table class="pdk-spec-table"><thead>'
+        + '<tr><th rowspan="2">ID</th><th colspan="' + depth + '">Location</th>'
+        + '<th rowspan="2">Page ID</th><th rowspan="2">Page Name</th><th rowspan="2">Target</th>'
+        + '<th colspan="2">Detail</th><th rowspan="2">Priority</th></tr>'
+        + '<tr>' + depthHead + '<th>Content</th><th>Description</th></tr>'
+        + '</thead><tbody>';
+      rows.forEach(function (r, i) {
+        var cls = [];
+        if (tab === 'all' && curId && r.pageId === curId) cls.push('is-current');
+        if (focusId && r.id === focusId) cls.push('is-focus');
+        var tr = '<tr data-spec-row="' + escapeHtml(r.id || '') + '"' + (cls.length ? ' class="' + cls.join(' ') + '"' : '') + '>'
+          + '<td class="is-id">' + escapeHtml(r.id || '') + '</td>';
+        for (var d2 = 0; d2 < depth; d2++) {
+          var n = span[i][d2];
+          if (n === 0) continue;
+          tr += '<td class="is-depth"' + (n > 1 ? ' rowspan="' + n + '"' : '') + '>' + escapeHtml(locs[i][d2] || '') + '</td>';
+        }
+        var unassigned = isUnassigned(r);
+        var pr = String(r.priority || '');
+        tr += '<td class="is-page' + (unassigned ? ' is-tbd' : '') + '">' + escapeHtml(unassigned ? '미정' : r.pageId) + '</td>'
+          + '<td class="is-page' + (unassigned ? ' is-tbd' : '') + '">' + escapeHtml(unassigned ? '미정' : (pageNames[r.pageId] || '(미등록 화면)')) + '</td>'
+          + '<td>' + escapeHtml(r.target || '') + '</td>'
+          + '<td class="is-content">' + escapeHtml(r.content || '') + '</td>'
+          + '<td class="is-desc">' + escapeHtml(r.description || '') + '</td>'
+          + '<td>' + (pr ? '<span class="pdk-spec-pri is-' + escapeHtml(pr.toLowerCase()) + '">' + escapeHtml(pr) + '</span>' : '') + '</td>'
+          + '</tr>';
+        html += tr;
+      });
+      body.innerHTML = html + '</tbody></table>';
+    }
+
+    function open(specId) {
+      focusId = specId || '';
+      if (focusId) {
+        var hit = (window.PDK_SPECS || []).filter(function (r) { return r.id === focusId; })[0];
+        tab = hit && curId && hit.pageId === curId ? 'page' : 'all';
+      }
+      render();
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      var row = focusId && body.querySelector('[data-spec-row="' + focusId.replace(/"/g, '') + '"]');
+      if (row) row.scrollIntoView({ block: 'center' });
+      else body.scrollTop = 0;
+    }
+    function close() {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+    window.__pdkOpenSpec = function (specId) {
+      if (Array.isArray(window.PDK_SPECS)) open(specId);
+      else window.__pdkSpecsReady = function () { open(specId); };   // 로드 전 클릭 → 로드 후 열기
+    };
+
+    btn.addEventListener('click', function () { window.__pdkOpenSpec(); });
+    modal.querySelector('.pdk-spec-close').addEventListener('click', close);
+    modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.classList.contains('is-open')) close();
+    });
+    modal.querySelectorAll('[data-spec-tab]').forEach(function (b) {
+      b.addEventListener('click', function () { tab = b.dataset.specTab; focusId = ''; render(); body.scrollTop = 0; });
+    });
+  }
+
   // ── 하단 시스템 문의 푸터 (저작권 표기처럼 아주 작게) ──
   function injectFooter() {
     if (document.querySelector('.pdk-sys-footer')) return;
@@ -1068,6 +1242,7 @@
     injectPageNav();
     injectPageDetail();
     injectFlowDiagram();
+    injectSpecModal();
     injectFooter();
   }
 

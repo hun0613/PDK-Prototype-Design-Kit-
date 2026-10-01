@@ -12,7 +12,7 @@ allowed-tools: Read, Write, Edit, AskUserQuestion, Glob
 > `/pdk-screen`이 개별 화면과 화면 간 이동을 정의한다면,
 > `/pdk-flow`는 "이 기능을 사용할 때 어떤 화면들을 거치는가"를 정의한다.
 >
-> 전체 순서: `/pdk-init` → `/pdk-screen` → **`/pdk-flow`** → `/pdk-wireframe` → `/pdk-figma-sync`
+> 전체 순서: `/pdk-init` → `/pdk-screen` → `/pdk-description` → **`/pdk-flow`** → `/pdk-wireframe` → `/pdk-figma-sync`
 > 화면을 `/pdk-screen`으로 먼저 등록한 뒤, 그 화면들을 여정으로 묶는 단계다.
 > 등록된 화면이 하나도 없으면 "먼저 `/pdk-screen`으로 화면을 등록하면 고르기만 하면 됩니다"라고 알리고,
 > 사용자가 그래도 진행하길 원하면 3)의 즉시 생성 규칙으로 진행한다.

@@ -12,7 +12,7 @@ allowed-tools: Read, Write, Edit, AskUserQuestion, Glob
 인자: `$1`=카테고리, `$2`=화면ID, `$3`=화면이름. (없으면 대화로 물어본다)
 단, **이미 등록된 화면ID 하나만** 주면(`/pdk-screen SCR-PAY-002`) 아래 「기존 화면 보강 모드」로 동작한다.
 
-> 전체 순서: `/pdk-init` → **`/pdk-screen`** → `/pdk-flow` → `/pdk-wireframe` → `/pdk-figma-sync`
+> 전체 순서: `/pdk-init` → **`/pdk-screen`** → `/pdk-description` → `/pdk-flow` → `/pdk-wireframe` → `/pdk-figma-sync`
 
 ## 절차
 
@@ -75,8 +75,8 @@ allowed-tools: Read, Write, Edit, AskUserQuestion, Glob
 - 추가된 화면ID/이름/카테고리, 만든 파일명, 연결(진입/다음) 요약.
 - `index.html` 또는 방금 만든 화면을 열면 페이지 목록·플로우·Description에 자동 반영됨을 알린다.
 - 다음 화면을 이어서 `/pdk-screen`으로 등록하도록 안내.
-- 화면 등록이 끝나면 **다음 단계는 `/pdk-flow [플로우ID] [플로우이름]`** — 등록한 화면들을 기능 단위 여정으로 묶는다.
-  (그다음 `/pdk-wireframe` → `/pdk-figma-sync`)
+- 화면 등록이 끝나면 **다음 단계는 `/pdk-description [화면ID]`** — 화면별 기능명세를 텍스트(표)로 먼저 작성한다.
+  (그다음 `/pdk-flow` → `/pdk-wireframe` → `/pdk-figma-sync`)
 
 ## 기존 화면 보강 모드
 

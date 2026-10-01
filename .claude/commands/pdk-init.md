@@ -1,5 +1,5 @@
 ---
-description: PDK 프로젝트 초기화 — 이름·설명·디바이스·PRD 문서·push 레포를 입력받아 config와 index.html 빈 골격 생성
+description: PDK 프로젝트 초기화 — 이름·코드·설명·디바이스·PRD 문서·push 레포를 입력받아 config와 index.html 빈 골격 생성
 argument-hint: (인자 없음 · 대화형)
 allowed-tools: Read, Write, Edit, AskUserQuestion, Glob, Bash
 ---
@@ -14,6 +14,8 @@ allowed-tools: Read, Write, Edit, AskUserQuestion, Glob, Bash
 
 ### 1) 입력 수집
 - **프로젝트 이름**과 **프로젝트 설명**은 일반 대화로 물어본다(자유 입력).
+- **프로젝트 코드**도 함께 묻는다 — 기능명세 ID 접두어로 쓰인다(`<코드>-FUC-001`). 영문 대문자 2~5자 권장(예: `GFC`).
+  기존 `config/project.js` 에 `code` 가 있으면 그 값을 기본값으로 제시하고, 바꾸지 않으면 유지한다.
 - **디바이스**는 `AskUserQuestion`으로 다음 중 하나를 선택받는다:
   - `데스크탑` → key `desktop`
   - `모바일` → key `mobile`
@@ -47,6 +49,7 @@ window.PDK_DEVICES = {
 ```js
 window.PDK_PROJECT = {
   name: '<입력한 이름>',
+  code: '<프로젝트 코드>',                  // 기능명세 ID 접두어 (예: 'GFC' → GFC-FUC-001)
   description: '<입력한 설명>',
   device: '<desktop|mobile|tossfront2|responsive>',
   responsive: <true|false>,
@@ -72,6 +75,15 @@ window.PDK_SCREENS = [];
 // 기능 플로우는 /pdk-flow 로 추가됩니다.
 window.PDK_FLOWS = [];
 ```
+
+### 4-b2) `config/specs.js` 보장
+- 파일이 **없으면** PDK 원본의 `config/specs.js` 와 같은 형식(스키마 주석 + 빈 배열)으로 생성한다. 이미 있으면 **유지**(기존 기능명세 보존).
+
+```js
+// 기능명세는 /pdk-description 으로 추가됩니다. (스키마는 PDK 원본 config/specs.js 주석 참고)
+window.PDK_SPECS = [];
+```
+- 이 파일은 화면 HTML 로더에 넣지 않는다 — 엔진이 직접 불러온다.
 
 ### 4-c) `pages/` 디렉토리 보장
 - 화면 HTML이 생성될 `pages/` 디렉토리가 없으면 만든다(`index.html`만 루트에 두고, 나머지 화면은 전부 `pages/` 안).
@@ -156,11 +168,11 @@ window.PDK_FLOWS = [];
 - 7)의 원격 정리 결과를 함께 알린다. `origin`을 지운 경우 push하려면 먼저 내 레포를 만들고
   `git remote add origin <주소>` 를 실행하면 된다고 안내한다.
 - 다음 단계 안내: **`/pdk-screen [카테고리] [화면ID] [화면이름]`** 으로 화면을 유저플로우 순서대로 추가(화면 파일은 `pages/`에 생성됨).
-  전체 순서도 함께 보여준다: `/pdk-init` → `/pdk-screen` → `/pdk-flow` → `/pdk-wireframe` → `/pdk-figma-sync`
+  전체 순서도 함께 보여준다: `/pdk-init` → `/pdk-screen` → `/pdk-description` → `/pdk-flow` → `/pdk-wireframe` → `/pdk-figma-sync`
 
 ## 주의
 - 디자인/CSS 세부는 다루지 않는다(이후 `/pdk-figma-sync`가 담당).
-- 기존 `config/screens.js`·`config/devices.js`를 덮어써서 사용자 작업을 지우지 않는다.
+- 기존 `config/screens.js`·`config/devices.js`·`config/flows.js`·`config/specs.js`를 덮어써서 사용자 작업을 지우지 않는다.
 - `config/project.js`는 덮어쓰지만, **기존 `prdFile` 등 이미 있던 값을 유실시키지 않는다**(재실행 안전).
 - 라벨→key 매핑: 데스크탑=desktop, 모바일=mobile, 토스프론트2=tossfront2, 반응형=responsive.
 - **PDK 원본을 가리키는 `origin`은 남겨두지 않는다**(push 사고 방지). 단, 이미 사용자가 지정한 origin은 건드리지 않는다.

@@ -4,6 +4,7 @@
  */
 window.PDK_PROJECT = {
   name: '',
+  code: '',                 // 프로젝트 코드 — 기능명세 ID 접두어 (예: 'PDK' → PDK-FUC-001)
   description: '',
   device: 'desktop',
   responsive: false,

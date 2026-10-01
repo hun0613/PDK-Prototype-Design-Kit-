@@ -15,6 +15,43 @@
 
 <!-- 새 릴리즈는 이 줄 아래에 추가 -->
 
+## v22 — 기능명세서 (/pdk-description · 상단 바 표 모달 · Description 자동 연결) (2026-10-01)
+
+### 요약
+- **`/pdk-description [화면ID]` 커맨드를 추가했습니다.** 화면을 그리기 전에, 그 화면의 기능을
+  **기능명세서(엑셀 양식과 같은 표)** 로 먼저 정리합니다. UI와 아직 짝짓지 않은 요구사항·정책·예외를
+  텍스트로 확인하고 남겨 두기 위한 단계입니다.
+  - 컬럼: `ID · Location(1~6Depth) · Page ID · Page Name · Target · Content · Description · Priority`
+  - 양식 원본: `templates/기능명세서_양식.xlsx`
+- **상단 바에 기능명세서 버튼**(Description·Flow 버튼 옆)이 생겼습니다. 누르면 표 모달이 열립니다.
+  - **이 화면** 탭: 지금 화면의 기능만 / **전체** 탭: 프로젝트 전체(아직 화면이 정해지지 않은 "미정" 포함)
+  - 같은 상위 위치(Depth)가 이어지면 엑셀처럼 **병합**해서 보여주고, 상세의 줄바꿈을 그대로 살립니다.
+- **`/pdk-wireframe` 이 기능명세를 끌어와 Description 을 만듭니다.** 끌어온 항목에는 **기능 ID 칩**이 붙고,
+  칩을 누르면 기능명세서 표의 그 행으로 이동합니다. 화면에 반영되지 않은 기능은 따로 알려줍니다.
+- 작업 순서에 기능명세 단계가 들어갑니다:
+  **init → screen → description → flow → wireframe → figma-sync**
+- `/pdk-init` 이 **프로젝트 코드**(기능명세 ID 접두어, 예: `GFC` → `GFC-FUC-001`)를 함께 묻습니다.
+
+### 코드 변경(자동)
+- `engine/common.js`: `config/specs.js` 를 엔진이 직접 불러온다(화면 HTML 로더 수정 없음 · 파일 없으면 빈 명세).
+  상단 바 `.pdk-topbar-spec` 버튼, `injectSpecModal()`(탭·Depth 병합 표·빈 상태·ESC/바깥 클릭 닫기),
+  Description 항목의 `spec` 필드 → ID 칩(`.page-detail-spec`) 렌더.
+- `engine/common.css`: `.pdk-spec-*` 모달·표·우선순위 배지, `.page-detail-spec` 칩.
+- `engine/icons/topbar-spec.svg`: 기능명세서 버튼 아이콘.
+- `templates/기능명세서_양식.xlsx`: 기능명세서 엑셀 양식(중립 예시 행 포함).
+- `.claude/commands/pdk-description.md`: 신규.
+- `.claude/commands/pdk-wireframe.md`: 1) 기능명세 확인, 4) 「기능명세에서 끌어오기」(`spec` 필드), 5) 반영 현황 보고.
+- `.claude/commands/pdk-init.md`: 프로젝트 코드 입력, `config/specs.js` 보장, 순서 안내.
+- `.claude/commands/pdk-screen.md`·`pdk-flow.md`: 다음 단계 안내를 새 순서로.
+- `.claude/commands/pdk-update.md`: `config/specs.js` 를 보존 대상에 추가.
+- `.claude/commands/pdk-figma-sync.md`: Description 의 `spec` 필드 보존.
+- `docs/GUIDE.md`: 3단계 `/pdk-description` 추가(이후 단계 번호 한 칸씩 밀림), 체크리스트 갱신.
+
+### 마이그레이션(필요 시)
+- 없음. `config/specs.js` 가 없으면 기능명세서 버튼은 "작성된 기능명세가 없습니다"를 보여준다.
+  파일은 `/pdk-description` 을 처음 실행할 때 만들어진다.
+- `config/project.js` 에 `code` 가 없으면 `/pdk-description` 이 처음 실행될 때 물어서 추가한다.
+
 ## v21 — 작업 순서 확정 (init → screen → flow → wireframe → figma-sync) · /pdk-screen 보강 모드 (2026-09-30)
 
 ### 요약
