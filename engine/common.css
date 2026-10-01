@@ -132,6 +132,13 @@ html, body {
   background: transparent;    /* 페이지 배경과 같은 톤 유지 */
 }
 .device-stage.is-fitted.has-case-panel { padding-top: 16px; }
+/* 엔진이 크기를 맞추기 전에는 목업 영역을 감춘다 — 화면 이동 때 원래 크기의 목업이 잠깐 보이지 않게.
+   엔진이 실패해도 화면이 비지 않도록 1.5초 뒤에는 그대로 보인다(fallback). */
+.device-stage:not(.is-fitted) {
+  visibility: hidden;
+  animation: pdk-stage-fallback 0s linear 1.5s forwards;
+}
+@keyframes pdk-stage-fallback { to { visibility: visible; } }
 
 .device-mockup {
   position: relative;
@@ -2080,6 +2087,9 @@ body.pdk-is-dragging { user-select: none; }
 .pdk-topbar,
 .page-nav,
 .pdk-dock { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+html.pdk-no-anim .pdk-topbar,
+html.pdk-no-anim .page-nav,
+html.pdk-no-anim .pdk-dock { transition: none !important; }   /* 첫 화면에선 슬라이드 없이 바로 숨김 */
 
 body.pdk-focus .pdk-topbar { transform: translateY(-100%); background: #f1f3f7; border-bottom: 1px solid #e5e7eb; }
 body.pdk-focus .page-nav { top: 0; transform: translateX(-100%); }

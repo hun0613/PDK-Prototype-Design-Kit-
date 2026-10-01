@@ -18,6 +18,15 @@
   // 현재 문서 위치와 무관하게 루트를 기준으로 URL을 만들어야 한다.
   var ROOT_BASE = ENGINE_BASE.replace(/[^/]*\/$/, '');   // ".../engine/" → ".../"
 
+  // ── 포커스 모드 즉시 복원 ───────────────
+  // 도구(상단 바·목록·패널)를 그리기 전에 적용해야 화면 이동 시 평소 화면이 잠깐 보이지 않는다.
+  // 첫 화면에서는 슬라이드 애니메이션도 끈다(pdk-no-anim — init 이 끝난 뒤 해제).
+  var FOCUS_STORE = 'pdk:focus';
+  document.documentElement.classList.add('pdk-no-anim');
+  try {
+    if (sessionStorage.getItem(FOCUS_STORE) === '1' && document.body) document.body.classList.add('pdk-focus');
+  } catch (_) {}
+
   // 루트 기준 href → 현재 문서에서 열 수 있는 URL
   function pageUrl(href) {
     var h = String(href || '');
@@ -1541,12 +1550,20 @@
   // 화면 가장자리(왼쪽/오른쪽/위)에 마우스를 잠시 두면 그쪽 영역이 목업 위로 떠오르고, 벗어나면 다시 숨는다.
   // 켜기/끄기: 상단 바 버튼 · Ctrl+\ (mac ⌘+\) · ESC(끄기). 상태는 sessionStorage 로 화면 이동 후에도 유지.
   // 자동 이동(flow.to 의 kind:'auto')은 포커스 모드에서만 카운트다운 후 넘어간다.
-  var FOCUS_STORE = 'pdk:focus';
   var EDGE_DELAY = 200, HIDE_DELAY = 250, AUTO_GO_SEC = 3;
   var EDGE_TARGET = { left: '.page-nav', right: '.pdk-dock', top: '.pdk-topbar' };
   var autoGoTimer = null;
 
   function isFocus() { return document.body.classList.contains('pdk-focus'); }
+
+  // Ctrl+\ (mac ⌘+\) — 키보드 배열마다 이 키의 key/code 가 다르다
+  //   US·한국: Backslash ('\', 한국 자판은 ₩ 로 표시) · 일본: IntlYen ('¥') · ISO(유럽): IntlBackslash
+  function isFocusShortcut(e) {
+    if (!(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return false;
+    return ['Backslash', 'IntlBackslash', 'IntlYen'].indexOf(e.code) > -1
+      || ['\\', '₩', '¥'].indexOf(e.key) > -1
+      || e.keyCode === 220 || e.keyCode === 226;
+  }
 
   function setFocus(on) {
     document.body.classList.toggle('pdk-focus', on);
@@ -1619,7 +1636,7 @@
 
     // 단축키 — capture 단계에서 먼저 본다(열린 모달의 ESC 처리보다 앞서 상태를 확인해야 한다)
     window.addEventListener('keydown', function (e) {
-      if ((e.ctrlKey || e.metaKey) && (e.key === '\\' || e.code === 'Backslash')) {
+      if (isFocusShortcut(e)) {
         e.preventDefault();
         setFocus(!isFocus());
         return;
@@ -1657,6 +1674,10 @@
     fitStage();            // 패널이 생긴 뒤 실제 남는 공간으로 다시 배치
     watchLayout();
     initFocusMode();       // 저장된 포커스 모드 복원(화면 이동 후에도 유지)
+    // 첫 화면을 그린 뒤 슬라이드 애니메이션을 다시 켠다(가장자리에서 떠오르는 효과용)
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      document.documentElement.classList.remove('pdk-no-anim');
+    }); });
   }
 
   if (document.readyState === 'loading') {
