@@ -2071,3 +2071,85 @@ body.pdk-is-dragging { user-select: none; }
   height: 56px; border: none; border-radius: 14px;
   background: #3182f6; color: #fff; font-size: 18px; font-weight: 700; cursor: pointer;
 }
+
+/* ─────────────────────────────────────────────
+   포커스 모드 (클라이언트 시연용) — body.pdk-focus
+   목업 · 분기 라디오만 남기고 주변 도구는 화면 밖으로 밀어 둔다.
+   가장자리(.pdk-edge-*)에 마우스를 두면 body.pdk-reveal-<방향> 이 붙어 그쪽 영역이 목업 위로 떠오른다.
+   ───────────────────────────────────────────── */
+.pdk-topbar,
+.page-nav,
+.pdk-dock { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+
+body.pdk-focus .pdk-topbar { transform: translateY(-100%); background: #f1f3f7; border-bottom: 1px solid #e5e7eb; }
+body.pdk-focus .page-nav { top: 0; transform: translateX(-100%); }
+body.pdk-focus .pdk-dock { top: 0; transform: translateX(100%); }
+body.pdk-focus .page-detail.is-floating,
+body.pdk-focus .page-flow.is-floating,
+body.pdk-focus .pdk-sys-footer { display: none; }
+
+body.pdk-focus.pdk-reveal-top .pdk-topbar { transform: none; box-shadow: 0 8px 24px rgba(17, 20, 24, 0.14); }
+body.pdk-focus.pdk-reveal-left .page-nav { transform: none; z-index: 140; box-shadow: 8px 0 24px rgba(17, 20, 24, 0.14); }
+body.pdk-focus.pdk-reveal-right .pdk-dock { transform: none; z-index: 140; box-shadow: -8px 0 24px rgba(17, 20, 24, 0.14); }
+
+/* 가장자리 감지 영역 — 포커스 모드에서만 동작 */
+.pdk-edge { position: fixed; z-index: 145; display: none; }
+body.pdk-focus .pdk-edge { display: block; }
+.pdk-edge-left { left: 0; top: 0; bottom: 0; width: 10px; }
+.pdk-edge-right { right: 0; top: 0; bottom: 0; width: 10px; }
+.pdk-edge-top { top: 0; left: 0; right: 0; height: 10px; }
+
+/* 상단 바 포커스 모드 버튼 — 켜져 있을 때 강조 */
+.pdk-topbar-focus.is-active { background: #ebf3ff; border-color: #c9dcfb; }
+
+/* 자동 이동 카운트다운 (포커스 모드 · flow.to kind:'auto') */
+.pdk-autogo {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 160;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(17, 20, 24, 0.78);
+  color: #ffffff;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+/* 분기 선택창 — goBranch(this, '<branch>') 로 누른 요소 옆에 뜬다 */
+.pdk-branch-picker {
+  position: fixed;
+  z-index: 210;
+  min-width: 200px;
+  padding: 6px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(17, 20, 24, 0.18);
+  font-family: "Pretendard", -apple-system, sans-serif;
+}
+.pdk-branch-picker-title { padding: 6px 10px 8px; font-size: 12px; font-weight: 700; color: #9ca3af; }
+.pdk-branch-picker button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: #191c23;
+  text-align: left;
+  cursor: pointer;
+}
+.pdk-branch-picker button:hover { background: #f3f4f6; }
+.pdk-branch-picker-via { font-weight: 600; }
+.pdk-branch-picker-to { font-size: 12px; color: #8b95a1; }
+
+/* 목업 안에서 이동이 연결된 요소(onclick)는 손가락 커서 */
+.pdk-screen [onclick] { cursor: pointer; }

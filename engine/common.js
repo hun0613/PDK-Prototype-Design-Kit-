@@ -203,7 +203,7 @@
       first.style.flex = '0 0 ' + Math.floor(h1) + 'px';
       second.style.flex = '1 1 0';
     }
-    return visible.length ? dock.getBoundingClientRect().left : null;
+    return visible.length ? dock.offsetLeft : null;   // offset* 는 transform(포커스 모드 슬라이드) 영향 없음
   }
 
   // 두 패널 사이 구분선 — 끌어서 위아래 비율 조절
@@ -360,6 +360,62 @@
   window.go = function (href) {
     location.href = pageUrl(href);
   };
+
+  // 화면 ID 로 이동 — href 는 config/screens.js 에서 찾는다(파일 경로가 바뀌어도 연결 유지).
+  //   <button onclick="goScreen('SCR-PAY-001')">결제하기</button>
+  window.goScreen = function (screenId) {
+    var p = flatPages().filter(function (x) { return x.id === screenId; })[0];
+    if (p && p.href) location.href = pageUrl(p.href);
+    else console.warn('[PDK] goScreen: 등록되지 않은 화면 ' + screenId);
+  };
+
+  // 분기 이동 — 누른 요소 옆에 선택창을 띄우고, 고른 경로로 이동한다.
+  // 선택지는 현재 화면 flow.to 중 branch 가 같은 항목(via = 선택지 이름).
+  //   <button onclick="goBranch(this, '결제 결과')">결제하기</button>
+  window.goBranch = function (el, branch) {
+    var found = findCurrentPage(currentKey());
+    var to = found && found.page.flow && Array.isArray(found.page.flow.to) ? found.page.flow.to : [];
+    var opts = to.filter(function (t) { return t.branch === branch; });
+    if (!opts.length) { console.warn('[PDK] goBranch: 분기 없음 ' + branch); return; }
+    if (opts.length === 1) { window.goScreen(opts[0].screen); return; }
+
+    closeBranchPicker();
+    var names = {};
+    flatPages().forEach(function (p) { names[p.id] = p.label; });
+    var pop = document.createElement('div');
+    pop.className = 'pdk-branch-picker';
+    pop.innerHTML = '<div class="pdk-branch-picker-title">' + escapeHtml(branch) + '</div>'
+      + opts.map(function (t) {
+        return '<button type="button" data-go="' + escapeHtml(t.screen) + '">'
+          + '<span class="pdk-branch-picker-via">' + escapeHtml(t.via || t.screen) + '</span>'
+          + '<span class="pdk-branch-picker-to">→ ' + escapeHtml(names[t.screen] || t.screen) + '</span>'
+          + '</button>';
+      }).join('');
+    document.body.appendChild(pop);
+
+    // 누른 요소 바로 아래(공간이 없으면 위)에, 화면 밖으로 나가지 않게
+    var r = el.getBoundingClientRect();
+    var pw = pop.offsetWidth, ph = pop.offsetHeight;
+    var left = Math.max(8, Math.min(r.left + r.width / 2 - pw / 2, window.innerWidth - pw - 8));
+    var top = r.bottom + 8 + ph < window.innerHeight ? r.bottom + 8 : Math.max(8, r.top - ph - 8);
+    pop.style.left = Math.round(left) + 'px';
+    pop.style.top = Math.round(top) + 'px';
+
+    pop.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-go]');
+      if (b) window.goScreen(b.dataset.go);
+    });
+    setTimeout(function () { document.addEventListener('pointerdown', outside, true); }, 0);
+    function outside(e) { if (!pop.contains(e.target)) closeBranchPicker(); }
+    pop.__outside = outside;
+  };
+  function closeBranchPicker() {
+    var pop = document.querySelector('.pdk-branch-picker');
+    if (!pop) return false;
+    document.removeEventListener('pointerdown', pop.__outside, true);
+    pop.remove();
+    return true;
+  }
 
   // ── 개발용 페이지 네비게이션 사이드바 ─────
   // 카테고리별 페이지 구조. 새 페이지는 해당 카테고리 pages 배열에 추가하면 됨.
@@ -1194,14 +1250,18 @@
     var topbar = document.querySelector('.pdk-topbar');
     var nav = document.querySelector('.page-nav');
     var dockLeft = renderDock();
-    var top = topbar ? Math.round(topbar.getBoundingClientRect().bottom) : 0;
+    // 위치는 offset* 로 잰다 — getBoundingClientRect 는 슬라이드 애니메이션(transform) 도중 값을 돌려준다.
     // (fixed 요소는 offsetParent 가 항상 null 이라 표시 여부는 getClientRects 로 본다)
-    var left = nav && nav.getClientRects().length ? Math.round(nav.getBoundingClientRect().right) : 0;
+    var top = topbar ? topbar.offsetTop + topbar.offsetHeight : 0;
+    var left = nav && nav.getClientRects().length ? nav.offsetLeft + nav.offsetWidth : 0;
     var right = dockLeft == null ? 0 : Math.max(0, Math.round(window.innerWidth - dockLeft));
+    var bottom = STAGE_BOTTOM;
+    // 포커스 모드: 주변 도구가 모두 숨으므로 화면 전체를 쓴다(떠오르는 영역은 목업 위에 겹친다)
+    if (document.body.classList.contains('pdk-focus')) top = left = right = bottom = 0;
     root.style.setProperty('--pdk-stage-top', top + 'px');
     root.style.setProperty('--pdk-stage-left', left + 'px');
     root.style.setProperty('--pdk-stage-right', right + 'px');
-    root.style.setProperty('--pdk-stage-bottom', STAGE_BOTTOM + 'px');
+    root.style.setProperty('--pdk-stage-bottom', bottom + 'px');
     stage.classList.add('is-fitted');
 
     // 2) 목업을 줄인 크기만큼만 자리를 차지하는 래퍼(.device-fit)로 감싼다
@@ -1476,6 +1536,106 @@
     });
   }
 
+  // ── 포커스 모드 (클라이언트 시연용) ─────────────
+  // 목업 · 분기 라디오만 남기고 나머지(상단 바 · 페이지 목록 · 오른쪽 섹션 · 떠 있는 패널 · 문의 문구)를 숨긴다.
+  // 화면 가장자리(왼쪽/오른쪽/위)에 마우스를 잠시 두면 그쪽 영역이 목업 위로 떠오르고, 벗어나면 다시 숨는다.
+  // 켜기/끄기: 상단 바 버튼 · Ctrl+\ (mac ⌘+\) · ESC(끄기). 상태는 sessionStorage 로 화면 이동 후에도 유지.
+  // 자동 이동(flow.to 의 kind:'auto')은 포커스 모드에서만 카운트다운 후 넘어간다.
+  var FOCUS_STORE = 'pdk:focus';
+  var EDGE_DELAY = 200, HIDE_DELAY = 250, AUTO_GO_SEC = 3;
+  var EDGE_TARGET = { left: '.page-nav', right: '.pdk-dock', top: '.pdk-topbar' };
+  var autoGoTimer = null;
+
+  function isFocus() { return document.body.classList.contains('pdk-focus'); }
+
+  function setFocus(on) {
+    document.body.classList.toggle('pdk-focus', on);
+    ['left', 'right', 'top'].forEach(function (s) { document.body.classList.remove('pdk-reveal-' + s); });
+    try { on ? sessionStorage.setItem(FOCUS_STORE, '1') : sessionStorage.removeItem(FOCUS_STORE); } catch (_) {}
+    var btn = document.querySelector('.pdk-topbar-focus');
+    if (btn) btn.classList.toggle('is-active', on);
+    fitStage();
+    if (on) startAutoGo(); else stopAutoGo();
+  }
+
+  function startAutoGo() {
+    stopAutoGo();
+    var found = findCurrentPage(currentKey());
+    var to = found && found.page.flow && Array.isArray(found.page.flow.to) ? found.page.flow.to : [];
+    var auto = to.filter(function (t) { return t.kind === 'auto'; })[0];
+    if (!auto) return;
+    var dest = flatPages().filter(function (p) { return p.id === auto.screen; })[0];
+    var destName = dest ? dest.label : auto.screen;
+    var n = AUTO_GO_SEC;
+    var badge = document.createElement('div');
+    badge.className = 'pdk-autogo';
+    document.body.appendChild(badge);
+    function tick() {
+      badge.textContent = n + '초 후 이동 → ' + destName;
+      if (n <= 0) { stopAutoGo(); window.goScreen(auto.screen); return; }
+      n -= 1;
+      autoGoTimer = setTimeout(tick, 1000);
+    }
+    tick();
+  }
+  function stopAutoGo() {
+    clearTimeout(autoGoTimer);
+    autoGoTimer = null;
+    var b = document.querySelector('.pdk-autogo');
+    if (b) b.remove();
+  }
+
+  function initFocusMode() {
+    var body = document.body;
+
+    // 상단 바 버튼 (도구 영역 맨 앞)
+    var tools = document.querySelector('.pdk-topbar-tools');
+    if (tools && !tools.querySelector('.pdk-topbar-focus')) {
+      var btn = document.createElement('button');
+      btn.className = 'pdk-topbar-btn pdk-topbar-focus';
+      btn.type = 'button';
+      btn.setAttribute('data-tooltip', '포커스 모드 (Ctrl+\\)');
+      btn.innerHTML = '<img src="' + ENGINE_BASE + 'icons/topbar-focus.svg" width="24" height="24" alt="">';
+      btn.addEventListener('click', function () { setFocus(!isFocus()); });
+      tools.insertBefore(btn, tools.firstChild);
+    }
+
+    // 가장자리 감지 영역 + 떠오른 영역에서 벗어나면 숨김
+    Object.keys(EDGE_TARGET).forEach(function (side) {
+      var zone = document.createElement('div');
+      zone.className = 'pdk-edge pdk-edge-' + side;
+      body.appendChild(zone);
+      var showT = null, hideT = null;
+      function reveal() { clearTimeout(hideT); body.classList.add('pdk-reveal-' + side); }
+      function conceal() { clearTimeout(showT); hideT = setTimeout(function () { body.classList.remove('pdk-reveal-' + side); }, HIDE_DELAY); }
+      zone.addEventListener('mouseenter', function () { clearTimeout(hideT); showT = setTimeout(reveal, EDGE_DELAY); });
+      zone.addEventListener('mouseleave', function () { clearTimeout(showT); if (!body.classList.contains('pdk-reveal-' + side)) return; conceal(); });
+      var target = document.querySelector(EDGE_TARGET[side]);
+      if (target) {
+        target.addEventListener('mouseenter', function () { if (isFocus()) clearTimeout(hideT); });
+        target.addEventListener('mouseleave', function () { if (isFocus()) conceal(); });
+      }
+    });
+
+    // 단축키 — capture 단계에서 먼저 본다(열린 모달의 ESC 처리보다 앞서 상태를 확인해야 한다)
+    window.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === '\\' || e.code === 'Backslash')) {
+        e.preventDefault();
+        setFocus(!isFocus());
+        return;
+      }
+      if (e.key === 'Escape' && isFocus()) {
+        if (closeBranchPicker()) return;
+        if (document.querySelector('.page-flow-modal.is-open, .pdk-spec-modal.is-open')) return;   // 모달부터 닫는다
+        setFocus(false);
+      }
+    }, true);
+
+    var saved = false;
+    try { saved = sessionStorage.getItem(FOCUS_STORE) === '1'; } catch (_) {}
+    if (saved) setFocus(true);
+  }
+
   // ── 하단 시스템 문의 푸터 (저작권 표기처럼 아주 작게) ──
   function injectFooter() {
     if (document.querySelector('.pdk-sys-footer')) return;
@@ -1496,6 +1656,7 @@
     injectFooter();
     fitStage();            // 패널이 생긴 뒤 실제 남는 공간으로 다시 배치
     watchLayout();
+    initFocusMode();       // 저장된 포커스 모드 복원(화면 이동 후에도 유지)
   }
 
   if (document.readyState === 'loading') {
