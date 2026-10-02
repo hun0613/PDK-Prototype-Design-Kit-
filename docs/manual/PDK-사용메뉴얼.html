@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>PDK 사용 메뉴얼</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 16mm; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0;
+    font-family: "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", -apple-system, sans-serif;
+    font-size: 10.2pt; line-height: 1.68; color: #1b1d21; letter-spacing: -0.01em;
+  }
+
+  /* ── 표지 ── */
+  .cover { height: 247mm; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
+  .cover .kicker { font-size: 9pt; letter-spacing: .22em; color: #7b818c; font-weight: 600; }
+  .cover h1 { font-size: 34pt; margin: 10mm 0 0; letter-spacing: -0.035em; line-height: 1.1; font-weight: 800; }
+  .cover .sub { font-size: 12.5pt; color: #4a505a; margin-top: 7mm; line-height: 1.75; max-width: 125mm; }
+  .cover .rule { height: 3px; width: 46mm; background: #1b1d21; margin: 11mm 0; }
+  .cover .meta { font-size: 9pt; color: #7b818c; line-height: 1.9; }
+  .cover .meta b { color: #1b1d21; font-weight: 600; }
+
+  /* ── 섹션 ── */
+  section { page-break-inside: avoid; }
+  .page-break { page-break-before: always; }
+  h2 {
+    font-size: 16pt; margin: 0 0 5mm; padding-bottom: 2.5mm; letter-spacing: -0.03em;
+    border-bottom: 2px solid #1b1d21; font-weight: 800;
+  }
+  h2 .num { display: inline-block; min-width: 9mm; color: #9aa0aa; }
+  h3 { font-size: 11.5pt; margin: 7mm 0 2.5mm; letter-spacing: -0.02em; font-weight: 700; }
+  h3:first-of-type { margin-top: 4mm; }
+  p { margin: 0 0 3mm; }
+  .lead { color: #4a505a; margin-bottom: 5mm; }
+
+  ul, ol { margin: 0 0 3.5mm; padding-left: 5.5mm; }
+  li { margin-bottom: 1.4mm; }
+  li::marker { color: #9aa0aa; }
+
+  code, .cmd {
+    font-family: "SF Mono", "Menlo", monospace; font-size: 9pt;
+    background: #f1f2f4; padding: 0.6mm 1.4mm; border-radius: 2px; letter-spacing: 0;
+  }
+  pre {
+    background: #f7f8f9; border-left: 3px solid #c8ccd2; margin: 0 0 4mm;
+    padding: 3.2mm 4mm; font-family: "SF Mono", "Menlo", monospace;
+    font-size: 8.8pt; line-height: 1.62; white-space: pre-wrap; letter-spacing: 0; color: #2a2d33;
+  }
+  pre .c { color: #8a9099; }
+
+  table { width: 100%; border-collapse: collapse; margin: 0 0 4mm; font-size: 9.4pt; }
+  th, td { text-align: left; padding: 2.2mm 2.6mm; border-bottom: 1px solid #e3e5e9; vertical-align: top; }
+  th { background: #f4f5f7; font-weight: 700; border-bottom: 1.5px solid #c8ccd2; }
+  td code { font-size: 8.6pt; }
+
+  .note {
+    background: #f7f8f9; border-left: 3px solid #1b1d21; padding: 3mm 4mm;
+    margin: 0 0 4mm; font-size: 9.4pt; color: #3a3f47;
+  }
+  .note b { color: #1b1d21; }
+  .warn { border-left-color: #c0392b; }
+  .warn b { color: #c0392b; }
+
+  /* ── 단계 흐름도 ── */
+  .flow { margin: 0 0 5mm; }
+  .flow-row { display: flex; align-items: stretch; gap: 2mm; margin-bottom: 2mm; }
+  .step {
+    flex: 1; border: 1.2px solid #1b1d21; border-radius: 3px; padding: 2.6mm 3mm; text-align: center;
+  }
+  .step .n { font-size: 7.6pt; font-weight: 700; color: #9aa0aa; letter-spacing: .1em; }
+  .step .t { font-size: 9.6pt; font-weight: 700; margin-top: 0.8mm; letter-spacing: -0.02em; }
+  .step .c { font-size: 8pt; color: #7b818c; font-family: "SF Mono", Menlo, monospace; margin-top: 0.8mm; letter-spacing: 0; }
+  .step.opt { border-style: dashed; border-color: #9aa0aa; }
+  .arrow { display: flex; align-items: center; color: #9aa0aa; font-size: 11pt; }
+
+  /* ── 체크리스트 ── */
+  .check { list-style: none; padding: 0; }
+  .check li { padding-left: 7mm; position: relative; margin-bottom: 2mm; }
+  .check li::before {
+    content: ""; position: absolute; left: 0; top: 1.3mm;
+    width: 3.6mm; height: 3.6mm; border: 1.3px solid #1b1d21; border-radius: 1px;
+  }
+
+  .kbd {
+    font-family: "SF Mono", Menlo, monospace; font-size: 8.6pt; border: 1px solid #c8ccd2;
+    border-bottom-width: 2px; border-radius: 2.5px; padding: 0.4mm 1.4mm; background: #fff; letter-spacing: 0;
+  }
+  .footnote { font-size: 8.6pt; color: #8a9099; margin-top: 6mm; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ 표지 ══════════ -->
+<div class="cover">
+  <div class="kicker">PROTOTYPE DESIGN KIT</div>
+  <h1>PDK 사용 메뉴얼</h1>
+  <div class="sub">
+    코딩을 몰라도 <b>커맨드를 순서대로 입력</b>하면<br>
+    화면설계서가 만들어집니다 — 페이지 목록 · 유저플로우 ·<br>
+    기능명세서 · 와이어프레임 · Figma 디자인.
+  </div>
+  <div class="rule"></div>
+  <div class="meta">
+    대상 — <b>기획자 (비개발자)</b><br>
+    버전 — <b>v7</b><br>
+    문서 기준일 — <b>2026-10-02</b>
+  </div>
+</div>
+
+<!-- ══════════ 1. PDK란 ══════════ -->
+<section>
+  <h2><span class="num">1</span>PDK란</h2>
+  <p class="lead">기획자가 <b>Claude에게 말로 설명</b>하면 화면설계서를 만들어 주는 템플릿입니다. 설치할 프로그램도, 코드를 쓸 일도 없습니다.</p>
+
+  <h3>무엇이 만들어지나</h3>
+  <table>
+    <tr><th style="width:32mm">결과물</th><th>내용</th></tr>
+    <tr><td>페이지 목록</td><td>등록한 화면 전체 목록 (화면 ID · 이름 · 진행 상태)</td></tr>
+    <tr><td>화면 플로우</td><td>화면이 어디서 들어와 어디로 가는지 그린 다이어그램</td></tr>
+    <tr><td>기능명세서</td><td>엑셀로 쓰던 그 표 (기능 ID · 위치 · 대상 · 상세 · 우선순위)</td></tr>
+    <tr><td>와이어프레임</td><td>실제 문구가 들어간 흑백 화면 — 버튼을 누르면 다음 화면으로 이동</td></tr>
+    <tr><td>Description</td><td>화면 옆 설명 패널 (마우스를 올리면 해당 요소가 강조됨)</td></tr>
+  </table>
+
+  <h3>알아 둘 것</h3>
+  <ul>
+    <li><b>브라우저로 열면 바로 보입니다</b> — 설치·빌드 과정이 없습니다.</li>
+    <li>목업 기기 <b>4종 내장</b> — 데스크탑 / 모바일 / 토스프론트2 / 반응형. 다른 기기도 추가할 수 있습니다.</li>
+    <li>색·폰트 같은 <b>디자인은 Figma에서</b> 관리합니다. PDK는 구조와 흐름까지입니다.</li>
+  </ul>
+
+  <div class="note">
+    <b>화면은 3단계로 자랍니다.</b><br>
+    ① <code>/pdk-screen</code> 등록 (이름·ID만) → ② <code>/pdk-wireframe</code> 흑백 UI → ③ <code>/pdk-figma-sync</code> 디자인 반영
+  </div>
+</section>
+
+<!-- ══════════ 2. 준비 ══════════ -->
+<section class="page-break">
+  <h2><span class="num">2</span>준비</h2>
+  <p class="lead">딱 세 가지만 하면 됩니다.</p>
+
+  <h3>① 폴더 내려받기</h3>
+  <p>PDK 레포를 클론하거나 ZIP으로 받아 압축을 풉니다. 받은 폴더를 내 작업 폴더로 씁니다.</p>
+
+  <h3>② 그 폴더에서 Claude Code 열기</h3>
+  <p>터미널에서 폴더로 이동한 뒤 <code>claude</code> 를 입력하거나, VS Code 확장에서 그 폴더를 엽니다. <b>이제부터는 Claude에게 커맨드만 입력합니다.</b></p>
+
+  <h3>③ (선택) 미리보기 서버 띄우기</h3>
+  <pre>python -m http.server 8124   <span class="c"># → 브라우저에서 http://localhost:8124</span></pre>
+  <p>서버 없이 <code>index.html</code> 파일을 더블클릭해 열어도 됩니다.</p>
+
+  <div class="note">
+    <b>처음엔 비어 있는 게 정상입니다.</b> 받은 직후에는 등록된 화면이 없어 목록·플로우가 모두 빈 상태입니다. 다음 단계부터 채워집니다.
+  </div>
+</section>
+
+<!-- ══════════ 3. 전체 흐름 ══════════ -->
+<section>
+  <h2><span class="num">3</span>전체 흐름</h2>
+  <p class="lead">아래 순서대로 진행합니다. 각 단계는 Claude가 질문으로 안내하니 <b>답만 하면 됩니다.</b></p>
+
+  <div class="flow">
+    <div class="flow-row">
+      <div class="step"><div class="n">STEP 1</div><div class="t">프로젝트 시작</div><div class="c">/pdk-init</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">STEP 2</div><div class="t">화면 등록</div><div class="c">/pdk-screen</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">STEP 3</div><div class="t">기능명세서</div><div class="c">/pdk-description</div></div>
+    </div>
+    <div class="flow-row">
+      <div class="step"><div class="n">STEP 4</div><div class="t">기능 플로우</div><div class="c">/pdk-flow</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">STEP 5</div><div class="t">화면 설계</div><div class="c">/pdk-wireframe</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">STEP 6</div><div class="t">디자인 입히기</div><div class="c">/pdk-figma-sync</div></div>
+    </div>
+    <div class="flow-row">
+      <div class="step opt" style="flex:0 0 58mm"><div class="n">선택 · STEP 1 이전</div><div class="t">커스텀 기기 추가</div><div class="c">/pdk-mockup</div></div>
+      <div style="flex:1"></div>
+    </div>
+  </div>
+
+  <table>
+    <tr><th style="width:38mm">커맨드</th><th>하는 일</th></tr>
+    <tr><td><code>/pdk-init</code></td><td>프로젝트 이름·코드·디바이스를 받아 빈 골격을 만듭니다</td></tr>
+    <tr><td><code>/pdk-mockup</code></td><td>내장 4종 외의 기기 목업을 등록합니다 <i>(선택)</i></td></tr>
+    <tr><td><code>/pdk-screen</code></td><td>화면을 등록하고 진입·이동을 연결합니다</td></tr>
+    <tr><td><code>/pdk-description</code></td><td>화면의 기능을 표로 먼저 정리합니다</td></tr>
+    <tr><td><code>/pdk-flow</code></td><td>화면들을 기능 단위 여정으로 묶습니다</td></tr>
+    <tr><td><code>/pdk-wireframe</code></td><td>흑백 와이어프레임 UI와 Description을 만듭니다</td></tr>
+    <tr><td><code>/pdk-figma-sync</code></td><td>Figma 시안을 화면에 입힙니다</td></tr>
+  </table>
+
+  <div class="note">
+    한 번에 다 하지 않아도 됩니다. <b>2단계까지만 해도</b> 페이지 목록과 플로우 다이어그램이 나옵니다.
+  </div>
+</section>
+
+<!-- ══════════ 4. STEP 1 ══════════ -->
+<section class="page-break">
+  <h2><span class="num">4</span>STEP 1 — 프로젝트 시작</h2>
+  <pre>/pdk-init</pre>
+  <p class="lead">Claude가 차례로 물어봅니다. 순서대로 답하면 됩니다.</p>
+
+  <table>
+    <tr><th style="width:34mm">질문</th><th>답하는 법</th></tr>
+    <tr><td>프로젝트 이름</td><td>그대로 적습니다 (예: 더베스트페이 가맹점센터)</td></tr>
+    <tr><td>프로젝트 코드</td><td>영문 약어. 기능 ID 앞에 붙습니다 (예: <code>GFC</code> → <code>GFC-FUC-001</code>)</td></tr>
+    <tr><td>프로젝트 설명</td><td>한두 줄</td></tr>
+    <tr><td>디바이스</td><td>데스크탑 / 모바일 / 토스프론트2 / 반응형 중 하나</td></tr>
+    <tr><td>PRD 문서 <i>(선택)</i></td><td><code>docs/prd/</code> 에 넣어 둔 HTML 파일명. 상단 바에 <b>PRD 문서 보기</b> 버튼이 생깁니다</td></tr>
+    <tr><td>내 레포 주소</td><td>작업 결과를 올릴 곳. 없으면 <b>"나중에"</b> 라고 답하면 됩니다</td></tr>
+  </table>
+
+  <div class="note warn">
+    <b>왜 레포 주소를 묻나요?</b> 받은 폴더는 PDK 원본을 가리키고 있어, 그대로 올리면 <b>템플릿 레포에 내 작업이 밀려 들어갑니다.</b>
+    <code>/pdk-init</code> 이 이 연결을 끊거나 내 레포로 바꿔 줍니다. "나중에"라고 답해도 안전합니다.
+  </div>
+
+  <ul>
+    <li><b>반응형</b>을 고르면 상단 바 우측에 데스크탑/모바일 토글이 생깁니다.</li>
+    <li>다시 실행해도 <b>이미 등록한 화면·설정은 그대로</b> 남습니다. PRD는 나중에 붙여도 됩니다.</li>
+  </ul>
+
+  <h3>(선택) 다른 기기를 쓰고 싶다면 — STEP 1 이전에</h3>
+  <pre>/pdk-mockup my-kiosk ./목업이미지폴더
+/pdk-mockup my-kiosk https://www.figma.com/design/...?node-id=12-34</pre>
+  <ul>
+    <li>이미지가 여러 장이면 Claude가 <b>어느 걸 쓸지 물어봅니다.</b></li>
+    <li>화면 <b>가로×세로(px)</b> 를 직접 입력합니다.</li>
+    <li>등록하면 <code>/pdk-init</code> 의 디바이스 목록에 나타납니다.</li>
+  </ul>
+</section>
+
+<!-- ══════════ 5. STEP 2 ══════════ -->
+<section class="page-break">
+  <h2><span class="num">5</span>STEP 2 — 화면 등록</h2>
+  <p class="lead">화면을 <b>사용자가 지나가는 순서대로</b> 하나씩 등록합니다. 가장 많이 쓰는 단계입니다.</p>
+
+  <pre>/pdk-screen 공통 SCR-MAIN-001 메인
+/pdk-screen 주문 SCR-LIST-001 상품목록
+
+<span class="c"># 형식: /pdk-screen [카테고리] [화면ID] [화면이름]</span></pre>
+
+  <h3>Claude가 묻는 세 가지</h3>
+  <ol>
+    <li><b>언제·어떻게 보이는 화면인가요?</b> — 화면의 맥락</li>
+    <li><b>어디서 들어오나요?</b> — 예: 메인에서 "시작하기" 버튼</li>
+    <li><b>다음에 어디로 가나요?</b> — 갈래가 나뉘어도 됩니다 (예: 결제 성공→완료 / 실패→실패)</li>
+  </ol>
+
+  <h3>결과</h3>
+  <ul>
+    <li>화면 HTML이 <code>pages/</code> 폴더에 생깁니다 (<code>index.html</code> 만 폴더 바깥에 있습니다).</li>
+    <li><b>페이지 목록 · 화면 플로우 · Description이 자동으로 그려집니다.</b></li>
+  </ul>
+
+  <div class="note">
+    <b>없는 화면을 말해도 괜찮습니다.</b> "결제 실패하면 실패 화면으로" 라고 하면 그 화면도 <b>그 자리에서 만들어집니다.</b>
+    이름·카테고리만 묻고, 그 화면의 다음 이동은 나중에 그 화면 차례에 물어봅니다.
+  </div>
+
+  <h3>나중에 채우거나 고치기</h3>
+  <p>화면 ID만 주면 됩니다. <b>비어 있는 항목만</b> 물어보고 이미 쓴 내용과 만들어 둔 화면은 건드리지 않습니다.</p>
+  <pre>/pdk-screen SCR-PAY-002</pre>
+
+  <div class="note">
+    화면 ID 권장 형식 — <code>SCR-&lt;카테고리약어&gt;-&lt;세 자리&gt;</code> (예: <code>SCR-PAY-001</code>)
+  </div>
+</section>
+
+<!-- ══════════ 6. STEP 3 ══════════ -->
+<section class="page-break">
+  <h2><span class="num">6</span>STEP 3 — 기능명세서</h2>
+  <p class="lead">화면을 <b>그리기 전에</b>, 그 화면에 어떤 기능이 있어야 하는지 글로 먼저 정리합니다. 엑셀로 쓰던 기능명세서와 같은 형식입니다.</p>
+
+  <pre>/pdk-description SCR-SALE-001</pre>
+
+  <ul>
+    <li>Claude가 화면 맥락·이동·PRD를 보고 <b>기능 목록 초안을 먼저 보여줍니다.</b> 추가·삭제·수정만 말하면 됩니다.</li>
+    <li>처음 한 번은 <b>위치(메뉴 계층)</b> 와 <b>사용 대상</b> 을 물어봅니다.</li>
+    <li>다시 실행하면 고칠 수 있고, <b>기능 ID는 바뀌지 않습니다.</b></li>
+  </ul>
+
+  <h3>표의 항목</h3>
+  <table>
+    <tr><th style="width:30mm">항목</th><th>내용</th></tr>
+    <tr><td>ID</td><td>프로젝트 코드 기반 (예: <code>GFC-FUC-001</code>)</td></tr>
+    <tr><td>위치</td><td>메뉴 계층 1~6 Depth</td></tr>
+    <tr><td>화면 · 대상</td><td>어느 화면인지 · 누가 쓰는지</td></tr>
+    <tr><td>기능명</td><td>짧게</td></tr>
+    <tr><td>상세</td><td>동작 · 조건 · 예외 메시지 · 정책을 <b>번호 매긴 문장</b>으로</td></tr>
+    <tr><td>우선순위</td><td>필수 / 선택 등</td></tr>
+  </table>
+
+  <h3>보는 법</h3>
+  <p>화면 상단 바의 <b>기능명세서</b> 버튼을 누릅니다.</p>
+  <ul>
+    <li><b>이 화면</b> 탭 — 지금 보고 있는 화면의 기능만</li>
+    <li><b>전체</b> 탭 — 프로젝트 전체 (화면이 아직 정해지지 않은 "미정" 기능까지)</li>
+    <li>표의 셀을 클릭하면 그 <b>기능이 속한 행 범위가 강조</b>됩니다.</li>
+  </ul>
+
+  <div class="note">
+    여기 적은 명세는 <b>STEP 5에서 Description으로 자동으로 옮겨집니다.</b> 그래서 UI보다 먼저 쓰는 게 이득입니다.
+  </div>
+  <p class="footnote">엑셀 양식: <code>templates/기능명세서_양식.xlsx</code></p>
+</section>
+
+<!-- ══════════ 7. STEP 4 ══════════ -->
+<section class="page-break">
+  <h2><span class="num">7</span>STEP 4 — 기능 플로우</h2>
+  <p class="lead">등록한 화면들을 <b>기능 단위 여정</b>으로 묶습니다 (예: 회원가입, 결제, 도착 인증).</p>
+
+  <pre>/pdk-flow FLW-PAY-001 결제
+
+<span class="c"># 형식: /pdk-flow [플로우ID] [플로우이름]</span></pre>
+
+  <h3>Claude가 묻는 세 가지</h3>
+  <ol>
+    <li><b>이 기능은 무엇인가요?</b> — 한 줄</li>
+    <li><b>사용자가 어떤 과정을 거치나요?</b> — 예: 상품 선택 → 결제 → 완료</li>
+    <li><b>어떤 화면들이 순서대로 들어가나요?</b> — 등록된 화면 목록에서 고릅니다</li>
+  </ol>
+
+  <h3>결과</h3>
+  <ul>
+    <li>좌측 페이지 목록 위에 <b>플로우 Dock</b>이 생깁니다. 플로우를 클릭하면 <b>그 기능의 화면만</b> 다이어그램에 보입니다.</li>
+    <li>여정 순서상 아직 안 이어진 이동이 있으면 <b>한 번에 확인받고</b> 연결선을 그어 줍니다.</li>
+  </ul>
+
+  <div class="note">
+    <b>한 화면이 여러 플로우에 들어가도 됩니다</b> (메인 화면처럼).<br>
+    여기서 새 화면이 언급되면 그 자리에서 만들어집니다 — 맥락·이동은 <code>/pdk-screen &lt;화면ID&gt;</code> 로 마저 채우세요.
+  </div>
+</section>
+
+<!-- ══════════ 8. STEP 5 ══════════ -->
+<section class="page-break">
+  <h2><span class="num">8</span>STEP 5 — 화면 설계</h2>
+  <p class="lead">등록한 화면을 하나씩 실제 UI로 그립니다. <b>플로우 순서대로</b> 진행하면 흐름이 자연스럽게 맞습니다.</p>
+
+  <pre>/pdk-wireframe SCR-MAIN-001</pre>
+
+  <h3>어떻게 진행되나</h3>
+  <ul>
+    <li>Claude와 대화하며 화면에 <b>무엇이 있는지</b> 정합니다 — 버튼 · 목록 · 입력칸 등.</li>
+    <li><b>실제 문구가 들어간 흑백 와이어프레임</b>으로 그려집니다. 버튼에는 버튼 이름, 목록에는 예시 항목이 들어갑니다.</li>
+    <li>색·이미지 같은 <b>디자인은 다루지 않습니다.</b> 그건 STEP 6에서 입힙니다.</li>
+  </ul>
+
+  <h3>Description은 자동으로 써집니다</h3>
+  <ul>
+    <li>STEP 3에서 기능명세를 써 뒀다면 <b>그 내용을 끌어와</b> 만들고, 항목 옆에 <b>기능 ID 칩</b>이 붙습니다 (누르면 기능명세서 표의 그 행으로 이동).</li>
+    <li>화면에 반영되지 않은 기능이 있으면 <b>마지막에 따로 알려줍니다.</b></li>
+    <li>훑어보기용 라벨이라 <b>한 항목당 한 줄 정도로 짧게</b> 적힙니다 (예: <code>결제하기 → 결제 진행</code>).</li>
+    <li>Description 항목에 마우스를 올리면 <b>화면의 해당 요소가 강조</b>됩니다.</li>
+  </ul>
+
+  <div class="note">
+    <b>조건에 따라 화면이 달라지면 그렇다고 말해 주세요</b> (목록 있음/없음, 성공/실패 등).
+    목업 위에 <b>라디오 버튼</b>이 생겨 상태를 전환해 볼 수 있습니다.
+  </div>
+</section>
+
+<!-- ══════════ 9. STEP 6 ══════════ -->
+<section>
+  <h2><span class="num">9</span>STEP 6 — 디자인 입히기</h2>
+  <p class="lead">Figma 시안을 와이어프레임에 입힙니다. 디자인이 나온 화면만 하면 됩니다.</p>
+
+  <pre>/pdk-figma-sync SCR-MAIN-001 https://www.figma.com/design/...?node-id=12-34</pre>
+
+  <ul>
+    <li>Figma에서 디자인을 가져와 와이어프레임에 적용합니다.</li>
+    <li>페이지 목록의 디자인 뱃지가 <b>"반영"</b> 으로 바뀝니다.</li>
+    <li>Description의 <b>Figma 링크</b>가 채워집니다.</li>
+  </ul>
+
+  <div class="note warn">
+    <b>Figma 데스크탑 앱과 계정 연결이 필요합니다.</b> URL은 <b>노드를 지정한 주소</b>(<code>node-id</code> 가 포함된 것)여야 합니다 — Figma에서 프레임을 선택하고 링크를 복사하면 됩니다.
+  </div>
+</section>
+
+<!-- ══════════ 10. 결과물 보기 ══════════ -->
+<section class="page-break">
+  <h2><span class="num">10</span>결과물 보는 법</h2>
+  <p class="lead"><code>index.html</code> 또는 <code>pages/</code> 안의 화면 파일을 브라우저로 엽니다.</p>
+
+  <h3>실제 앱처럼 움직입니다</h3>
+  <ul>
+    <li>화면 안의 <b>버튼을 누르면 다음 화면으로 이동</b>합니다.</li>
+    <li>성공/실패처럼 <b>갈라지는 버튼</b>은 누르면 어디로 갈지 고르는 작은 창이 뜹니다.</li>
+    <li>왼쪽 <b>페이지 목록</b>의 행, 오른쪽 <b>화면 플로우</b>의 노드를 클릭해도 이동합니다.</li>
+  </ul>
+
+  <h3>오른쪽 패널 — 떼어내고 붙이기</h3>
+  <ul>
+    <li><b>헤더를 잡고 밖으로 끌면</b> 떼어내 원하는 곳에 둘 수 있습니다 (네 변·모서리로 크기 조절).</li>
+    <li>떠 있는 패널을 <b>섹션 위로 끌어오면</b>(위/아래 절반) 또는 헤더의 <b>다시 붙이기</b> 버튼으로 돌아옵니다.</li>
+    <li>두 패널 사이 선을 끌면 <b>높이 비율</b>이 바뀝니다.</li>
+    <li>배치는 <b>브라우저 탭을 닫기 전까지</b> 유지됩니다.</li>
+  </ul>
+</section>
+
+<!-- ══════════ 11. 포커스 모드 ══════════ -->
+<section>
+  <h2><span class="num">11</span>클라이언트 시연 — 포커스 모드</h2>
+  <p class="lead">프로토타입을 보여줄 때 씁니다. <b>목업과 조건 분기 라디오만 남기고</b> 나머지 도구를 모두 숨깁니다.</p>
+
+  <table>
+    <tr><th style="width:30mm">동작</th><th>방법</th></tr>
+    <tr><td>켜기 / 끄기</td><td>상단 바의 <b>포커스 모드</b> 버튼, 또는 <span class="kbd">⌘ + \</span> (Windows <span class="kbd">Ctrl + \</span>)</td></tr>
+    <tr><td>끄기</td><td><span class="kbd">ESC</span> 로도 됩니다</td></tr>
+    <tr><td>도구 꺼내 보기</td><td>화면 <b>가장자리에 마우스를 잠시</b> 두면 떠오르고, 떼면 다시 숨습니다</td></tr>
+  </table>
+
+  <ul>
+    <li>가장자리 위치 — <b>왼쪽</b> 페이지 목록 · <b>오른쪽</b> Description·화면 플로우 · <b>위</b> 상단 바</li>
+    <li>시연은 <b>화면 안 버튼을 눌러</b> 진행합니다. 다른 화면으로 넘어가도 포커스 모드는 유지됩니다.</li>
+    <li>카운트다운처럼 <b>자동으로 넘어가는 화면</b>은 포커스 모드에서만 3초 후 이동합니다 (하단에 남은 시간 표시).</li>
+  </ul>
+
+  <div class="note">
+    <b>버튼을 눌러도 안 넘어가나요?</b> 이동 연결 전에 만든 화면입니다 — <code>/pdk-wireframe &lt;화면ID&gt;</code> 를 다시 실행하세요.
+  </div>
+</section>
+
+<!-- ══════════ 12. 업데이트 ══════════ -->
+<section class="page-break">
+  <h2><span class="num">12</span>PDK 업데이트</h2>
+  <p class="lead">PDK가 개선되면 <b>커맨드 한 번</b>으로 최신화합니다. 내 화면은 그대로 남습니다.</p>
+
+  <pre>/pdk-update</pre>
+
+  <p>실행하면 순서대로 자동 처리됩니다 — 공통 부분(엔진·커맨드·템플릿·문서) 동기화 → 구조 변경 자동 반영 → 내 수정 재적용 → <b>변경점 요약 표시</b>.</p>
+
+  <ul>
+    <li><b>내 화면·설정은 건드리지 않습니다</b> — <code>config/</code>, <code>index.html</code>, <code>pages/</code>, <code>assets/mockups/</code>, <code>README.md</code></li>
+    <li>덮어쓰기 전 <code>.pdk-backup/</code> 에 백업합니다.</li>
+    <li>직접 <code>git pull</code> 할 필요 없습니다 — 커맨드가 다 합니다.</li>
+  </ul>
+
+  <h3>공통 파일을 직접 고쳤다면 — 순서가 중요합니다</h3>
+  <pre>/pdk-custom   <span class="c"># ① 내 수정을 patch로 빼둔다</span>
+/pdk-update   <span class="c"># ② 최신화 → 그 수정을 자동 재적용</span></pre>
+
+  <div class="note warn">
+    <b><code>engine/</code> 같은 공통 파일은 업데이트 때 덮어써집니다.</b>
+    고친 게 있으면 <b>반드시 <code>/pdk-custom</code> 을 먼저</b> 실행해 빼두세요. (<code>/pdk-update</code> 도 감지해 자동 추출하지만 먼저 빼두는 편이 안전합니다.)
+  </div>
+
+  <p class="footnote">현재 버전 <code>config/pdk-version.json</code> · 변경 이력 <code>RELEASES.md</code> · 자세한 절차 <code>docs/UPDATING.md</code></p>
+</section>
+
+<!-- ══════════ 13. 체크리스트 ══════════ -->
+<section class="page-break">
+  <h2><span class="num">13</span>체크리스트</h2>
+  <ul class="check">
+    <li><code>/pdk-init</code> 로 프로젝트 생성 (이름·코드·설명·디바이스)</li>
+    <li><i>(선택)</i> <code>/pdk-mockup</code> 으로 커스텀 기기 등록</li>
+    <li>모든 화면을 <code>/pdk-screen</code> 으로 유저플로우 순서대로 등록</li>
+    <li>화면별 <code>/pdk-description</code> 으로 기능명세서 작성</li>
+    <li>기능별 <code>/pdk-flow</code> 로 여정 정의 <span style="color:#7b818c">(새로 생긴 화면은 <code>/pdk-screen &lt;화면ID&gt;</code> 로 보강)</span></li>
+    <li>화면별 <code>/pdk-wireframe</code> 으로 와이어프레임 + Description 작성</li>
+    <li>화면별 <code>/pdk-figma-sync</code> 로 디자인 적용</li>
+    <li><code>index.html</code> 에서 목록·플로우·Description·디자인 최종 확인</li>
+  </ul>
+</section>
+
+<!-- ══════════ 14. 자주 막히는 점 ══════════ -->
+<section>
+  <h2><span class="num">14</span>자주 막히는 점</h2>
+  <table>
+    <tr><th style="width:52mm">증상</th><th>해결</th></tr>
+    <tr>
+      <td>화면 플로우에 선이 안 그려짐</td>
+      <td>화면이 1개면 점만 생깁니다. <b>이동(다음 화면)</b> 정보를 넣어야 선이 그려집니다.</td>
+    </tr>
+    <tr>
+      <td>플로우에 점선 회색 노드가 있음</td>
+      <td>등록되지 않은 화면 표시입니다. 커맨드로 작업하면 보통 나오지 않습니다 — <code>config/screens.js</code> 를 직접 손댔다면 그 화면 ID를 <code>/pdk-screen</code> 으로 등록하세요.</td>
+    </tr>
+    <tr>
+      <td>버튼을 눌러도 화면이 안 넘어감</td>
+      <td>이동 연결 전에 만든 화면입니다. <code>/pdk-wireframe &lt;화면ID&gt;</code> 를 다시 실행하세요. 이동 자체가 없으면 <code>/pdk-screen &lt;화면ID&gt;</code> 로 먼저 추가합니다.</td>
+    </tr>
+    <tr>
+      <td>Description에 마우스를 올려도 강조가 안 됨</td>
+      <td>그 요소가 <code>/pdk-wireframe</code> 으로 만들어졌는지 확인하세요.</td>
+    </tr>
+    <tr>
+      <td>Figma 디자인이 안 보임</td>
+      <td>Figma 데스크탑 앱·계정 연결이 필요합니다. URL에 <code>node-id</code> 가 있는지 확인하세요.</td>
+    </tr>
+    <tr>
+      <td>업데이트 후 내가 고친 게 사라짐</td>
+      <td><code>.pdk-backup/</code> 에 백업이 남아 있습니다. 다음부터는 <code>/pdk-custom</code> → <code>/pdk-update</code> 순서로 실행하세요.</td>
+    </tr>
+  </table>
+
+  <h3>더 보기</h3>
+  <table>
+    <tr><th style="width:52mm">문서</th><th>내용</th></tr>
+    <tr><td><code>docs/GUIDE.md</code></td><td>단계별 가이드 (이 문서의 원본)</td></tr>
+    <tr><td><code>docs/UPDATING.md</code></td><td>업데이트 · 기존 프로젝트에 커맨드 설치</td></tr>
+    <tr><td><code>examples/</code></td><td>완성 예제 — 실제로 어떻게 보이는지 확인</td></tr>
+    <tr><td><code>RELEASES.md</code></td><td>변경 이력</td></tr>
+  </table>
+</section>
+
+</body>
+</html>
